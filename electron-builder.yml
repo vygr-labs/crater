@@ -1,0 +1,15 @@
+productName: Crater Bible Project
+artifactName: ${productName}-${os}-${arch}.${ext}
+win:
+  target: nsis
+linux:
+  target: AppImage
+  synopsis: Free Alternative to Easyworship
+  category: Presentation
+mac:
+  target: dmg
+  category: public.app-category.social-networking
+files: ['src/backend/build/**/*', 'build/**/*']
+extraResources: ['./assets/**']
+directories:
+  buildResources: 'assets'

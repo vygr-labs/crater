@@ -1,0 +1,349 @@
+import path from 'node:path';
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, session, } from 'electron';
+import log from 'electron-log';
+import electronUpdater from 'electron-updater';
+import electronIsDev from 'electron-is-dev';
+import ElectronStore from 'electron-store';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import fs from 'node:fs';
+import { fetchScripture, fetchChapter, fetchChapterCounts, fetchAllScripture, fetchTranslations, } from './database/bible-operations.js';
+import { fetchAllSongs, fetchSongLyrics, updateSong, filterSongsByPhrase, deleteSongById, createSong, } from './database/song-operations.js';
+import { DB_IMPORT_TEMP_DIR, MEDIA_IMAGES, MEDIA_VIDEOS, RESOURCES_PATH, } from './constants.js';
+import { screen } from 'electron/main';
+import { addTheme, deleteTheme, fetchAllThemes, fetchThemeById, updateTheme, filterThemes, } from './database/theme-operations.js';
+import processSongs from './scripts/songs-importer/index.js';
+import { getMediaDestination } from './utils.js';
+// import processSongs from './scripts/songs-importer/index.js'
+// import grandiose from 'grandiose'
+// const { GrandioseFinder } = grandiose
+// const finder = new GrandioseFinder()
+// setTimeout(() => {
+// 	// Log the discovered sources after 1000ms wait
+// 	console.log('NDI Sources: ', finder.getCurrentSources())
+// }, 1000)
+// processSongs()
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const { autoUpdater } = electronUpdater;
+let appWindow = null;
+let projectionWindow = null;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const store = new ElectronStore();
+let appReady = false;
+class AppUpdater {
+    constructor() {
+        log.transports.file.level = 'info';
+        autoUpdater.logger = log;
+        autoUpdater.checkForUpdatesAndNotify();
+    }
+}
+const installExtensions = async () => {
+    /**
+     * NOTE:
+     * As of writing this comment, Electron does not support the `scripting` API,
+     * which causes errors in the REACT_DEVELOPER_TOOLS extension.
+     * A possible workaround could be to downgrade the extension but you're on your own with that.
+     */
+    /*
+    const {
+        default: electronDevtoolsInstaller,
+        //REACT_DEVELOPER_TOOLS,
+        REDUX_DEVTOOLS,
+    } = await import('electron-devtools-installer')
+    // @ts-expect-error Weird behaviour
+    electronDevtoolsInstaller.default([REDUX_DEVTOOLS]).catch(console.log)
+    */
+};
+const PRELOAD_PATH = path.join(__dirname, 'preload.js');
+const getAssetPath = (...paths) => {
+    return path.join(RESOURCES_PATH, ...paths);
+};
+const spawnAppWindow = async () => {
+    if (electronIsDev)
+        await installExtensions();
+    appWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        icon: getAssetPath('icon.png'),
+        title: electronIsDev
+            ? 'Controls Window - Development'
+            : 'Crater Bible Project',
+        show: false,
+        webPreferences: {
+            backgroundThrottling: false,
+            preload: PRELOAD_PATH,
+            webSecurity: electronIsDev ? false : true,
+        },
+    });
+    appWindow.loadURL(electronIsDev
+        ? 'http://localhost:7241/controls'
+        : `file://${path.join(__dirname, '../../frontend/build/controls.html')}`);
+    appWindow.maximize();
+    // appWindow.setMenu(null)
+    appWindow.show();
+    if (electronIsDev)
+        appWindow.webContents.openDevTools({ mode: 'right' });
+    appWindow.on('closed', () => {
+        appWindow = null;
+    });
+};
+function spawnProjectionWindow({ x, y }) {
+    projectionWindow = new BrowserWindow({
+        width: 800,
+        height: 600,
+        title: electronIsDev
+            ? 'Projection Window - Development'
+            : 'Crater Projection Window',
+        icon: getAssetPath('icon.png'),
+        show: false,
+        fullscreen: true,
+        frame: false,
+        transparent: true, // Allow transparency
+        webPreferences: {
+            backgroundThrottling: false,
+            preload: PRELOAD_PATH,
+            webSecurity: electronIsDev ? false : true,
+        },
+        x,
+        y,
+    });
+    projectionWindow.loadURL(electronIsDev
+        ? 'http://localhost:7241'
+        : `file://${path.join(__dirname, '../../frontend/build/index.html')}`);
+    projectionWindow.show();
+    // projectionWindow.setIgnoreMouseEvents(true)
+    // if (electronIsDev)
+    // 	projectionWindow.webContents.openDevTools({ mode: 'right' })
+    projectionWindow.on('closed', () => {
+        projectionWindow = null;
+    });
+}
+const reactDevToolsPath = 'C:/Users/KINGSLEY/AppData/Local/Google/Chrome/User Data/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/6.1.1_0';
+//   os.homedir(),
+app.on('ready', async () => {
+    appReady = true;
+    new AppUpdater();
+    spawnAppWindow();
+    await session.defaultSession.loadExtension(reactDevToolsPath);
+});
+app.on('window-all-closed', () => {
+    appReady = false;
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
+/*
+ * ======================================================================================
+ *                                IPC Main Events
+ * ======================================================================================
+ */
+ipcMain.handle('sample:ping', () => {
+    return 'pong';
+});
+ipcMain.handle('fetch-chapter-counts', () => {
+    const counts = fetchChapterCounts();
+    // console.log("Here are the Chapter Counts: ", counts);
+    return counts;
+});
+ipcMain.handle('fetch-chapter', (_, chapterInfo) => {
+    console.log('Code - Fetching Scripture Chapter Data', chapterInfo);
+    // console.log(fetchChapter(chapterInfo));
+    return fetchChapter(chapterInfo);
+});
+ipcMain.handle('fetch-scripture', (_, scriptureInfo) => {
+    console.log('Fetch Scripture Arguments: ', scriptureInfo);
+    return fetchScripture(scriptureInfo);
+});
+ipcMain.handle('fetch-all-scripture', (_, version) => fetchAllScripture(version));
+ipcMain.handle('fetch-scripture-translations', fetchTranslations);
+ipcMain.handle('fetch-songs', fetchAllSongs);
+ipcMain.handle('fetch-lyrics', (_, songId) => fetchSongLyrics(songId));
+ipcMain.handle('create-song', (_, newSong) => createSong(newSong));
+ipcMain.handle('update-song', (_, newInfo) => updateSong(newInfo));
+ipcMain.handle('filter-songs', (_, phrase) => filterSongsByPhrase(phrase));
+ipcMain.handle('delete-song', (_, songId) => deleteSongById(songId));
+ipcMain.handle('get-all-displays', () => {
+    if (appReady) {
+        return screen.getAllDisplays();
+    }
+});
+ipcMain.handle('dark-mode:toggle', () => {
+    if (nativeTheme.shouldUseDarkColors) {
+        nativeTheme.themeSource = 'light';
+    }
+    else {
+        nativeTheme.themeSource = 'dark';
+    }
+    return nativeTheme.shouldUseDarkColors;
+});
+ipcMain.on('dark-mode:update', (_, newTheme) => {
+    nativeTheme.themeSource = newTheme;
+    return nativeTheme.shouldUseDarkColors;
+});
+ipcMain.on('dark-mode:system', () => {
+    nativeTheme.themeSource = 'system';
+});
+ipcMain.on('open-projection', (_, { x, y }) => {
+    const coords = { x, y };
+    if (!projectionWindow) {
+        const display = screen.getDisplayNearestPoint({ x, y });
+        if (!display) {
+            coords.x = 0;
+            coords.y = 0;
+        }
+        console.log(coords, display, screen.getAllDisplays());
+        spawnProjectionWindow(coords);
+    }
+});
+ipcMain.on('close-projection', () => {
+    if (projectionWindow) {
+        projectionWindow.close();
+        projectionWindow = null;
+    }
+    else {
+        console.warn('Projection window is already closed or does not exist.');
+    }
+});
+ipcMain.handle('add-theme', (_, data) => addTheme(data));
+ipcMain.handle('update-theme', (_, id, data) => updateTheme(id, data));
+ipcMain.handle('delete-theme', (_, id) => deleteTheme(id));
+ipcMain.handle('fetch-themes-meta', () => fetchAllThemes());
+ipcMain.handle('fetch-theme', (_, id) => fetchThemeById(id));
+ipcMain.handle('filter-themes', (_, type) => filterThemes(type));
+console.log('TEMPORARY DIRECTORY: ', app.getPath('temp'));
+ipcMain.handle('import-easyworship-songs', async () => {
+    console.log(app.getPath('temp'));
+    if (appWindow) {
+        const result = await dialog.showOpenDialog(appWindow, {
+            properties: ['openFile', 'multiSelections'],
+            filters: [
+                {
+                    name: 'Easyworship Song Databases',
+                    extensions: ['db'],
+                },
+            ],
+            // defaultPath:
+            // 'C:UsersPublicDocumentsSoftouchEasyworship',
+        });
+        if (result.filePaths.length > 2) {
+            return {
+                type: 'error',
+                message: `You selected more than 2 files`,
+            };
+        }
+        const baseNameArr = result.filePaths.map(file => path.basename(file));
+        const DB_NAMES = ['Songs.db', 'SongWords.db'].filter(basepath => !baseNameArr.includes(basepath));
+        console.log('Selected does not include: ', DB_NAMES);
+        if (DB_NAMES.length) {
+            return {
+                type: 'error',
+                message: `You did not select a ${DB_NAMES.join(' and ')} file`,
+            };
+        }
+        // Make sure the import-databases temp folder is empty
+        for (const file of await fs.promises.readdir(DB_IMPORT_TEMP_DIR)) {
+            await fs.promises.unlink(path.join(DB_IMPORT_TEMP_DIR, file));
+        }
+        // Copy the db files to the temp dir so they don't get deleted while being transacted with
+        const songsPaths = {
+            SONG_DB: '',
+            SONG_WORDS_DB: '',
+        };
+        for (const file of result.filePaths) {
+            const fileBasename = path.basename(file);
+            const destination = path.join(DB_IMPORT_TEMP_DIR, fileBasename);
+            await fs.promises.copyFile(file, destination);
+            songsPaths[fileBasename === 'Songs.db' ? 'SONG_DB' : 'SONG_WORDS_DB'] =
+                destination;
+        }
+        const isComplete = await processSongs(songsPaths);
+        if (isComplete) {
+            return {
+                success: true,
+                message: 'Songs Imported Successfully',
+            };
+        }
+        else {
+            return {
+                success: false,
+                message: 'Failed to import songs',
+            };
+        }
+    }
+});
+const filterObj = {
+    images: { name: 'Images', extensions: ['jpg', 'png', 'gif'] },
+    videos: { name: 'Videos', extensions: ['mkv', 'avi', 'mp4'] },
+};
+ipcMain.handle('import-media', async (_, { filters, multiSelect }) => {
+    if (appWindow) {
+        const properties = ['openFile'];
+        if (multiSelect)
+            properties.push('multiSelections');
+        const result = await dialog.showOpenDialog(appWindow, {
+            properties,
+            filters: filters.map(filter => filterObj[filter]),
+        });
+        if (!result.filePaths.length) {
+            return; // No files selected, do nothing
+        }
+        const destinations = [];
+        for (const filePath of result.filePaths) {
+            const destination = getMediaDestination(filePath);
+            console.log(filePath, destination);
+            if (!destination)
+                return;
+            destinations.push(destination);
+            try {
+                await fs.promises.copyFile(filePath, destination);
+            }
+            catch (err) {
+                console.error('An error occurred while copying the file:', err);
+            }
+        }
+        return {
+            type: 'success',
+            message: 'Completely Successful',
+            paths: destinations,
+        };
+    }
+});
+ipcMain.handle('get-images', async () => {
+    try {
+        const files = await fs.promises.readdir(MEDIA_IMAGES);
+        return files.map(name => ({
+            title: name,
+            path: path.join(MEDIA_IMAGES, name),
+        }));
+    }
+    catch (err) {
+        console.error('Error reading directory:', err);
+        return [];
+    }
+});
+ipcMain.handle('get-videos', async () => {
+    try {
+        const files = await fs.promises.readdir(MEDIA_VIDEOS);
+        return files.map(name => ({
+            title: name,
+            path: path.join(MEDIA_VIDEOS, name),
+        }));
+    }
+    catch (err) {
+        console.error('Error reading directory:', err);
+        return [];
+    }
+});
+ipcMain.handle('delete-media', async (_, path) => {
+    try {
+        await fs.promises.rm(path);
+        return {
+            type: 'success',
+            message: 'Deleted successfully',
+        };
+    }
+    catch {
+        console.error('Failed to delete media');
+    }
+});

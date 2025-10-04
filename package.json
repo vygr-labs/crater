@@ -1,14 +1,60 @@
 {
   "name": "crater",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.5.0",
+  "description": "Professional Scripture Projection Software",
+  "author": {
+    "name": "Eyetu Kingsley",
+    "email": "eyetukingsley330@gmail.com",
+    "url": "https://eyetukingsley.dev"
+  },
+  "main": "src/backend/build/main.js",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "frontend:dev": "astro dev",
+    "frontend:build": "astro build",
+    "frontend:lint": "eslint pages && eslint components && eslint layouts && eslint utils",
+    "backend:build": "tsc -p src/backend && tsc-alias -p ./src/backend/tsconfig.json",
+    "backend:lint": "eslint src/backend",
+    "lint": "prettier -c . && yarn backend:lint && yarn frontend:lint",
+    "lint:fix": "prettier -w .",
+    "boot": "yarn backend:build && electron .",
+    "start": "concurrently -k \"yarn frontend:dev\" \"wait-on tcp:127.0.0.1:7241 && yarn boot\"",
+    "pre-build": "yarn frontend:build && yarn backend:build",
+    "build": "yarn pre-build && electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
-    "astro": "^5.14.1"
+    "@astrojs/solid-js": "^5.1.1",
+    "astro": "^5.14.1",
+    "better-sqlite3": "^12.4.1",
+    "copy-to-clipboard": "^3.3.3",
+    "electron-is-dev": "^3.0.1",
+    "electron-log": "^5.4.3",
+    "electron-redux": "^2.0.0",
+    "electron-store": "^11.0.0",
+    "electron-updater": "^6.6.2",
+    "fs": "^0.0.1-security",
+    "lodash": "^4.17.21",
+    "mime": "^4.1.0",
+    "rtf-parse": "^0.1.0",
+    "solid-icons": "^1.1.0",
+    "solid-js": "^1.9.9"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^24.6.2",
+    "@typescript-eslint/parser": "^8.45.0",
+    "concurrently": "^9.2.1",
+    "electron": "^38.2.1",
+    "electron-builder": "^26.0.12",
+    "electron-devtools-installer": "^4.0.0",
+    "eslint": "^9.37.0",
+    "prettier": "^3.6.2",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.9.3",
+    "wait-on": "^9.0.1"
   }
 }
