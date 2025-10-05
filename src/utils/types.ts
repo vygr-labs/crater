@@ -1,4 +1,4 @@
-import { SongLyric } from '@/context'
+import type { SongLyric } from "./context"
 
 export interface ScriptureTranslation {
 	id: number
