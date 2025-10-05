@@ -22,11 +22,13 @@
     "lint:fix": "prettier -w .",
     "boot": "yarn backend:build && electron .",
     "start": "concurrently -k \"yarn frontend:dev\" \"wait-on tcp:127.0.0.1:7241 && yarn boot\"",
+    "prepare": "panda codegen",
     "pre-build": "yarn frontend:build && yarn backend:build",
     "build": "yarn pre-build && electron-builder",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
+    "@ark-ui/solid": "^5.25.1",
     "@astrojs/solid-js": "^5.1.1",
     "astro": "^5.14.1",
     "better-sqlite3": "^12.4.1",
@@ -36,14 +38,18 @@
     "electron-redux": "^2.0.0",
     "electron-store": "^11.0.0",
     "electron-updater": "^6.6.2",
+    "fast-safe-stringify": "^2.1.1",
     "fs": "^0.0.1-security",
     "lodash": "^4.17.21",
     "mime": "^4.1.0",
     "rtf-parse": "^0.1.0",
+    "solid-gesture": "^0.0.3",
     "solid-icons": "^1.1.0",
-    "solid-js": "^1.9.9"
+    "solid-js": "^1.9.9",
+    "solid-spring": "^0.0.7"
   },
   "devDependencies": {
+    "@pandacss/dev": "^1.4.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.6.2",
     "@typescript-eslint/parser": "^8.45.0",
