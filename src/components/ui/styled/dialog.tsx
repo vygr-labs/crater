@@ -1,4 +1,4 @@
-import { type Assign, Dialog } from '@ark-ui/solid'
+import { type Assign, Dialog, useDialogContext } from '@ark-ui/solid'
 import type { ComponentProps } from 'solid-js'
 import { type DialogVariantProps, dialog } from 'styled-system/recipes'
 import type { HTMLStyledProps } from 'styled-system/types'
@@ -62,5 +62,12 @@ export const Body = withContext<HTMLStyledProps<'div'>>(
   "div",
   "body",
 )
+
+// export const DialogActionTrigger: HTMLStyledProps<'button'> = (function DialogActionTrigger(props, ref) {
+//   const dialog = useDialogContext()
+//   return (
+//     <styled.button {...props} ref={ref} onClick={() => dialog().setOpen(false)} />
+//   )
+// })
 
 export { DialogContext as Context } from '@ark-ui/solid'

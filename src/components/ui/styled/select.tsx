@@ -4,7 +4,7 @@ import { type SelectVariantProps, select } from 'styled-system/recipes'
 import type { HTMLStyledProps } from 'styled-system/types'
 import { createStyleContext } from './utils/create-style-context'
 
-const { withRootProvider, withContext } = createStyleContext(select)
+const { withRootProvider, withProvider, withContext } = createStyleContext(select)
 
 export type RootProviderProps = ComponentProps<typeof RootProvider>
 export const RootProvider = withRootProvider<
@@ -15,12 +15,12 @@ export const RootProvider = withRootProvider<
 >(Select.RootProvider)
 
 export type RootProps = ComponentProps<typeof Root>
-export const Root = withRootProvider<
+export const Root = withProvider<
   Assign<
     Assign<HTMLStyledProps<'div'>, Select.RootBaseProps<Select.CollectionItem>>,
     SelectVariantProps
   >
->(Select.Root)
+>(Select.Root, "root")
 
 export const ClearTrigger = withContext<
   Assign<HTMLStyledProps<'button'>, Select.ClearTriggerBaseProps>
@@ -39,6 +39,11 @@ export const Control = withContext<Assign<HTMLStyledProps<'div'>, Select.Control
 export const Indicator = withContext<Assign<HTMLStyledProps<'div'>, Select.IndicatorBaseProps>>(
   Select.Indicator,
   'indicator',
+)
+
+export const IndicatorGroup = withContext<HTMLStyledProps<'div'>>(
+  "div",
+  'indicatorGroup',
 )
 
 export const ItemGroupLabel = withContext<

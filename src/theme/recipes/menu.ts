@@ -45,6 +45,26 @@ export const menuSlotRecipe = defineSlotRecipe({
         ps: "8",
       },
     },
+    triggerItem: {
+      textDecoration: "none",
+      color: "fg",
+      userSelect: "none",
+      borderRadius: "l1",
+      width: "100%",
+      display: "flex",
+      cursor: "menuitem",
+      alignItems: "center",
+      textAlign: "start",
+      position: "relative",
+      flex: "0 0 auto",
+      outline: 0,
+      _disabled: {
+        layerStyle: "disabled",
+      },
+      "&[data-type]": {
+        ps: "8",
+      },
+    },
     itemText: {
       flex: "1",
     },
@@ -90,9 +110,20 @@ export const menuSlotRecipe = defineSlotRecipe({
             bg: "bg.emphasized/60",
           },
         },
+        triggerItem: {
+          _highlighted: {
+            bg: "bg.emphasized/60",
+          },
+        },
       },
       solid: {
         item: {
+          _highlighted: {
+            bg: "colorPalette.solid",
+            color: "colorPalette.contrast",
+          },
+        },
+        triggerItem: {
           _highlighted: {
             bg: "colorPalette.solid",
             color: "colorPalette.contrast",
@@ -114,6 +145,12 @@ export const menuSlotRecipe = defineSlotRecipe({
           py: "1",
           px: "1.5",
         },
+        triggerItem: {
+          gap: "1",
+          textStyle: "xs",
+          py: "1",
+          px: "1.5",
+        },
       },
       md: {
         content: {
@@ -122,6 +159,12 @@ export const menuSlotRecipe = defineSlotRecipe({
           scrollPadding: "1.5",
         },
         item: {
+          gap: "2",
+          textStyle: "sm",
+          py: "1.5",
+          px: "2",
+        },
+        triggerItem: {
           gap: "2",
           textStyle: "sm",
           py: "1.5",

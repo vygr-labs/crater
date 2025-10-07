@@ -36,4 +36,6 @@ export const Trigger = withContext<Assign<HTMLStyledProps<'button'>, Tabs.Trigge
   'trigger',
 )
 
+export const ContentGroup = withContext<HTMLStyledProps<"div">>("div", "contentGroup")
+
 export { TabsContext as Context } from '@ark-ui/solid'

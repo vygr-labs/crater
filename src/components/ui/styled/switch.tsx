@@ -1,19 +1,19 @@
 import { type Assign, Switch } from '@ark-ui/solid'
 import type { ComponentProps } from 'solid-js'
-import { type SwitchRecipeVariantProps, switchRecipe } from 'styled-system/recipes'
+import { type ChakraSwitchVariantProps, chakraSwitch } from 'styled-system/recipes'
 import type { HTMLStyledProps } from 'styled-system/types'
 import { createStyleContext } from './utils/create-style-context'
 
-const { withProvider, withContext } = createStyleContext(switchRecipe)
+const { withRootProvider, withProvider, withContext } = createStyleContext(chakraSwitch)
 
 export type RootProviderProps = ComponentProps<typeof RootProvider>
-export const RootProvider = withProvider<
-  Assign<Assign<HTMLStyledProps<'label'>, Switch.RootProviderBaseProps>, SwitchRecipeVariantProps>
->(Switch.RootProvider, 'root')
+export const RootProvider = withRootProvider<
+  Assign<Assign<HTMLStyledProps<'label'>, Switch.RootProviderBaseProps>, ChakraSwitchVariantProps>
+>(Switch.RootProvider)
 
 export type RootProps = ComponentProps<typeof Root>
 export const Root = withProvider<
-  Assign<Assign<HTMLStyledProps<'label'>, Switch.RootBaseProps>, SwitchRecipeVariantProps>
+  Assign<Assign<HTMLStyledProps<'label'>, Switch.RootBaseProps>, ChakraSwitchVariantProps>
 >(Switch.Root, 'root')
 
 export const Control = withContext<Assign<HTMLStyledProps<'span'>, Switch.ControlBaseProps>>(

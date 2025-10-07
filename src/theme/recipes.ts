@@ -17,6 +17,7 @@ import { skeletonRecipe } from "./recipes/skeleton"
 import { skipNavLinkRecipe } from "./recipes/skip-nav-link"
 import { spinnerRecipe } from "./recipes/spinner"
 import { textareaRecipe } from "./recipes/textarea"
+import { textRecipe } from "./recipes/text"
 
 export const recipes = {
   badge: badgeRecipe,
@@ -34,6 +35,7 @@ export const recipes = {
   skipNavLink: skipNavLinkRecipe,
   spinner: spinnerRecipe,
   textarea: textareaRecipe,
+  text: textRecipe,
   icon: iconRecipe,
   checkmark: checkmarkRecipe,
   radiomark: radiomarkRecipe,

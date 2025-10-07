@@ -1398,6 +1398,18 @@
   resolved "https://registry.yarnpkg.com/@solid-primitives/keyed/-/keyed-1.5.2.tgz#0b2caa83bb293374b513f33fd4ba09dc3b5f4630"
   integrity sha512-BgoEdqPw48URnI+L5sZIHdF4ua4Las1eWEBBPaoSFs42kkhnHue+rwCBPL2Z9ebOyQ75sUhUfOETdJfmv0D6Kg==
 
+"@solidjs-use/shared@2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@solidjs-use/shared/-/shared-2.3.0.tgz#5eb78ea93a389a4cc4875fc67ad3d51601eac082"
+  integrity sha512-xuPNzZ9fwigkmYXTO+a8kaT45XQCPt6jVlyiDDYCD9NRZheRJOZWiUcVjYHzjececbWTctcY8NFdsXVyxARHKg==
+  dependencies:
+    "@solidjs-use/solid-to-vue" "2.3.0"
+
+"@solidjs-use/solid-to-vue@2.3.0":
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/@solidjs-use/solid-to-vue/-/solid-to-vue-2.3.0.tgz#f95b8bed5d9a6770c2acade7da2554313858cd43"
+  integrity sha512-I2onRwzdYl2eq20M3hcTkVIeYq4hNoBpHvRJB9yzoyXRDSyp7R2glIbvdBzpsXqnTvX7HJhB2KePfxYXFvyJxw==
+
 "@standard-schema/spec@^1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@standard-schema/spec/-/spec-1.0.0.tgz#f193b73dc316c4170f2e82a881da0f550d551b9c"
@@ -1416,6 +1428,18 @@
   integrity sha512-4BAffykYOgO+5nzBWYwE3W90sBgLJoUPRWWcL8wlyiM8IB8ipJz3UMJ9KXQd1RKQXpKp8Tutn80HZtWsu2u76w==
   dependencies:
     defer-to-connect "^2.0.0"
+
+"@tanstack/solid-virtual@^3.13.12":
+  version "3.13.12"
+  resolved "https://registry.yarnpkg.com/@tanstack/solid-virtual/-/solid-virtual-3.13.12.tgz#f2e28d491189456c258226b29fad761f12c207b2"
+  integrity sha512-0dS8GkBTmbuM9cUR6Jni0a45eJbd32CAEbZj8HrZMWIj3lu974NpGz5ywcomOGJ9GdeHuDaRzlwtonBbKV1ihQ==
+  dependencies:
+    "@tanstack/virtual-core" "3.13.12"
+
+"@tanstack/virtual-core@3.13.12":
+  version "3.13.12"
+  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.13.12.tgz#1dff176df9cc8f93c78c5e46bcea11079b397578"
+  integrity sha512-1YBOJfRHV4sXUmWsFSf5rQor4Ss82G8dQWLRbnk3GA4jeP8hQt1hxXh0tmflpC0dz3VgEv/1+qwPyLeWkQuPFA==
 
 "@tootallnate/once@2":
   version "2.0.0"
@@ -1593,6 +1617,11 @@
   version "1.10.11"
   resolved "https://registry.yarnpkg.com/@types/verror/-/verror-1.10.11.tgz#d3d6b418978c8aa202d41e5bb3483227b6ecc1bb"
   integrity sha512-RlDm9K7+o5stv0Co8i8ZRGxDbrTxhJtgjqjFyVh/tXQyl/rYtTKlnTvZ88oSTeYREWurwx20Js4kTuKCsFkUtg==
+
+"@types/web-bluetooth@^0.0.16":
+  version "0.0.16"
+  resolved "https://registry.yarnpkg.com/@types/web-bluetooth/-/web-bluetooth-0.0.16.tgz#1d12873a8e49567371f2a75fe3e7f7edca6662d8"
+  integrity sha512-oh8q2Zc32S6gd/j50GowEjKLoOVOwHP/bWVjKJInBwQqdOYMdPrf1oVlelTlyfFK3CKxL1uahMDAr+vy8T7yMQ==
 
 "@types/yauzl@^2.9.1":
   version "2.10.3"
@@ -7020,6 +7049,14 @@ solid-spring@^0.0.7:
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/solid-spring/-/solid-spring-0.0.7.tgz#00f2f23b97ab2cc648fe212384a352e7c9dfb270"
   integrity sha512-/sP/z4nvXYSHH557IRPKN+H33OrnshT89mOlFynMqxbHGKxReut0xTkGrdWysp+mLR7DlqX+vqNJBY4PPtwgyg==
+
+solidjs-use@^2.3.0:
+  version "2.3.0"
+  resolved "https://registry.yarnpkg.com/solidjs-use/-/solidjs-use-2.3.0.tgz#838cc16dc529603298a777bdf34f457e5ecbc16a"
+  integrity sha512-ZyH2jiUSQU+5S5vd8zyvqz9X2ikhMjJhDeh/TjRzjLDJlZ1RuZaMxdM+jGsrJxo3X/xBW9kDpYNONXs6wYrQCQ==
+  dependencies:
+    "@solidjs-use/shared" "2.3.0"
+    "@types/web-bluetooth" "^0.0.16"
 
 source-map-js@^1.0.1, source-map-js@^1.0.2, source-map-js@^1.2.0, source-map-js@^1.2.1:
   version "1.2.1"

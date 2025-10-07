@@ -20,6 +20,8 @@ export const ItemContent = withContext<
   Assign<HTMLStyledProps<'div'>, Accordion.ItemContentBaseProps>
 >(Accordion.ItemContent, 'itemContent')
 
+export const ItemBody = withContext<HTMLStyledProps<"div">>("div", "itemBody");
+
 export const ItemIndicator = withContext<
   Assign<HTMLStyledProps<'div'>, Accordion.ItemIndicatorBaseProps>
 >(Accordion.ItemIndicator, 'itemIndicator')

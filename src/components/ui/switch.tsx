@@ -3,7 +3,7 @@ import * as StyledSwitch from './styled/switch'
 
 export interface SwitchProps extends StyledSwitch.RootProps {}
 
-export const Switch = (props: SwitchProps) => {
+export const GenericSwitch = (props: SwitchProps) => {
   const getChildren = children(() => props.children)
 
   return (
@@ -18,3 +18,5 @@ export const Switch = (props: SwitchProps) => {
     </StyledSwitch.Root>
   )
 }
+
+export const ArkSwitch = StyledSwitch

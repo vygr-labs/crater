@@ -11,6 +11,9 @@ export const selectSlotRecipe = defineSlotRecipe({
       gap: "1.5",
       width: "full",
     },
+    positioner: {
+      width: "var(--reference-width)"
+    },
     trigger: {
       display: "flex",
       alignItems: "center",

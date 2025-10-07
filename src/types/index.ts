@@ -1,4 +1,6 @@
-import type { SongLyric } from "./context"
+import type { Setter } from "solid-js"
+import type { SongData, SongLyric } from "./context"
+import type { SetStoreFunction } from "solid-js/store"
 
 export interface ScriptureTranslation {
 	id: number
@@ -167,9 +169,30 @@ export const MEDIA_BACKGROUND_OPTIONS: { value: string; label: string }[] = [
 	{ value: 'video', label: 'Video' },
 ]
 
+export type GroupType = 'song' | 'scripture' | 'media' | 'theme'
+export type GroupCategory = 'favorite' | 'collection'
+
+export interface DisplayMetadata {
+	title: string
+	id: string | number
+	[data: string]: any
+}
+
+export interface DisplayProps {
+	metadata?: DisplayMetadata
+	type: DisplayType
+	data: any[]
+	index: number
+}
+
 export type DisplayBounds = {
-	x: 0
-	y: 0
-	width: 0
-	height: 0
+	x: number
+	y: number
+	width: number
+	height: number
+}
+
+export interface OpenEditData {
+	open: boolean
+	song: SongData | null
 }

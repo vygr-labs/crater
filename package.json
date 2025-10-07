@@ -30,6 +30,7 @@
   "dependencies": {
     "@ark-ui/solid": "^5.25.1",
     "@astrojs/solid-js": "^5.1.1",
+    "@tanstack/solid-virtual": "^3.13.12",
     "astro": "^5.14.1",
     "better-sqlite3": "^12.4.1",
     "copy-to-clipboard": "^3.3.3",
@@ -46,7 +47,8 @@
     "solid-gesture": "^0.0.3",
     "solid-icons": "^1.1.0",
     "solid-js": "^1.9.9",
-    "solid-spring": "^0.0.7"
+    "solid-spring": "^0.0.7",
+    "solidjs-use": "^2.3.0"
   },
   "devDependencies": {
     "@pandacss/dev": "^1.4.1",
