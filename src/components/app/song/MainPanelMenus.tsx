@@ -1,3 +1,4 @@
+import { FiPlus, FiSettings } from "solid-icons/fi";
 import { ImPlus } from "solid-icons/im";
 import { TbChevronDown, TbChevronRight, TbSettings } from "solid-icons/tb";
 import { For, Portal } from "solid-js/web";
@@ -76,7 +77,7 @@ export const MainActionBarMenu = () => <>
         aria-label="Add new song"
     // onClick={() => updateSongEdit(appStore, { open: true, song: null })}
     >
-        <ImPlus size={9.5} />
+        <FiPlus size={14} />
     </HStack>
 
     <Menu.Root>
@@ -91,8 +92,8 @@ export const MainActionBarMenu = () => <>
                 aria-label="Song settings"
                 {...triggerProps()}
             >
-                <TbSettings size={17} />
-                <TbChevronDown size={12} />
+                <FiSettings size={14} />
+                <TbChevronDown size={10} />
             </HStack>
         )}>
         </Menu.Trigger>

@@ -1,89 +1,228 @@
 import { Box, Flex, HStack } from "styled-system/jsx";
 import SelectionGroups from "../SelectionGroups";
-import { createStore } from "solid-js/store";
-import { Menu } from "../../ui/menu";
+import { createStore, produce } from "solid-js/store";
 import { For, Portal } from "solid-js/web";
-import { TbChevronDown, TbChevronRight, TbPlus, TbSettings } from "solid-icons/tb";
 import { IconButton } from "../../ui/icon-button";
 import { InputGroup } from "../../ui/input-group";
-import { ImPlus } from "solid-icons/im";
-import { FiSettings } from "solid-icons/fi";
 import ControlTabDisplay from "../ControlTabDisplay";
-import type { SongData } from "~/types/context";
-import { createEffect, createMemo, onMount } from "solid-js";
+import { createEffect, createMemo, Show, type JSX } from "solid-js";
 import { Text } from "../../ui/text";
-import type { ScriptureVerse } from "~/types";
 import { createVirtualizer } from "@tanstack/solid-virtual";
+import { useAppContext } from "~/layouts/AppContext";
+import { useFocusContext } from "~/layouts/FocusContext";
+import { defaultPalette, SCRIPTURE_TAB_FOCUS_NAME } from "~/utils/constants";
+import { focusStyles } from "~/utils/atomic-recipes";
+import { getFocusVariant } from "~/utils";
+import { css } from "styled-system/css";
+import { token } from "styled-system/tokens";
+import { createAsyncMemo } from "solidjs-use";
+import type { PanelCollection } from "~/types/app-context";
+import ScriptureSelectionGroupDisplay from "./SelectionGroupDisplay";
+import { MainActionBarMenu, MainDisplayMenuContent } from "./MainPanelMenus";
+import SearchInput from "../../custom/search-input";
+import { Kbd } from "../../ui/kbd";
+import { VsListTree, VsSearchFuzzy } from 'solid-icons/vs'
+import type { AvailableTranslation, ScriptureVerse } from "~/types";
 
-type GroupValues = 'all' | 'collections' | 'favorites'
-type SongListData = {
+type ScripturePanelGroupValues = 'all' | 'collections' | 'favorites'
+type ScriptureListData = {
     title: string
-    value: GroupValues
+    value: ScripturePanelGroupValues
 }
-type SongControlsData = {
-    searchMode: "search" | "title"
-    currentGroup: GroupValues[]
-    filter: string
+type ScriptureSearchMode = "search" | "title";
+
+type ScriptureControlsData = {
+    searchMode: ScriptureSearchMode;
+    group: string;
+    collection: number | null;
+    query: string;
+    contextMenuOpen: boolean;
+    translation: AvailableTranslation;
 }
 
 export default function ScriptureSelection() {
-    const [allScripture, setAllScripture] = createStore<ScriptureVerse[]>([]);
-    // convert this into a createMemo
-    // const [filteredSongs, setFilteredSongs] = createStore<SongData[]>([]);
-    const [songControls, setSongControls] = createStore<SongControlsData>({
-        currentGroup: ["all"],
+    const { appStore, setAppStore } = useAppContext();
+    const [scriptureControls, setScriptureControls] = createStore<ScriptureControlsData>({
+        group: "all",
+        collection: null,
         searchMode: "title",
-        filter: ""
+        query: "",
+        contextMenuOpen: false,
+        translation: "NKJV"
     })
-    function handleGroupAccordionChange(open: (GroupValues | string)[], e?: MouseEvent) {
-        setSongControls("currentGroup", open as GroupValues[])
-    }
+    const allScriptures = createAsyncMemo(async () => {
+        // const updated = appStore.scripturesUpdateCounter
+        return await window.electronAPI.fetchAllScripture(scriptureControls.translation);
+    }, [])
+    const currentGroup = createMemo(() => appStore.displayGroups.scripture[scriptureControls.group])
+    const currentCollection = createMemo(() => currentGroup().subGroups?.find(group => group.id === scriptureControls.collection))
+    const applyQueryFilter = (scriptures: ScriptureVerse[]) => scriptures.filter(scripture => scripture.text.includes(scriptureControls.query))
+    const filteredScriptures = createMemo<ScriptureVerse[]>(() => {
+        const scriptureCollection = currentCollection()
+        if (currentGroup().subGroups && scriptureCollection) {
+            return applyQueryFilter(allScriptures().filter(scripture => scriptureCollection.items.includes(scripture.id)))
+        } else {
+            return applyQueryFilter(allScriptures())
+        }
+    });
 
-    onMount(() => {
-        window.electronAPI.fetchAllScripture("NKJV").then(result => {
-            console.log("Scriptures Fetched: ", result.length);
-            setAllScripture(result);
-        })
-    })
-    
     let virtualizerParentRef!: HTMLDivElement
     const rowVirtualizer = createMemo(() => createVirtualizer({
-        count: allScripture.length,
+        count: filteredScriptures().length,
         getScrollElement: () => virtualizerParentRef,
         estimateSize: () => 36,
         overscan: 5,
     }))
 
+    const { subscribeEvent, changeFocusPanel } = useFocusContext();
+    const { name, coreFocusId, fluidFocusId } = subscribeEvent({
+        name: SCRIPTURE_TAB_FOCUS_NAME,
+        defaultCoreFocus: 0,
+        defaultFluidFocus: 0,
+        handlers: {
+            "ArrowDown": ({ coreFocusId, fluidFocusId, changeFocus, changeCoreFocus, changeFluidFocus }) => {
+                const newCoreFocusId = Math.min((fluidFocusId ?? 0) + 1, filteredScriptures().length);
+                changeFluidFocus(newCoreFocusId);
+            },
+            "ArrowUp": ({ coreFocusId, fluidFocusId, changeFocus, changeCoreFocus, changeFluidFocus }) => {
+                const newCoreFocusId = Math.max((fluidFocusId ?? 0) - 1, 0);
+                changeFluidFocus(newCoreFocusId);
+            },
+            "Enter": ({ coreFocusId, fluidFocusId, changeFocus, changeCoreFocus, changeFluidFocus }) => {
+                changeFocus(fluidFocusId);
+            }
+        },
+        clickHandlers: {
+            onClick: ({ changeFluidFocus, focusId }) => {
+                if (typeof focusId === "number") {
+                    changeFluidFocus(focusId)
+                    setScriptureControls("contextMenuOpen", false)
+                }
+            },
+            onDblClick: ({ changeFocus, focusId }) => {
+                if (typeof focusId === "number") {
+                    changeFocus(focusId)
+                }
+            },
+            onRightClick: ({ changeFluidFocus, focusId }) => {
+                if (typeof focusId === "number") {
+                    changeFluidFocus(focusId);
+                    setScriptureControls("contextMenuOpen", true)
+                }
+            }
+        }
+    })
+
+    function handleGroupAccordionChange(open: (ScripturePanelGroupValues | string)[], e?: MouseEvent) {
+        if (!open.length) return;
+        setScriptureControls(produce(store => {
+            const subSelection = open.find(item => item.includes('-'))
+
+            if (subSelection) {
+                const [group, collection] = subSelection.split('-');
+                store.group = group
+                store.collection = parseInt(collection)
+            } else {
+                store.group = open[0]
+                store.collection = null
+            }
+        }))
+    }
+
+    // scroll to current fluid item
+    createEffect(() => {
+        rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+    })
+
+    // close contextMenu when we scroll
+    createEffect(() => {
+        const fluidFocus = fluidFocusId();
+        if (scriptureControls.contextMenuOpen && fluidFocus) {
+            if (!rowVirtualizer().getVirtualItems().map(item => item.index).includes(fluidFocus)) {
+                setScriptureControls("contextMenuOpen", false);
+            }
+        }
+    })
+
+    // send current fluid item to preview-menu
+    createEffect(() => {
+        const previewFocusId = fluidFocusId()
+        if (typeof previewFocusId !== "number" || !filteredScriptures().length) return;
+
+        const previewScripture = filteredScriptures()[previewFocusId];
+        if (previewScripture) {
+            setAppStore("previewItem", {
+                metadata: {
+                    title: `${previewScripture.book_name} ${previewScripture.chapter}:${previewScripture.verse} (${previewScripture.version.toUpperCase()})`,
+                    id: `${previewScripture.book_name}-${previewScripture.chapter}-${previewScripture.verse}`.toLowerCase(),
+                },
+                type: "scripture",
+                data: [previewScripture],
+                index: 0,
+            })
+        }
+    })
+
+    const handleFilter = (e: InputEvent) => {
+        setScriptureControls("query", (e.target as HTMLInputElement).value)
+    }
+
+    const updateSearchMode = () => {
+        setScriptureControls("searchMode", former => former === "search" ? "title" : "search")
+    }
+
     return (
         <Flex h="full" pos="relative">
-            <SelectionGroups currentGroup={songControls.currentGroup} allGroups={songGroups} subGroups={{
-                favorites: [],
-                collections: [{
-                    id: 1,
-                    name: "October"
-                }, {
-                    id: 2,
-                    name: "November"
-                }],
-                all: [],
-            }} handleAccordionChange={handleGroupAccordionChange} actionMenus={<SongSelectionGroupMenus />} />
-            <ControlTabDisplay contextMenuContent={<MainDisplayMenuContent />} actionBarMenu={<MainActionBarMenu />} ref={virtualizerParentRef}>
+            <SelectionGroups searchInput={<ScriptureSearchInput searchMode={scriptureControls.searchMode} updateSearchMode={updateSearchMode} query={scriptureControls.query} onFilter={handleFilter} />} currentGroup={[scriptureControls.group]} groups={appStore.displayGroups.scripture} handleAccordionChange={handleGroupAccordionChange} actionMenus={<ScriptureSelectionGroupDisplay />} />
+            <ControlTabDisplay open={scriptureControls.contextMenuOpen} contextMenuContent={<MainDisplayMenuContent />} actionBarMenu={<MainActionBarMenu />} ref={virtualizerParentRef}>
                 <Box style={{
                     height: `${rowVirtualizer().getTotalSize()}px`,
                     width: '100%',
                     position: 'relative',
                 }}>
                     <For each={rowVirtualizer().getVirtualItems()}>
-                        {virtualItem => (
-                            <Text style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: `${virtualItem.size}px`,
-                                transform: `translateY(${virtualItem.start}px)`,
-                            }}>{allScripture[virtualItem.index].text}</Text>
-                        )}
+                        {virtualItem => {
+                            const scripture = filteredScriptures()[virtualItem.index]
+                            return (
+                                <HStack
+                                    pos="absolute"
+                                    top={0}
+                                    left={0}
+                                    w="full"
+                                    textAlign="left"
+                                    userSelect="none"
+                                    fontSize="14px"
+                                    pl={2}
+                                    cursor="pointer"
+                                    py={1.5}
+                                    css={{
+                                        "& *": {
+                                            pointerEvents: "none",
+                                        },
+                                        _hover: {
+                                            bgColor: "purple.800/40"
+                                        }
+                                    }
+                                    }
+                                    style={{
+                                        height: `${virtualItem.size}px`,
+                                        transform: `translateY(${virtualItem.start}px)`,
+                                        "background-color": virtualItem.index === fluidFocusId() ? token.var(`colors.${defaultPalette}.900`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
+                                        color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
+                                    }}
+                                    data-panel={SCRIPTURE_TAB_FOCUS_NAME}
+                                    data-focusId={virtualItem.index}
+                                >
+                                    <Box pl={2} textTransform="uppercase">
+                                        {scripture.version}
+                                    </Box>
+                                    <Box pl={2} textTransform="capitalize" whiteSpace="nowrap">
+                                        {scripture.book_name} {scripture.chapter}:{scripture.verse}
+                                    </Box>
+                                    <Box pl={2} pr={2} whiteSpace="nowrap" overflow="hidden" textOverflow="ellipsis">{scripture.text}</Box>
+                                </HStack>
+                            )
+                        }}
                     </For>
                 </Box>
             </ControlTabDisplay>
@@ -91,223 +230,48 @@ export default function ScriptureSelection() {
     )
 }
 
-const SongSelectionGroupMenus = () => <>
-    <Menu.Root>
-        <Menu.Trigger asChild={parentProps =>
-            <HStack
-                width={10}
-                gap={1}
-                h={6}
-                px={2}
-                py={0.5}
-                pr={10}
-                mr={1}
-                cursor="pointer"
-                borderRight="2px solid"
-                borderRightColor="gray.600"
-                aria-label="Add group menu"
-                {...parentProps()}
-            >
-                <ImPlus size={11} />
-                <TbChevronDown size={12} />
-            </HStack>
-        }>
-        </Menu.Trigger>
-        <Portal>
-            <Menu.Positioner>
-                <Menu.Content>
-                    <Menu.Item
-                        value="add-collection"
-                    // onClick={() => handleNewGroup('collection')}
-                    >
-                        New Collection
-                    </Menu.Item>
-                </Menu.Content>
-            </Menu.Positioner>
-        </Portal>
-    </Menu.Root>
+interface SearchInputProps {
+    query: string;
+    onFilter: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
+    searchMode: ScriptureSearchMode;
+    updateSearchMode: () => void;
+}
 
-    <Menu.Root>
-        <Menu.Trigger asChild={parentProps =>
-            <HStack
-                width={10}
-                gap={1}
-                h={6}
-                px={2}
-                py={0.5}
-                cursor="pointer"
-                aria-label="Collection settings"
-                {...parentProps()}
-            >
-                <TbSettings size={18} />
-                <TbChevronDown size={12} />
-            </HStack>
-        }>
-        </Menu.Trigger>
-        <Portal>
-            <Menu.Positioner>
-                <Menu.Content>
-                    <Menu.ItemGroup>
-                        <Menu.Item value="rename">Rename</Menu.Item>
-                        <Menu.Item value="duplicate">Duplicate</Menu.Item>
-                        <Menu.Item value="edit">Edit</Menu.Item>
-                    </Menu.ItemGroup>
-                    <Menu.Separator />
-                    <Menu.ItemGroup>
-                        <Menu.Item
-                            value="delete"
-                            color="fg.error"
-                            _hover={{ bg: 'bg.error', color: 'fg.error' }}
-                        >
-                            Delete
-                        </Menu.Item>
-                    </Menu.ItemGroup>
-                </Menu.Content>
-            </Menu.Positioner>
-        </Portal>
-    </Menu.Root>
-</>
-
-const MainDisplayMenuContent = () => <Menu.Content>
-    <Menu.Item
-        value="edit-song"
-    // onClick={() => onSongEdit(songListContextIndex)}
-    >
-        Edit Song
-    </Menu.Item>
-    <Menu.Item value="rename-song">Rename Song</Menu.Item>
-    <Menu.Item value="duplicate-song">Duplicate Song</Menu.Item>
-    <Menu.Separator />
-    <Menu.Item
-        value="add-to-favorites"
-    // onClick={handleAddToFavorites}
-    >
-        Add to Favorites
-    </Menu.Item>
-    <Menu.ItemGroup>
-        <Menu.Root
-            positioning={{ placement: 'right-start', gutter: 2 }}
+const ScriptureSearchInput = (props: SearchInputProps) => {
+    return (
+        <InputGroup
+            w="full"
+            pr={2}
+            startElement={() =>
+                <IconButton
+                    size="sm"
+                    variant="plain"
+                    cursor="pointer"
+                    onClick={props.updateSearchMode}
+                    aria-label={
+                        props.searchMode === 'title'
+                            ? 'Switch to search mode'
+                            : 'Switch to title mode'
+                    }
+                >
+                    <Show when={props.searchMode === 'title'} fallback={<VsSearchFuzzy />}>
+                        <VsListTree />
+                    </Show>
+                </IconButton>
+            }
+            startElementProps={{ padding: 0, pointerEvents: 'auto' }}
+            endElement={() => <Kbd variant="plain">⌘A</Kbd>}
         >
-            <Menu.TriggerItem w="full" justifyContent="space-between">
-                Add to Collection <TbChevronRight />
-            </Menu.TriggerItem>
-            <Menu.Positioner>
-                <Menu.Content>
-                    {/* {songCollections.map((collection, index) => (
-                                                                <Menu.Item
-                                                                    key={index}
-                                                                    value={`sc-${collection.id}`}
-                                                                    onClick={() =>
-                                                                        handleAddToCollection(collection)
-                                                                    }
-                                                                >
-                                                                    {collection.name}
-                                                                </Menu.Item>
-                                                            ))} */}
-                </Menu.Content>
-            </Menu.Positioner>
-        </Menu.Root>
-        <Menu.Item value="refresh">Refresh</Menu.Item>
-    </Menu.ItemGroup>
-    <Menu.Separator />
-    <Menu.Item
-        value="delete"
-        color="fg.error"
-        _hover={{ bg: 'bg.error', color: 'fg.error' }}
-    // onClick={() => onSongDelete(songListContextIndex)}
-    >
-        Delete Song
-    </Menu.Item>
-</Menu.Content>
-
-const MainActionBarMenu = () => <>
-    <HStack
-        width={10}
-        gap={1}
-        h={6}
-        px={2}
-        py={0.5}
-        mr={1}
-        justify="center"
-        cursor="pointer"
-        borderInline="2px solid"
-        borderInlineColor="gray"
-        aria-label="Add new song"
-    // onClick={() => updateSongEdit(appStore, { open: true, song: null })}
-    >
-        <ImPlus size={9.5} />
-    </HStack>
-
-    <Menu.Root>
-        <Menu.Trigger asChild={triggerProps => (
-            <HStack
-                width={10}
-                gap={1}
-                h={6}
-                px={2}
-                py={0.5}
-                cursor="pointer"
-                aria-label="Song settings"
-                {...triggerProps()}
-            >
-                <TbSettings size={17} />
-                <TbChevronDown size={12} />
-            </HStack>
-        )}>
-        </Menu.Trigger>
-        <Menu.Positioner>
-            <Menu.Content>
-                <Menu.ItemGroup>
-                    <Menu.Item value="edit">Edit Song</Menu.Item>
-                    <Menu.Item value="rename">Rename Song</Menu.Item>
-                    <Menu.Item value="duplicate">Duplicate Song</Menu.Item>
-                </Menu.ItemGroup>
-                <Menu.Separator />
-                <Menu.ItemGroup>
-                    <Menu.Item
-                        value="delete"
-                        color="fg.error"
-                        _hover={{ bg: 'bg.error', color: 'fg.error' }}
-                    >
-                        Delete Song
-                    </Menu.Item>
-                </Menu.ItemGroup>
-                <Menu.Separator />
-                <Menu.ItemGroup>
-                    <Menu.Root
-                        positioning={{ placement: 'right-start', gutter: 2 }}
-                    >
-                        <Menu.TriggerItem w="full" justifyContent="space-between">
-                            Sort by <TbChevronRight />
-                        </Menu.TriggerItem>
-                        <Menu.Positioner>
-                            <Menu.Content>
-                                <Menu.ItemGroup>
-                                    <Menu.Item value="name">Name</Menu.Item>
-                                    <Menu.Item value="date-added">
-                                        Date Added
-                                    </Menu.Item>
-                                    <Menu.Item value="last-used">Last Used</Menu.Item>
-                                </Menu.ItemGroup>
-                                <Menu.Separator />
-                                <Menu.ItemGroup>
-                                    <Menu.Item value="ascending">Ascending</Menu.Item>
-                                    <Menu.Item value="descending">
-                                        Descending
-                                    </Menu.Item>
-                                </Menu.ItemGroup>
-                            </Menu.Content>
-                        </Menu.Positioner>
-                    </Menu.Root>
-                    <Menu.Item value="refresh">Refresh</Menu.Item>
-                </Menu.ItemGroup>
-            </Menu.Content>
-        </Menu.Positioner>
-    </Menu.Root>
-</>
-
-const songGroups: SongListData[] = [
-    { value: 'all', title: 'All Songs' },
-    { value: 'favorites', title: 'My Favorites' },
-    { value: 'collections', title: 'My Collections' },
-]
+            <SearchInput
+                firstBookMatch=""
+                value={props.query}
+                placeholder="Search scriptures"
+                onInput={props.onFilter}
+                // ref={searchInputRef}
+                // onFocus={handleSearchInputFocus}
+                data-testid="scripture-search-input"
+                aria-label="Search scriptures"
+            />
+        </InputGroup>
+    )
+} 

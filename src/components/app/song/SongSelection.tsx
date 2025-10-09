@@ -3,14 +3,14 @@ import SelectionGroups from "../SelectionGroups";
 import { createStore, produce } from "solid-js/store";
 import { Menu } from "../../ui/menu";
 import { For, Portal } from "solid-js/web";
-import { TbChevronDown, TbChevronRight, TbPlus, TbSettings } from "solid-icons/tb";
+import { TbChevronDown, TbChevronRight, TbPlus, TbSettings, TbTree } from "solid-icons/tb";
 import { IconButton } from "../../ui/icon-button";
 import { InputGroup } from "../../ui/input-group";
 import { ImPlus } from "solid-icons/im";
 import { FiSettings } from "solid-icons/fi";
 import ControlTabDisplay from "../ControlTabDisplay";
 import type { SongData } from "~/types/context";
-import { createEffect, createMemo, createRenderEffect, on } from "solid-js";
+import { createEffect, createMemo, createRenderEffect, on, Show, type JSX } from "solid-js";
 import { Text } from "../../ui/text";
 import { createVirtualizer } from "@tanstack/solid-virtual";
 import { useAppContext } from "~/layouts/AppContext";
@@ -22,16 +22,21 @@ import { css } from "styled-system/css";
 import { token } from "styled-system/tokens";
 import { createAsyncMemo } from "solidjs-use";
 import type { PanelCollection } from "~/types/app-context";
-import SongSelectionGroupMenus from "./SelectionGroupMenus";
+import SongSelectionGroupDisplay from "./SelectionGroupDisplay";
 import { MainActionBarMenu, MainDisplayMenuContent } from "./MainPanelMenus";
+import SearchInput from "../../custom/search-input";
+import { Kbd } from "../../ui/kbd";
+import { VsListTree, VsSearchFuzzy } from 'solid-icons/vs'
 
 type SongPanelGroupValues = 'all' | 'collections' | 'favorites'
 type SongListData = {
     title: string
     value: SongPanelGroupValues
 }
+type SongSearchMode = "search" | "title";
+
 type SongControlsData = {
-    searchMode: "search" | "title";
+    searchMode: SongSearchMode;
     group: string;
     collection: number | null;
     query: string;
@@ -54,7 +59,7 @@ export default function SongSelection() {
     const currentGroup = createMemo(() => appStore.displayGroups.song[songControls.group])
     const currentCollection = createMemo(() => currentGroup().subGroups?.find(group => group.id === songControls.collection))
     const applyQueryFilter = (songs: SongData[]) => songs.filter(song => song.title.includes(songControls.query))
-    const filteredSongs = createMemo<SongData[]>(() => { 
+    const filteredSongs = createMemo<SongData[]>(() => {
         const songCollection = currentCollection()
         if (currentGroup().subGroups && songCollection) {
             return applyQueryFilter(allSongs().filter(song => songCollection.items.includes(song.id)))
@@ -114,7 +119,7 @@ export default function SongSelection() {
         if (!open.length) return;
         setSongControls(produce(store => {
             const subSelection = open.find(item => item.includes('-'))
-           
+
             if (subSelection) {
                 const [group, collection] = subSelection.split('-');
                 store.group = group
@@ -126,10 +131,12 @@ export default function SongSelection() {
         }))
     }
 
+    // scroll to current fluid item
     createEffect(() => {
         rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
     })
 
+    // close contextMenu when we scroll
     createEffect(() => {
         const fluidFocus = fluidFocusId();
         if (songControls.contextMenuOpen && fluidFocus) {
@@ -139,6 +146,7 @@ export default function SongSelection() {
         }
     })
 
+    // send current fluid item to preview-menu
     createEffect(() => {
         const previewFocusId = fluidFocusId()
         if (typeof previewFocusId !== "number" || !filteredSongs().length) return;
@@ -161,9 +169,17 @@ export default function SongSelection() {
         }
     }
 
+    const handleFilter = (e: InputEvent) => {
+        setSongControls("query", (e.target as HTMLInputElement).value)
+    }
+
+    const updateSearchMode = () => {
+        setSongControls("searchMode", former => former === "search" ? "title" : "search")
+    }
+
     return (
         <Flex h="full" pos="relative">
-            <SelectionGroups currentGroup={[songControls.group]} groups={appStore.displayGroups.song} handleAccordionChange={handleGroupAccordionChange} actionMenus={<SongSelectionGroupMenus />} />
+            <SelectionGroups searchInput={<SongSearchInput searchMode={songControls.searchMode} updateSearchMode={updateSearchMode} query={songControls.query} onFilter={handleFilter} />} currentGroup={[songControls.group]} groups={appStore.displayGroups.song} handleAccordionChange={handleGroupAccordionChange} actionMenus={<SongSelectionGroupDisplay />} />
             <ControlTabDisplay open={songControls.contextMenuOpen} contextMenuContent={<MainDisplayMenuContent onSongEdit={handleSongEdit} />} actionBarMenu={<MainActionBarMenu />} ref={virtualizerParentRef}>
                 <Box style={{
                     height: `${rowVirtualizer().getTotalSize()}px`,
@@ -215,3 +231,49 @@ export default function SongSelection() {
         </Flex>
     )
 }
+
+interface SearchInputProps {
+    query: string;
+    onFilter: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
+    searchMode: SongSearchMode;
+    updateSearchMode: () => void;
+}
+
+const SongSearchInput = (props: SearchInputProps) => {
+    return (
+        <InputGroup
+            w="full"
+            pr={2}
+            startElement={() =>
+                <IconButton
+                    size="sm"
+                    variant="plain"
+                    cursor="pointer"
+                    onClick={props.updateSearchMode}
+                    aria-label={
+                        props.searchMode === 'title'
+                            ? 'Switch to search mode'
+                            : 'Switch to title mode'
+                    }
+                >
+                    <Show when={props.searchMode === 'title'} fallback={<VsSearchFuzzy />}>
+                        <VsListTree />
+                    </Show>
+                </IconButton>
+            }
+            startElementProps={{ padding: 0, pointerEvents: 'auto' }}
+            endElement={() => <Kbd variant="plain">⌘A</Kbd>}
+        >
+            <SearchInput
+                firstBookMatch=""
+                value={props.query}
+                placeholder="Search songs"
+                onInput={props.onFilter}
+                // ref={searchInputRef}
+                // onFocus={handleSearchInputFocus}
+                data-testid="song-search-input"
+                aria-label="Search songs"
+            />
+        </InputGroup>
+    )
+} 

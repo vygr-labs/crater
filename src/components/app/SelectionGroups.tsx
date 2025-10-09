@@ -1,7 +1,7 @@
 import { Box, HStack } from "styled-system/jsx";
 import { Accordion } from "../ui/accordion";
 import { For, Show, type JSXElement } from "solid-js";
-import { TbChevronDown, TbPlus, TbSettings } from "solid-icons/tb";
+import { TbChevronDown } from "solid-icons/tb";
 import { Text } from "../ui/text";
 import type { PanelGroup } from "~/types/app-context";
 
@@ -39,7 +39,7 @@ export default function SelectionGroups<T extends GroupMeta[]>(props: Props<T>) 
                 tabIndex={0}
                 // onFocus={handleAccordionFocus}
                 role="tree"
-                aria-label="Song categories"
+                aria-label="Panel Groups"
             >
                 <Accordion.Root
                     variant={'enclosed'}
@@ -124,34 +124,3 @@ export default function SelectionGroups<T extends GroupMeta[]>(props: Props<T>) 
         </Box>
     )
 }
-
-// const searchInput = <InputGroup
-// 					w="full"
-// 					startElement={
-// 						<IconButton
-// 							size="sm"
-// 							variant="plain"
-// 							cursor="pointer"
-// 							onClick={updateSearchMode}
-// 							aria-label={
-// 								searchMode === 'title'
-// 									? 'Switch to search mode'
-// 									: 'Switch to title mode'
-// 							}
-// 						>
-// 							{searchMode === 'title' ? <VscListTree /> : <VscSearchFuzzy />}
-// 						</IconButton>
-// 					}
-// 					startElementProps={{ padding: 0, pointerEvents: 'auto' }}
-// 					endElement={<Kbd>⌘A</Kbd>}
-// 				>
-// 					<SearchInput
-// 						value={filter}
-// 						placeholder="Search songs"
-// 						onChange={handleFilterUpdate}
-// 						ref={searchInputRef}
-// 						onFocus={handleSearchInputFocus}
-// 						data-testid="song-search-input"
-// 						aria-label="Search songs"
-// 					/>
-// 				</InputGroup>

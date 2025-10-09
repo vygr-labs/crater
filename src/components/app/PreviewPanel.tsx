@@ -102,6 +102,9 @@ export default function PreviewPanel() {
                                         <Match when={itemType() === "song"}>
                                             <LyricDisplay index={virtualItem.index} lyric={item as SongLyric} isFocusItem={false} />
                                         </Match>
+                                        <Match when={true}>
+                                            No display for this, yet;
+                                        </Match>
                                     </Switch>
                                 </Box>
                                 // <HStack

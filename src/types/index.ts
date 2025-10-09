@@ -2,6 +2,8 @@ import type { Setter } from "solid-js"
 import type { SongData, SongLyric } from "./context"
 import type { SetStoreFunction } from "solid-js/store"
 
+export type AvailableTranslation = "NKJV" | "NIV" | "NLT";
+
 export interface ScriptureTranslation {
 	id: number
 	version: string
