@@ -13,14 +13,23 @@ export interface UserData {
 	name: string
 }
 
-export interface CreateCollection {
-	name: string
-	type: GroupType
-	items: number[]
+export interface DisplayCollection {
+	name: string;
+	id: number;
+	items: number[];
 }
 
-export interface DisplayPropsCollection extends CreateCollection {
-	id: number
+export type PanelCollection = {
+	title: string;
+	subGroups: DisplayCollection[] | null;
+}
+
+export type PanelGroup = {
+	[group: string]: PanelCollection
+}
+
+export type GroupCollectionObj = {
+	[panel in GroupType]: PanelGroup
 }
 
 export interface LyricScopes {
@@ -43,7 +52,7 @@ export interface SongEditData {
 
 export interface NamingModalData {
 	type: GroupType
-	group: GroupCategory
+	group: string
 	open: boolean
 }
 
@@ -62,8 +71,9 @@ export interface AppData {
 	previewItem: DisplayProps | undefined
 	liveItem: DisplayProps | undefined
 	scheduleItems: DisplayProps[]
-	favorites: DisplayPropsCollection[]
-	collections: DisplayPropsCollection[]
+	displayGroups: GroupCollectionObj;
+	// favorites: DisplayPropsCollection[]
+	// collections: GroupCollectionObj
 	themeEditor: {
 		type: ThemeType
 		open: boolean
@@ -87,7 +97,7 @@ export interface AppSettings {
 
 export interface AppContextObj {
 	appStore: AppData
-    setAppStore: SetStoreFunction<AppData>
+	setAppStore: SetStoreFunction<AppData>
 	settings: AppSettings
-    updateSettings: SetStoreFunction<AppSettings>
+	updateSettings: SetStoreFunction<AppSettings>
 }

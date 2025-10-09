@@ -5,8 +5,12 @@ import { TbBible, TbMusic, TbPalette, TbPlus, TbPresentation, TbVideo } from "so
 import SongSelection from "./song/SongSelection";
 import ScriptureSelection from "./scripture/ScriptureSelection";
 import ThemeSelection from "./theme/ThemeSelection";
+import { useFocusContext } from "~/layouts/FocusContext";
+import { DEFAULT_PANEL, MEDIA_TAB_FOCUS_NAME, PRESENTATIONS_TAB_FOCUS_NAME, SCRIPTURE_TAB_FOCUS_NAME, SONGS_TAB_FOCUS_NAME, THEMES_TAB_FOCUS_NAME } from "~/utils/constants";
 
 export default function ControlsMain() {
+	const { changeFocusPanel } = useFocusContext();
+
     return (
         <VStack h="full">
 			<Tabs.Root
@@ -15,9 +19,8 @@ export default function ControlsMain() {
 				variant="plain"
 				display="flex"
 				flexDir="column"
-				// defaultValue={DEFAULT_TAB}
-				// value={currentTab}
-				// onValueChange={changeKeyboardFocus}
+				defaultValue={DEFAULT_PANEL}
+				onValueChange={({ value }) => changeFocusPanel(value)}
 			>
 				<HStack pr={4}>
 					<Tabs.List
@@ -28,23 +31,23 @@ export default function ControlsMain() {
 						pl="2"
 						fontFamily="heading"
 					>
-						<Tabs.Trigger value="songs" px={4} _focus={{ outline: 'none' }}>
+						<Tabs.Trigger value={SONGS_TAB_FOCUS_NAME} px={4} _focus={{ outline: 'none' }}>
 							<TbMusic />
 							Songs
 						</Tabs.Trigger>
-						<Tabs.Trigger value="scripture" px={4}>
+						<Tabs.Trigger value={SCRIPTURE_TAB_FOCUS_NAME} px={4}>
 							<TbBible />
 							Scripture
 						</Tabs.Trigger>
-						<Tabs.Trigger value="media" px={4}>
+						<Tabs.Trigger value={MEDIA_TAB_FOCUS_NAME} px={4}>
 							<TbVideo />
 							Media
 						</Tabs.Trigger>
-						<Tabs.Trigger value="presentations" px={4}>
+						<Tabs.Trigger value={PRESENTATIONS_TAB_FOCUS_NAME} px={4}>
 							<TbPresentation />
 							Presentations
 						</Tabs.Trigger>
-						<Tabs.Trigger value="themes" px={4}>
+						<Tabs.Trigger value={THEMES_TAB_FOCUS_NAME} px={4}>
 							<TbPalette />
 							Themes
 						</Tabs.Trigger>
@@ -66,19 +69,19 @@ export default function ControlsMain() {
 					pos="relative"
 				>
 					{/* {isPending ? <ControlsLoading /> : null} */}
-					<Tabs.Content h="full" value="songs" py={0}>
+					<Tabs.Content h="full" value={SONGS_TAB_FOCUS_NAME} py={0}>
 						<SongSelection />
 					</Tabs.Content>
-					<Tabs.Content h="full" value="scripture" py={0}>
+					<Tabs.Content h="full" value={SCRIPTURE_TAB_FOCUS_NAME} py={0}>
 						<ScriptureSelection />
 					</Tabs.Content>
-					<Tabs.Content value="media" h="full" py={0}>
+					<Tabs.Content value={MEDIA_TAB_FOCUS_NAME} h="full" py={0}>
 						{/* <MediaSelection /> */}
 					</Tabs.Content>
-					<Tabs.Content value="presentations">
+					<Tabs.Content value={PRESENTATIONS_TAB_FOCUS_NAME}>
 						Manage your tasks for freelancers
 					</Tabs.Content>
-					<Tabs.Content value="themes" h="full" py={0}>
+					<Tabs.Content value={THEMES_TAB_FOCUS_NAME} h="full" py={0}>
 						<ThemeSelection />
 					</Tabs.Content>
 				</Tabs.ContentGroup>

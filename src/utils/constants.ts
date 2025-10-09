@@ -1,39 +1,69 @@
 import type { OpenEditData } from "~/types";
-import type { AppSettings, AppData, DisplayPropsCollection } from "~/types/app-context";
+import type { AppSettings, AppData, GroupCollectionObj } from "~/types/app-context";
 
 export const DEFAULT_SCRIPTURE_COLLECTION_ID = 1
 export const defaultPalette = "purple"
 export const defaultSupportingPalette = "orange";
+export const PREVIEW_INDEX_WIDTH = 8
 
-const APP_FAVORITES: DisplayPropsCollection[] = [
-    {
-        id: 0,
-        name: 'Favorites',
-        type: 'song',
-        items: [],
-    },
-    {
-        id: 1,
-        name: 'Favorites',
-        type: 'scripture',
-        items: [],
-    },
-    {
-        id: 2,
-        name: 'Favorites',
-        type: 'media',
-        items: [],
-    },
-]
-
-const DEFAULT_COLLECTIONS: DisplayPropsCollection[] = [
-    {
-        id: DEFAULT_SCRIPTURE_COLLECTION_ID,
-        name: 'Default Scripture Collection',
-        type: 'scripture',
-        items: [],
-    },
-]
+const DEFAULT_GROUPS: GroupCollectionObj = {
+	song: {
+		all: {
+			title: "All Songs",
+			subGroups: null
+		},
+		favorite: {
+			title: "My Favorites",
+			subGroups: []
+		},
+		collection: {
+			title: "My Collections",
+			subGroups: []
+		}
+	},
+	scripture: {
+		all: {
+			title: "All Songs",
+			subGroups: null
+		},
+		favorite: {
+			title: "My Favorites",
+			subGroups: []
+		},
+		collection: {
+			title: "My Collections",
+			subGroups: []
+		}
+	},
+	media: {
+		all: {
+			title: "All Songs",
+			subGroups: null
+		},
+		favorite: {
+			title: "My Favorites",
+			subGroups: []
+		},
+		collection: {
+			title: "My Collections",
+			subGroups: []
+		}
+	},
+	theme: {
+		all: {
+			title: "All Songs",
+			subGroups: null
+		},
+		favorite: {
+			title: "My Favorites",
+			subGroups: []
+		},
+		collection: {
+			title: "My Collections",
+			subGroups: []
+		}
+	}
+}
 
 // adding arrays to app state takes a few reloads to show in redux/persist and are undefined till then
 export const defaultAppStore: AppData = {
@@ -54,8 +84,8 @@ export const defaultAppStore: AppData = {
 	previewItem: undefined,
 	liveItem: undefined,
 	scheduleItems: [],
-	collections: DEFAULT_COLLECTIONS,
-	favorites: APP_FAVORITES,
+	displayGroups: DEFAULT_GROUPS,
+	// favorites: APP_FAVORITES,
 	themeEditor: {
 		type: 'song',
 		open: false,
@@ -93,3 +123,12 @@ export const defaultAppSettings: AppSettings = {
 };
 
 export const CLOSE_SONG_EDIT: OpenEditData = { open: false, song: null }
+
+export const SONGS_TAB_FOCUS_NAME = "SONGS";
+export const SCRIPTURE_TAB_FOCUS_NAME = "SCRIPTURE";
+export const MEDIA_TAB_FOCUS_NAME = "MEDIA";
+export const THEMES_TAB_FOCUS_NAME = "THEMES";
+export const PRESENTATIONS_TAB_FOCUS_NAME = "PRESENTATIONS";
+export const PREVIEW_PANEL_FOCUS_NAME = "PREVIEW";
+
+export const DEFAULT_PANEL = SONGS_TAB_FOCUS_NAME;

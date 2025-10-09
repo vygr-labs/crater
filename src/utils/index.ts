@@ -1,4 +1,4 @@
-import { BookInfo, ChapterCountObj, HighlightedVerse } from './types'
+import type { BookInfo, ChapterCountObj, HighlightedVerse } from '../types'
 
 export function getName(book?: BookInfo) {
 	return book?.name?.toLowerCase() ?? ''
@@ -54,3 +54,9 @@ export function getKeyByValue(object, value) {
 
 export const getToastType = (success: boolean) =>
 	success ? 'success' : 'error'
+
+export const getFocusVariant = (contextName: string, currentItemId: number,coreFocusId?: number, fluidFocusId?: number) => ({
+	panel: contextName,
+	isCurrentCore: currentItemId === coreFocusId,
+	isCurrentFluid: currentItemId === fluidFocusId
+})

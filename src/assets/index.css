@@ -4,3 +4,7 @@
 html {
     font-family: 'Inter';
 }
+
+.disable-child-clicks * {
+	pointer-events: none;
+}

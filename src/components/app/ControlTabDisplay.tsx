@@ -3,6 +3,7 @@ import { Menu } from "../ui/menu";
 import { ImPlus } from "solid-icons/im";
 import { TbChevronDown, TbChevronRight, TbSettings } from "solid-icons/tb";
 import { createSignal, type JSXElement, type Ref } from "solid-js";
+import ContextMenu from "./ContextMenu";
 
 interface Props {
     contextMenuContent: JSXElement
@@ -25,28 +26,9 @@ export default function ControlTabDisplay(props: Props) {
 				borderColor="gray.700"
 				pb={7}
 			>
-				<Box w="full" h="full" tabIndex={0}>
-					<Menu.Root open={contextOpen()}>
-						<Menu.ContextTrigger asChild={triggerProps => (
-							<Box w="full" h="full" overflow="auto" ref={props.ref} {...triggerProps()}>
-                                {props.children}
-								{/* <Virtuoso
-									style={{ height: '100%' }}
-									ref={virtuosoRef}
-									totalCount={filteredSongs.length}
-									itemContent={itemContent}
-									overscan={20} // Increased overscan for smoother scrolling
-									defaultItemHeight={30}
-									followOutput={navigatedSong !== null}
-								/> */}
-							</Box>
-                        )}>
-						</Menu.ContextTrigger>
-							<Menu.Positioner>
-								{props.contextMenuContent}
-							</Menu.Positioner>
-					</Menu.Root>
-				</Box>
+				<ContextMenu open={contextOpen()} content={props.contextMenuContent} ref={props.ref}>
+					{props.children}
+				</ContextMenu>
 
 				{/* Bottom controls for right panel */}
 				<HStack

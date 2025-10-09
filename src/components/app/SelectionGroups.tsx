@@ -3,24 +3,16 @@ import { Accordion } from "../ui/accordion";
 import { For, Show, type JSXElement } from "solid-js";
 import { TbChevronDown, TbPlus, TbSettings } from "solid-icons/tb";
 import { Text } from "../ui/text";
+import type { PanelGroup } from "~/types/app-context";
 
 interface GroupMeta {
     title: string
     value: string
 }
 
-interface DisplayPropsCollection {
-    id: number
-    name: string,
-    [key: string]: unknown
-}
-
 interface Props<T extends GroupMeta[]> {
     currentGroup: (T[number]["value"])[]
-    allGroups: T
-    subGroups: {
-        [K in T[number]["value"]]: DisplayPropsCollection[]
-    }
+    groups: PanelGroup
     handleAccordionChange: (value: any) => void;
     searchInput?: JSXElement
     actionMenus?: JSXElement
@@ -55,33 +47,33 @@ export default function SelectionGroups<T extends GroupMeta[]>(props: Props<T>) 
                     value={props.currentGroup}
                     onValueChange={e => props.handleAccordionChange(e.value)}
                 >
-                    <For each={props.allGroups}>
-                        {(item, index) => {
-                            const subGroupItems = props.subGroups[item.value as T[number]["value"]]
+                    <For each={props.groups ? Object.keys(props.groups) : []}>
+                        {(panel, index) => {
+                            const panelGroup = props.groups[panel]
 
                             return (
-                                <Accordion.Item value={item.value}>
+                                <Accordion.Item value={panel}>
                                     <Accordion.ItemTrigger
                                         cursor="pointer"
                                         w="full"
                                         justifyContent="space-between"
                                         role="treeitem"
-                                        aria-expanded={props.currentGroup.includes(item.value)}
+                                        aria-expanded={props.currentGroup.includes(panel)}
                                     >
-                                        <Text fontSize="13px">{item.title}</Text>
-                                        <Show when={subGroupItems?.length}>
+                                        <Text fontSize="13px">{panelGroup.title}</Text>
+                                        <Show when={panelGroup.subGroups?.length}>
                                             <Accordion.ItemIndicator>
                                                 <TbChevronDown />
                                             </Accordion.ItemIndicator>
                                         </Show>
                                     </Accordion.ItemTrigger>
 
-                                    <Show when={subGroupItems?.length}>
+                                    <Show when={panelGroup.subGroups?.length}>
                                         <Accordion.ItemContent borderRadius={0} p={0} role="group">
                                             <Accordion.ItemBody py={1}>
-                                                <For each={subGroupItems}>
+                                                <For each={panelGroup.subGroups}>
                                                     {
-                                                        (subItem: DisplayPropsCollection) => (
+                                                        (collection) => (
                                                             <HStack
                                                                 justifyContent="space-between"
                                                                 px={3}
@@ -93,16 +85,16 @@ export default function SelectionGroups<T extends GroupMeta[]>(props: Props<T>) 
                                                                     color: 'gray.200',
                                                                 }}
                                                                 borderRadius={0}
-                                                                data-subgroup={`song-${item.value}-${subItem.id}`}
+                                                                data-subgroup={`song-${panel}-${collection.id}`}
                                                                 role="treeitem"
                                                                 onClick={() =>
                                                                     props.handleAccordionChange([
-                                                                        item.value,
-                                                                        `${item.value}-${subItem.id}`,
+                                                                        panel,
+                                                                        `${panel}-${collection.id}`,
                                                                     ])
                                                                 }
                                                             >
-                                                                <Text>{subItem.name}</Text>
+                                                                <Text>{collection.name}</Text>
                                                             </HStack>
                                                         )
                                                     }

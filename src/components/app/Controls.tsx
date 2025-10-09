@@ -11,45 +11,52 @@ import AppContextProvider from "~/layouts/AppContext";
 import AppLoading from "../modals/AppLoading";
 import { AppSettingsDialog } from "../modals/AppSettingsDialog";
 import ControlsMain from "./ControlsMain";
+import FocusContextProvider from "~/layouts/FocusContext";
+import PreviewPanel from "./PreviewPanel";
+import NamingModal from "../modals/NamingModal";
 
 export default function AppControls() {
     return (
         <AppContextProvider>
-            <Box w="vw" h="vh" bg="bg.muted" pos="relative" overflow="hidden">
-                <MenuBar />
-                <Grid
-				w="full"
-				h="7/12"
-				columns={3}
-				pos="absolute"
-				top="calc(100%/12)"
-			>
-				<Box h="full" border="1px solid" borderColor="gray.700">
-					{/* <ScheduleComponent /> */}
+			<FocusContextProvider>
+				<Box w="vw" h="vh" bg="bg.muted" pos="relative" overflow="hidden">
+					<MenuBar />
+					<Grid
+					w="full"
+					h="7/12"
+					columns={3}
+					pos="absolute"
+					top="calc(100%/12)"
+				>
+					<Box h="full" border="1px solid" borderColor="gray.700">
+						{/* <ScheduleComponent /> */}
+					</Box>
+					<Box h="full" border="1px solid" borderColor="gray.700">
+						<PreviewPanel />
+					</Box>
+					<Box h="full" border="1px solid" borderColor="gray.700">
+						{/* <LiveComponent /> */}
+					</Box>
+				</Grid>
+				
+				<Box w="full" h="4/12" pos="absolute" bottom="0">
+					<ControlsMain />
 				</Box>
-				<Box h="full" border="1px solid" borderColor="gray.700">
-					{/* <PreviewComponent /> */}
+
+				<AppSettingsDialog />
+				<AppLoading />
+				<NamingModal />
+
+				{/* Song Editor Modal */}
+				{/* <SongEditor /> */}
+
+				{/* <Editor resolver={{ UserContainer, UserText, UserRootContainer }}>
+					<ThemeEditor />
+				</Editor> */}
+
+				{/* Naming Modal */}
 				</Box>
-				<Box h="full" border="1px solid" borderColor="gray.700">
-					{/* <LiveComponent /> */}
-				</Box>
-			</Grid>
-            <Box w="full" h="4/12" pos="absolute" bottom="0">
-				<ControlsMain />
-			</Box>
-			<AppSettingsDialog />
-			<AppLoading />
-
-			{/* Song Editor Modal */}
-			{/* <SongEditor /> */}
-
-			{/* <Editor resolver={{ UserContainer, UserText, UserRootContainer }}>
-				<ThemeEditor />
-			</Editor> */}
-
-			{/* Naming Modal */}
-			{/* <NamingModal /> */}
-            </Box>
+			</FocusContextProvider>
         </AppContextProvider>
     )
 }
