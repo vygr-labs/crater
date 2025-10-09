@@ -22,6 +22,8 @@ import { css } from "styled-system/css";
 import { token } from "styled-system/tokens";
 import { createAsyncMemo } from "solidjs-use";
 import type { PanelCollection } from "~/types/app-context";
+import SongSelectionGroupMenus from "./SelectionGroupMenus";
+import { MainActionBarMenu, MainDisplayMenuContent } from "./MainPanelMenus";
 
 type SongPanelGroupValues = 'all' | 'collections' | 'favorites'
 type SongListData = {
@@ -29,10 +31,11 @@ type SongListData = {
     value: SongPanelGroupValues
 }
 type SongControlsData = {
-    searchMode: "search" | "title"
-    group: string
+    searchMode: "search" | "title";
+    group: string;
     collection: number | null;
-    query: string
+    query: string;
+    contextMenuOpen: boolean;
 }
 
 export default function SongSelection() {
@@ -45,7 +48,8 @@ export default function SongSelection() {
         group: "all",
         collection: null,
         searchMode: "title",
-        query: ""
+        query: "",
+        contextMenuOpen: false
     })
     const currentGroup = createMemo(() => appStore.displayGroups.song[songControls.group])
     const currentCollection = createMemo(() => currentGroup().subGroups?.find(group => group.id === songControls.collection))
@@ -89,11 +93,18 @@ export default function SongSelection() {
             onClick: ({ changeFluidFocus, focusId }) => {
                 if (typeof focusId === "number") {
                     changeFluidFocus(focusId)
+                    setSongControls("contextMenuOpen", false)
                 }
             },
             onDblClick: ({ changeFocus, focusId }) => {
                 if (typeof focusId === "number") {
                     changeFocus(focusId)
+                }
+            },
+            onRightClick: ({ changeFluidFocus, focusId }) => {
+                if (typeof focusId === "number") {
+                    changeFluidFocus(focusId);
+                    setSongControls("contextMenuOpen", true)
                 }
             }
         }
@@ -116,7 +127,16 @@ export default function SongSelection() {
     }
 
     createEffect(() => {
-        rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0)
+        rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+    })
+
+    createEffect(() => {
+        const fluidFocus = fluidFocusId();
+        if (songControls.contextMenuOpen && fluidFocus) {
+            if (!rowVirtualizer().getVirtualItems().map(item => item.index).includes(fluidFocus)) {
+                setSongControls("contextMenuOpen", false);
+            }
+        }
     })
 
     createEffect(() => {
@@ -134,11 +154,17 @@ export default function SongSelection() {
         });
     })
 
+    const handleSongEdit = () => {
+        const toEdit = fluidFocusId();
+        if (toEdit) {
+            setAppStore("songEdit", { open: true, song: filteredSongs()[toEdit] });
+        }
+    }
+
     return (
         <Flex h="full" pos="relative">
             <SelectionGroups currentGroup={[songControls.group]} groups={appStore.displayGroups.song} handleAccordionChange={handleGroupAccordionChange} actionMenus={<SongSelectionGroupMenus />} />
-            <ControlTabDisplay contextMenuContent={<MainDisplayMenuContent />} actionBarMenu={<MainActionBarMenu />} ref={virtualizerParentRef}>
-                {/* h="full" overflow="auto" */}
+            <ControlTabDisplay open={songControls.contextMenuOpen} contextMenuContent={<MainDisplayMenuContent onSongEdit={handleSongEdit} />} actionBarMenu={<MainActionBarMenu />} ref={virtualizerParentRef}>
                 <Box style={{
                     height: `${rowVirtualizer().getTotalSize()}px`,
                     width: '100%',
@@ -149,7 +175,6 @@ export default function SongSelection() {
                             const song = filteredSongs()[virtualItem.index]
                             return (
                                 <HStack
-                                    // class={focusStyles(getFocusVariant(name, virtualItem.index, coreFocusId(), fluidFocusId()))}
                                     pos="absolute"
                                     top={0}
                                     left={0}
@@ -190,242 +215,3 @@ export default function SongSelection() {
         </Flex>
     )
 }
-
-// props: { handleNewGroup: (group: string) => void }
-const SongSelectionGroupMenus = () => {
-    const { appStore, setAppStore } = useAppContext();
-
-    const handleNewGroup = (group: string) => {
-        setAppStore("namingModal", { type: "song", open: true, group })
-    }
-
-    const availableSongGroups = () => Object.entries(appStore.displayGroups.song).filter(([id, group]) => group.subGroups !== null).map(([id]) => id)
-
-    return <>
-        <Menu.Root>
-            <Menu.Trigger asChild={parentProps =>
-                <HStack
-                    width={10}
-                    gap={1}
-                    h={6}
-                    px={2}
-                    py={0.5}
-                    pr={10}
-                    mr={1}
-                    cursor="pointer"
-                    borderRight="2px solid"
-                    borderRightColor="gray.600"
-                    aria-label="Add group menu"
-                    {...parentProps()}
-                >
-                    <ImPlus size={11} />
-                    <TbChevronDown size={12} />
-                </HStack>
-            }>
-            </Menu.Trigger>
-            <Portal>
-                <Menu.Positioner>
-                    <Menu.Content>
-                        <For each={availableSongGroups()}>
-                            {
-                                groupKey => (
-                                    <Menu.Item
-                                        value={`add-${groupKey}`}
-                                        textTransform="capitalize"
-                                        onClick={() => handleNewGroup(groupKey)}
-                                    >
-                                        New {groupKey}
-                                    </Menu.Item>
-                                )
-                            }
-                        </For>
-                    </Menu.Content>
-                </Menu.Positioner>
-            </Portal>
-        </Menu.Root>
-
-        <Menu.Root>
-            <Menu.Trigger asChild={parentProps =>
-                <HStack
-                    width={10}
-                    gap={1}
-                    h={6}
-                    px={2}
-                    py={0.5}
-                    cursor="pointer"
-                    aria-label="Collection settings"
-                    {...parentProps()}
-                >
-                    <TbSettings size={18} />
-                    <TbChevronDown size={12} />
-                </HStack>
-            }>
-            </Menu.Trigger>
-            <Portal>
-                <Menu.Positioner>
-                    <Menu.Content>
-                        <Menu.ItemGroup>
-                            <Menu.Item value="rename">Rename</Menu.Item>
-                            <Menu.Item value="duplicate">Duplicate</Menu.Item>
-                            <Menu.Item value="edit">Edit</Menu.Item>
-                        </Menu.ItemGroup>
-                        <Menu.Separator />
-                        <Menu.ItemGroup>
-                            <Menu.Item
-                                value="delete"
-                                color="fg.error"
-                                _hover={{ bg: 'bg.error', color: 'fg.error' }}
-                            >
-                                Delete
-                            </Menu.Item>
-                        </Menu.ItemGroup>
-                    </Menu.Content>
-                </Menu.Positioner>
-            </Portal>
-        </Menu.Root>
-    </>
-}
-
-const MainDisplayMenuContent = () => <Menu.Content>
-    <Menu.Item
-        value="edit-song"
-    // onClick={() => onSongEdit(songListContextIndex)}
-    >
-        Edit Song
-    </Menu.Item>
-    <Menu.Item value="rename-song">Rename Song</Menu.Item>
-    <Menu.Item value="duplicate-song">Duplicate Song</Menu.Item>
-    <Menu.Separator />
-    <Menu.Item
-        value="add-to-favorites"
-    // onClick={handleAddToFavorites}
-    >
-        Add to Favorites
-    </Menu.Item>
-    <Menu.ItemGroup>
-        <Menu.Root
-            positioning={{ placement: 'right-start', gutter: 2 }}
-        >
-            <Menu.TriggerItem w="full" justifyContent="space-between">
-                Add to Collection <TbChevronRight />
-            </Menu.TriggerItem>
-            <Menu.Positioner>
-                <Menu.Content>
-                    {/* {songCollections.map((collection, index) => (
-                                                                <Menu.Item
-                                                                    key={index}
-                                                                    value={`sc-${collection.id}`}
-                                                                    onClick={() =>
-                                                                        handleAddToCollection(collection)
-                                                                    }
-                                                                >
-                                                                    {collection.name}
-                                                                </Menu.Item>
-                                                            ))} */}
-                </Menu.Content>
-            </Menu.Positioner>
-        </Menu.Root>
-        <Menu.Item value="refresh">Refresh</Menu.Item>
-    </Menu.ItemGroup>
-    <Menu.Separator />
-    <Menu.Item
-        value="delete"
-        color="fg.error"
-        _hover={{ bg: 'bg.error', color: 'fg.error' }}
-    // onClick={() => onSongDelete(songListContextIndex)}
-    >
-        Delete Song
-    </Menu.Item>
-</Menu.Content>
-
-const MainActionBarMenu = () => <>
-    <HStack
-        width={10}
-        gap={1}
-        h={6}
-        px={2}
-        py={0.5}
-        mr={1}
-        justify="center"
-        cursor="pointer"
-        borderInline="2px solid"
-        borderInlineColor="gray"
-        aria-label="Add new song"
-    // onClick={() => updateSongEdit(appStore, { open: true, song: null })}
-    >
-        <ImPlus size={9.5} />
-    </HStack>
-
-    <Menu.Root>
-        <Menu.Trigger asChild={triggerProps => (
-            <HStack
-                width={10}
-                gap={1}
-                h={6}
-                px={2}
-                py={0.5}
-                cursor="pointer"
-                aria-label="Song settings"
-                {...triggerProps()}
-            >
-                <TbSettings size={17} />
-                <TbChevronDown size={12} />
-            </HStack>
-        )}>
-        </Menu.Trigger>
-        <Menu.Positioner>
-            <Menu.Content>
-                <Menu.ItemGroup>
-                    <Menu.Item value="edit">Edit Song</Menu.Item>
-                    <Menu.Item value="rename">Rename Song</Menu.Item>
-                    <Menu.Item value="duplicate">Duplicate Song</Menu.Item>
-                </Menu.ItemGroup>
-                <Menu.Separator />
-                <Menu.ItemGroup>
-                    <Menu.Item
-                        value="delete"
-                        color="fg.error"
-                        _hover={{ bg: 'bg.error', color: 'fg.error' }}
-                    >
-                        Delete Song
-                    </Menu.Item>
-                </Menu.ItemGroup>
-                <Menu.Separator />
-                <Menu.ItemGroup>
-                    <Menu.Root
-                        positioning={{ placement: 'right-start', gutter: 2 }}
-                    >
-                        <Menu.TriggerItem w="full" justifyContent="space-between">
-                            Sort by <TbChevronRight />
-                        </Menu.TriggerItem>
-                        <Menu.Positioner>
-                            <Menu.Content>
-                                <Menu.ItemGroup>
-                                    <Menu.Item value="name">Name</Menu.Item>
-                                    <Menu.Item value="date-added">
-                                        Date Added
-                                    </Menu.Item>
-                                    <Menu.Item value="last-used">Last Used</Menu.Item>
-                                </Menu.ItemGroup>
-                                <Menu.Separator />
-                                <Menu.ItemGroup>
-                                    <Menu.Item value="ascending">Ascending</Menu.Item>
-                                    <Menu.Item value="descending">
-                                        Descending
-                                    </Menu.Item>
-                                </Menu.ItemGroup>
-                            </Menu.Content>
-                        </Menu.Positioner>
-                    </Menu.Root>
-                    <Menu.Item value="refresh">Refresh</Menu.Item>
-                </Menu.ItemGroup>
-            </Menu.Content>
-        </Menu.Positioner>
-    </Menu.Root>
-</>
-
-// const songGroups: SongListData[] = [
-//     { value: 'all', title: 'All Songs' },
-//     { value: 'favorites', title: 'My Favorites' },
-//     { value: 'collections', title: 'My Collections' },
-// ]

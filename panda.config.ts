@@ -12,6 +12,7 @@ import {
   cssVarsRoot,
   globalCss
 } from "~/theme";
+import { defaultPalette, defaultSupportingPalette } from "~/utils/constants";
 
 export default defineConfig({
   preflight: true,
@@ -34,7 +35,7 @@ export default defineConfig({
     css: [
       {
         properties: {
-          colorPalette: [defaultPalette],
+          colorPalette: [defaultPalette, defaultSupportingPalette],
         },
       },
     ],

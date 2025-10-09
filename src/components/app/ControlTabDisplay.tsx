@@ -6,6 +6,7 @@ import { createSignal, type JSXElement, type Ref } from "solid-js";
 import ContextMenu from "./ContextMenu";
 
 interface Props {
+	open: boolean;
     contextMenuContent: JSXElement
     actionBarMenu: JSXElement
     children: JSXElement
@@ -13,8 +14,6 @@ interface Props {
 }
 
 export default function ControlTabDisplay(props: Props) {
-    const [contextOpen, setContextOpen] = createSignal(false);
-
     return (
      <>
 			<Box
@@ -26,7 +25,7 @@ export default function ControlTabDisplay(props: Props) {
 				borderColor="gray.700"
 				pb={7}
 			>
-				<ContextMenu open={contextOpen()} content={props.contextMenuContent} ref={props.ref}>
+				<ContextMenu open={props.open} content={props.contextMenuContent} ref={props.ref}>
 					{props.children}
 				</ContextMenu>
 
