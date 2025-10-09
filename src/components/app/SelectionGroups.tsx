@@ -26,6 +26,7 @@ export default function SelectionGroups<T extends GroupMeta[]>(props: Props<T>) 
             left="0"
             h="full"
             border="1px solid"
+            borderRight="none"
             borderColor="gray.700"
             pb={7}
             overflowY="auto"

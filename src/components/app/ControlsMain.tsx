@@ -6,7 +6,7 @@ import SongSelection from "./song/SongSelection";
 import ScriptureSelection from "./scripture/ScriptureSelection";
 import ThemeSelection from "./theme/ThemeSelection";
 import { useFocusContext } from "~/layouts/FocusContext";
-import { DEFAULT_PANEL, MEDIA_TAB_FOCUS_NAME, PRESENTATIONS_TAB_FOCUS_NAME, SCRIPTURE_TAB_FOCUS_NAME, SONGS_TAB_FOCUS_NAME, THEMES_TAB_FOCUS_NAME } from "~/utils/constants";
+import { DEFAULT_PANEL, defaultPalette, MEDIA_TAB_FOCUS_NAME, PRESENTATIONS_TAB_FOCUS_NAME, SCRIPTURE_TAB_FOCUS_NAME, SONGS_TAB_FOCUS_NAME, THEMES_TAB_FOCUS_NAME } from "~/utils/constants";
 
 export default function ControlsMain() {
 	const { changeFocusPanel } = useFocusContext();
@@ -16,7 +16,8 @@ export default function ControlsMain() {
 			<Tabs.Root
 				w="full"
 				h="full"
-				variant="plain"
+				variant="line"
+				colorPalette="purple"
 				display="flex"
 				flexDir="column"
 				defaultValue={DEFAULT_PANEL}
@@ -27,7 +28,7 @@ export default function ControlsMain() {
 						gap={2}
 						w="full"
 						bg="bg.muted"
-						py="1"
+						// py="1"
 						pl="2"
 						fontFamily="heading"
 					>
@@ -51,7 +52,7 @@ export default function ControlsMain() {
 							<TbPalette />
 							Themes
 						</Tabs.Trigger>
-						<Tabs.Indicator rounded="l2" />
+						<Tabs.Indicator />
 					</Tabs.List>
 
 					<IconButton
@@ -67,6 +68,7 @@ export default function ControlsMain() {
 					h="full"
 					fontFamily="body"
 					pos="relative"
+					gap={0}
 				>
 					{/* {isPending ? <ControlsLoading /> : null} */}
 					<Tabs.Content h="full" value={SONGS_TAB_FOCUS_NAME} py={0}>

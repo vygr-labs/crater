@@ -1,6 +1,6 @@
 import { Index } from "solid-js";
 import { Accordion } from "../ui/accordion";
-import { Box, Grid } from "styled-system/jsx";
+import { Box, Flex, Grid } from "styled-system/jsx";
 import { TbChevronDown, TbX } from "solid-icons/tb";
 import { Dialog } from "../ui/dialog";
 import { Portal } from "solid-js/web";
@@ -16,47 +16,47 @@ import PreviewPanel from "./PreviewPanel";
 import NamingModal from "../modals/NamingModal";
 
 export default function AppControls() {
-    return (
-        <AppContextProvider>
+	return (
+		<AppContextProvider>
 			<FocusContextProvider>
 				<Box w="vw" h="vh" bg="bg.muted" pos="relative" overflow="hidden">
 					<MenuBar />
-					<Grid
-					w="full"
-					h="7/12"
-					columns={3}
-					pos="absolute"
-					top="calc(100%/12)"
-				>
-					<Box h="full" border="1px solid" borderColor="gray.700">
-						{/* <ScheduleComponent /> */}
-					</Box>
-					<Box h="full" border="1px solid" borderColor="gray.700">
-						<PreviewPanel />
-					</Box>
-					<Box h="full" border="1px solid" borderColor="gray.700">
-						{/* <LiveComponent /> */}
-					</Box>
-				</Grid>
-				
-				<Box w="full" h="4/12" pos="absolute" bottom="0">
-					<ControlsMain />
-				</Box>
+					<Flex
+						w="full"
+						h="7/12"
+						columns={3}
+						pos="absolute"
+						top="calc(100%/12)"
+					>
+						<Box w="1/3" h="full" border="1px solid" borderColor="gray.700">
+							{/* <ScheduleComponent /> */}
+						</Box>
+						<Box w="1/3" h="full" border="1px solid" borderColor="gray.700">
+							<PreviewPanel />
+						</Box>
+						<Box w="1/3" h="full" border="1px solid" borderColor="gray.700">
+							{/* <LiveComponent /> */}
+						</Box>
+					</Flex>
 
-				<AppSettingsDialog />
-				<AppLoading />
-				<NamingModal />
+					<Box w="full" h="4/12" pos="absolute" bottom="0">
+						<ControlsMain />
+					</Box>
 
-				{/* Song Editor Modal */}
-				{/* <SongEditor /> */}
+					<AppSettingsDialog />
+					<AppLoading />
+					<NamingModal />
 
-				{/* <Editor resolver={{ UserContainer, UserText, UserRootContainer }}>
+					{/* Song Editor Modal */}
+					{/* <SongEditor /> */}
+
+					{/* <Editor resolver={{ UserContainer, UserText, UserRootContainer }}>
 					<ThemeEditor />
 				</Editor> */}
 
-				{/* Naming Modal */}
+					{/* Naming Modal */}
 				</Box>
 			</FocusContextProvider>
-        </AppContextProvider>
-    )
+		</AppContextProvider>
+	)
 }
