@@ -10,9 +10,9 @@ import { Text } from "../../ui/text";
 import { createVirtualizer } from "@tanstack/solid-virtual";
 import { useAppContext } from "~/layouts/AppContext";
 import { useFocusContext } from "~/layouts/FocusContext";
-import { defaultPalette, SCRIPTURE_TAB_FOCUS_NAME } from "~/utils/constants";
+import { defaultPalette, SCRIPTURE_TAB_FOCUS_NAME, SONGS_TAB_FOCUS_NAME } from "~/utils/constants";
 import { focusStyles } from "~/utils/atomic-recipes";
-import { getFocusVariant } from "~/utils";
+import { getBaseFocusStyles, getFocusableStyles, getFocusVariant } from "~/utils";
 import { css } from "styled-system/css";
 import { token } from "styled-system/tokens";
 import { createAsyncMemo } from "solidjs-use";
@@ -74,7 +74,7 @@ export default function ScriptureSelection() {
         overscan: 5,
     }))
 
-    const { subscribeEvent, changeFocusPanel } = useFocusContext();
+    const { subscribeEvent, changeFocusPanel, currentPanel } = useFocusContext();
     const { name, coreFocusId, fluidFocusId } = subscribeEvent({
         name: SCRIPTURE_TAB_FOCUS_NAME,
         defaultCoreFocus: 0,
@@ -112,6 +112,7 @@ export default function ScriptureSelection() {
             }
         }
     })
+    const isCurrentPanel = createMemo(() => currentPanel() === name);
 
     function handleGroupAccordionChange(open: (ScripturePanelGroupValues | string)[], e?: MouseEvent) {
         if (!open.length) return;
@@ -147,7 +148,7 @@ export default function ScriptureSelection() {
     // send current fluid item to preview-menu
     createEffect(() => {
         const previewFocusId = fluidFocusId()
-        if (typeof previewFocusId !== "number" || !filteredScriptures().length) return;
+        if (typeof previewFocusId !== "number" || !filteredScriptures().length || !isCurrentPanel()) return;
 
         const previewScripture = filteredScriptures()[previewFocusId];
         if (previewScripture) {
@@ -207,8 +208,10 @@ export default function ScriptureSelection() {
                                     style={{
                                         height: `${virtualItem.size}px`,
                                         transform: `translateY(${virtualItem.start}px)`,
-                                        "background-color": virtualItem.index === fluidFocusId() ? token.var(`colors.${defaultPalette}.900`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
-                                        color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
+                                        ...getBaseFocusStyles(SONGS_TAB_FOCUS_NAME),
+                                        ...getFocusableStyles(SONGS_TAB_FOCUS_NAME, virtualItem.index === fluidFocusId(), isCurrentPanel(), virtualItem.index === coreFocusId())
+                                        // "background-color": virtualItem.index === fluidFocusId() ? token.var(`colors.${defaultPalette}.900`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
+                                        // color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
                                     }}
                                     data-panel={SCRIPTURE_TAB_FOCUS_NAME}
                                     data-focusId={virtualItem.index}

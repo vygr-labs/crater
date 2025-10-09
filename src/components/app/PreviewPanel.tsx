@@ -17,7 +17,7 @@ export default function PreviewPanel() {
     const previewData = createMemo(() => appStore.previewItem?.data ?? [])
     const itemType = createMemo(() => appStore.previewItem?.type);
 
-    const { subscribeEvent, changeFocusPanel } = useFocusContext();
+    const { subscribeEvent, changeFocusPanel, currentPanel } = useFocusContext();
     const { name, coreFocusId, fluidFocusId } = subscribeEvent({
         name: PREVIEW_PANEL_FOCUS_NAME,
         defaultCoreFocus: 0,
@@ -36,7 +36,8 @@ export default function PreviewPanel() {
             }
         },
         clickHandlers: {
-            onClick: ({ changeFluidFocus, focusId }) => {
+            onClick: ({ changeFluidFocus, focusId, event }) => {
+                console.log(event.target, focusId)
                 if (typeof focusId === "number") {
                     changeFluidFocus(focusId)
                 }
@@ -53,10 +54,12 @@ export default function PreviewPanel() {
     const rowVirtualizer = createMemo(() => createVirtualizer({
         count: previewData().length,
         getScrollElement: () => virtualizerParentRef,
-        estimateSize: () => 36,
+        estimateSize: () => 20,
         overscan: 5,
     }))
+
     createEffect(() => {
+        console.log("Fluid Focus is CHanged: ", fluidFocusId())
         rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0)
     })
 
@@ -100,7 +103,7 @@ export default function PreviewPanel() {
                                 <Box data-index={virtualItem.index} ref={rowVirtualizer().measureElement}>
                                     <Switch>
                                         <Match when={itemType() === "song"}>
-                                            <LyricDisplay index={virtualItem.index} lyric={item as SongLyric} isFocusItem={false} />
+                                            <LyricDisplay index={virtualItem.index} lyric={item as SongLyric} isFocusItem={fluidFocusId() === virtualItem.index} panelName={name} isCurrentPanel={currentPanel() === name} />
                                         </Match>
                                         <Match when={true}>
                                             No display for this, yet;

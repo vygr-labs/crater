@@ -12,7 +12,7 @@ import {
   cssVarsRoot,
   globalCss
 } from "~/theme";
-import { defaultPalette, defaultSupportingPalette } from "~/utils/constants";
+import { defaultPalette, defaultSupportingPalette, PREVIEW_INDEX_WIDTH } from "~/utils/constants";
 
 export default defineConfig({
   preflight: true,
@@ -36,6 +36,10 @@ export default defineConfig({
       {
         properties: {
           colorPalette: [defaultPalette, defaultSupportingPalette],
+          width: [PREVIEW_INDEX_WIDTH],
+          margin: [PREVIEW_INDEX_WIDTH],
+          padding: [PREVIEW_INDEX_WIDTH],
+          paddingLeft: [PREVIEW_INDEX_WIDTH]
         },
       },
     ],

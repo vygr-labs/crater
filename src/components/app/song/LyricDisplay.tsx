@@ -1,13 +1,17 @@
-import { For } from "solid-js";
+import { For, Show } from "solid-js";
 import { Box, Flex, Stack } from "styled-system/jsx";
+import { token } from "styled-system/tokens";
 import { Text } from "~/components/ui/text";
 import type { SongLyric } from "~/types/context";
-import { defaultPalette, PREVIEW_INDEX_WIDTH } from "~/utils/constants";
+import { getFocusableStyles } from "~/utils";
+import { defaultPalette, defaultSupportingPalette, PREVIEW_INDEX_WIDTH } from "~/utils/constants";
 
 interface Props {
     index: number;
     lyric: SongLyric;
     isFocusItem: boolean;
+	panelName: string;
+	isCurrentPanel: boolean;
 }
 
 export default function LyricDisplay(props: Props) {
@@ -17,22 +21,25 @@ export default function LyricDisplay(props: Props) {
 			class="disable-child-clicks transition-children-backgrounds"
 			userSelect="none"
 			py={1}
-			mb="4"
-			height="unset"
+			mb={0}
 			data-focusId={props.index}
+			data-panel={props.panelName}
+			display="flex"
+			gap={0}
 			// onMouseEnter={() => setIsHovered(true)}
 			// onMouseLeave={() => setIsHovered(false)}
 		>
 			<Flex
 				w="full"
 				h="full"
-				// bgColor={
-				// 	isCurrentNavig ? `${defaultPalette}.800` : isHovered ? `${defaultSupportingPalette}.800` : 'transparent'
-				// }
 				fontSize="14px"
 				gap={0.5}
 				position="relative"
 				pl={PREVIEW_INDEX_WIDTH}
+				style={getFocusableStyles('LYRICS_PARENT_CONTAINER', props.isFocusItem, props.isCurrentPanel)}
+				// style={{
+				// 	// "background-color": props.isFocusItem ? token.var(`colors.${defaultPalette}.800`) : isHovered ? token.var(`colors.${defaultSupportingPalette}.800`) : 'transparent'
+				// }}
 			>
 				<Box
 					w={PREVIEW_INDEX_WIDTH}
@@ -43,14 +50,15 @@ export default function LyricDisplay(props: Props) {
 					left={0}
 					bottom={0}
 					top={0}
-					bgColor={
-						props.isFocusItem ? `${defaultPalette}.700` : isHovered ? `${defaultPalette}.700/50` : 'gray.800'
-					}
+					style={getFocusableStyles('LYRICS_INDEX_CONTAINER', props.isFocusItem, props.isCurrentPanel)}
+					// bgColor={
+					// 	props.isFocusItem ? `${defaultPalette}.700` : isHovered ? `${defaultPalette}.700/50` : 'gray.800'
+					// }
 				>
 					<Text>{props.index + 1}</Text>
 				</Box>
 				<Stack gap={0}>
-					{props.lyric.label ? (
+					<Show when={props.lyric.label}>
 						<Box px={2} pt={2}>
 							<Text
 								textTransform="capitalize"
@@ -66,15 +74,15 @@ export default function LyricDisplay(props: Props) {
 								{props.lyric.label}
 							</Text>
 						</Box>
-					) : null}
+					</Show>
 
 					<Box
-						pt={1}
-						pb={2}
+						py={1.5}
 						px={2}
-						color={
-							props.isFocusItem ? 'gray.200' : isHovered ? 'gray.200' : 'fg.muted'
-						}
+						style={getFocusableStyles('LYRICS_TEXT_CONTAINER', props.isFocusItem, props.isCurrentPanel)}
+						// color={
+						// 	props.isFocusItem ? 'gray.200' : isHovered ? 'gray.200' : 'fg.muted'
+						// }
 						fontFamily="body"
 					>
                         <For each={props.lyric?.text}>

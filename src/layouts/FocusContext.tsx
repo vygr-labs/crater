@@ -1,4 +1,4 @@
-import { createContext, createEffect, createMemo, createSignal, onCleanup, onMount, useContext, type ParentProps } from "solid-js";
+import { createContext, createEffect, createMemo, createSignal, onCleanup, onMount, useContext, type Accessor, type ParentProps } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { onKeyDown, useEventListener } from "solidjs-use"
 import { DEFAULT_PANEL } from "~/utils/constants";
@@ -61,14 +61,16 @@ interface FocusContextReturnVal {
     // add an isModal setting that ensures the context is always reset to the previous value when the current context is de-focused
     subscribeEvent: FocusEventSubscriberFn;
     changeFocusPanel: ChangeContextFn;
-    currentContext?: string
+    currentPanel: Accessor<string | undefined>
+    previousPanel?: string
 }
 
 const FocusContext = createContext<FocusContextReturnVal>();
 
 export default function FocusContextProvider(props: ParentProps) {
     const [store, setStore] = createStore<FocusStore>({ subscribers: {}, current: DEFAULT_PANEL });
-    const currentContext = createMemo(() => store.subscribers[store.current]);
+    const currentPanel = createMemo(() => store.current);
+    const currentSubscriber = createMemo(() => store.subscribers[store.current]);
 
     const changeCoreFocus: InternalChangeFocusFn = ({ contextName, newFocusId }) => {
         if (!contextName) return;
@@ -89,11 +91,11 @@ export default function FocusContextProvider(props: ParentProps) {
     };
 
     onKeyDown((e) => Object.values(store.subscribers).flatMap(subscriber => Object.keys(subscriber.handlers)).includes(e.key), e => {
-        const currentContext = store.subscribers[store.current]
-        if (currentContext && Object.hasOwn(currentContext.handlers, e.key)) {
-            currentContext.handlers[e.key]({
-                name: store.current, coreFocusId: currentContext.coreFocusId,
-                fluidFocusId: currentContext.fluidFocusId, changeFocus: (newId) => changeFocus({ contextName: store.current, newFocusId: newId }), changeCoreFocus: (newId) => changeCoreFocus({ contextName: store.current, newFocusId: newId }), changeFluidFocus: (newId) => changeFluidFocus({ contextName: store.current, newFocusId: newId }),
+        const currentPanel = store.subscribers[store.current]
+        if (currentPanel && Object.hasOwn(currentPanel.handlers, e.key)) {
+            currentPanel.handlers[e.key]({
+                name: store.current, coreFocusId: currentPanel.coreFocusId,
+                fluidFocusId: currentPanel.fluidFocusId, changeFocus: (newId) => changeFocus({ contextName: store.current, newFocusId: newId }), changeCoreFocus: (newId) => changeCoreFocus({ contextName: store.current, newFocusId: newId }), changeFluidFocus: (newId) => changeFluidFocus({ contextName: store.current, newFocusId: newId }),
                 event: e
             });
         }
@@ -114,6 +116,7 @@ export default function FocusContextProvider(props: ParentProps) {
                 changeFocusPanel(focusPanel)
             }
 
+            console.log(focusPanel);
             clickedContext.clickHandlers[eventKey]({
                 name: store.current, coreFocusId: clickedContext.coreFocusId,
                 fluidFocusId: clickedContext.fluidFocusId, changeFocus: (newId) => changeFocus({ contextName: store.current, newFocusId: newId }), changeCoreFocus: (newId) => changeCoreFocus({ contextName: store.current, newFocusId: newId }), changeFluidFocus: (newId) => changeFluidFocus({ contextName: store.current, newFocusId: newId }),
@@ -146,6 +149,7 @@ export default function FocusContextProvider(props: ParentProps) {
     }
 
     const changeFocusPanel: ChangeContextFn = (newContext) => {
+        console.log("Changing Focus Panel");
         setStore(produce(store => {
             store.previous = store.current
             store.current = newContext
@@ -153,7 +157,7 @@ export default function FocusContextProvider(props: ParentProps) {
     }
 
     return (
-        <FocusContext.Provider value={{ subscribeEvent, changeFocusPanel, currentContext: store.current }}>
+        <FocusContext.Provider value={{ subscribeEvent, changeFocusPanel, previousPanel: store.previous, currentPanel: currentPanel }}>
             {props.children}
         </FocusContext.Provider>
     )

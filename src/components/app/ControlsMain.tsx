@@ -30,8 +30,14 @@ export default function ControlsMain() {
 						// py="1"
 						pl="2"
 						fontFamily="heading"
+						css={{
+							"& [data-part=trigger]": {
+								px: 4, 
+								_focus: { outline: 'none' }
+							}
+						}}
 					>
-						<Tabs.Trigger value={SONGS_TAB_FOCUS_NAME} px={4} _focus={{ outline: 'none' }}>
+						<Tabs.Trigger value={SONGS_TAB_FOCUS_NAME}>
 							<TbMusic />
 							Songs
 						</Tabs.Trigger>

@@ -17,7 +17,7 @@ import { useAppContext } from "~/layouts/AppContext";
 import { useFocusContext } from "~/layouts/FocusContext";
 import { defaultPalette, SONGS_TAB_FOCUS_NAME } from "~/utils/constants";
 import { focusStyles } from "~/utils/atomic-recipes";
-import { getFocusVariant } from "~/utils";
+import { getBaseFocusStyles, getFocusableStyles } from "~/utils";
 import { css } from "styled-system/css";
 import { token } from "styled-system/tokens";
 import { createAsyncMemo } from "solidjs-use";
@@ -76,7 +76,7 @@ export default function SongSelection() {
         overscan: 5,
     }))
 
-    const { subscribeEvent, changeFocusPanel } = useFocusContext();
+    const { subscribeEvent, changeFocusPanel, currentPanel } = useFocusContext();
     const { name, coreFocusId, fluidFocusId } = subscribeEvent({
         name: SONGS_TAB_FOCUS_NAME,
         defaultCoreFocus: 0,
@@ -114,6 +114,7 @@ export default function SongSelection() {
             }
         }
     })
+    const isCurrentPanel = createMemo(() => currentPanel() === name)
 
     function handleGroupAccordionChange(open: (SongPanelGroupValues | string)[], e?: MouseEvent) {
         if (!open.length) return;
@@ -149,7 +150,7 @@ export default function SongSelection() {
     // send current fluid item to preview-menu
     createEffect(() => {
         const previewFocusId = fluidFocusId()
-        if (typeof previewFocusId !== "number" || !filteredSongs().length) return;
+        if (typeof previewFocusId !== "number" || !filteredSongs().length || !isCurrentPanel()) return;
 
         const metadata = filteredSongs()[previewFocusId]
         window.electronAPI.fetchSongLyrics(metadata.id).then(songData => {
@@ -213,8 +214,10 @@ export default function SongSelection() {
                                     style={{
                                         height: `${virtualItem.size}px`,
                                         transform: `translateY(${virtualItem.start}px)`,
-                                        "background-color": virtualItem.index === fluidFocusId() ? token.var(`colors.${defaultPalette}.900`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
-                                        color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
+                                        // "background-color": virtualItem.index === fluidFocusId() ? isCurrentPanel() ? token.var(`colors.${defaultPalette}.900`) : token.var(`colors.gray.800`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
+                                        // color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
+                                        ...getBaseFocusStyles(SONGS_TAB_FOCUS_NAME),
+                                        ...getFocusableStyles(SONGS_TAB_FOCUS_NAME, virtualItem.index === fluidFocusId(), isCurrentPanel(), virtualItem.index === coreFocusId())
                                     }}
                                     data-panel={SONGS_TAB_FOCUS_NAME}
                                     data-focusId={virtualItem.index}
