@@ -66,6 +66,24 @@ export default function ScriptureSelection() {
         }
     });
 
+    const pushToLive = (itemId?: number | null, isLive?: boolean) => {
+        const focusId = itemId;
+        if (typeof focusId !== "number" || !filteredScriptures().length || !isCurrentPanel()) return;
+
+        const previewScripture = filteredScriptures()[focusId];
+        if (previewScripture) {
+            setAppStore(isLive ? "liveItem" : "previewItem", {
+                metadata: {
+                    title: `${previewScripture.book_name} ${previewScripture.chapter}:${previewScripture.verse} (${previewScripture.version.toUpperCase()})`,
+                    id: `${previewScripture.book_name}-${previewScripture.chapter}-${previewScripture.verse}`.toLowerCase(),
+                },
+                type: "scripture",
+                data: [previewScripture],
+                index: 0,
+            })
+        }
+    }
+
     let virtualizerParentRef!: HTMLDivElement
     const rowVirtualizer = createMemo(() => createVirtualizer({
         count: filteredScriptures().length,
@@ -101,7 +119,8 @@ export default function ScriptureSelection() {
             },
             onDblClick: ({ changeFocus, focusId }) => {
                 if (typeof focusId === "number") {
-                    changeFocus(focusId)
+                    changeFocus(focusId);
+                    pushToLive(focusId, true);
                 }
             },
             onRightClick: ({ changeFluidFocus, focusId }) => {
@@ -147,21 +166,7 @@ export default function ScriptureSelection() {
 
     // send current fluid item to preview-menu
     createEffect(() => {
-        const previewFocusId = fluidFocusId()
-        if (typeof previewFocusId !== "number" || !filteredScriptures().length || !isCurrentPanel()) return;
-
-        const previewScripture = filteredScriptures()[previewFocusId];
-        if (previewScripture) {
-            setAppStore("previewItem", {
-                metadata: {
-                    title: `${previewScripture.book_name} ${previewScripture.chapter}:${previewScripture.verse} (${previewScripture.version.toUpperCase()})`,
-                    id: `${previewScripture.book_name}-${previewScripture.chapter}-${previewScripture.verse}`.toLowerCase(),
-                },
-                type: "scripture",
-                data: [previewScripture],
-                index: 0,
-            })
-        }
+        pushToLive(fluidFocusId(), false)
     })
 
     const handleFilter = (e: InputEvent) => {

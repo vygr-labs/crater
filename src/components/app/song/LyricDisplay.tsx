@@ -15,7 +15,6 @@ interface Props {
 }
 
 export default function LyricDisplay(props: Props) {
-    const isHovered = false;
     return (
         <Box
 			class="disable-child-clicks transition-children-backgrounds"
@@ -62,13 +61,14 @@ export default function LyricDisplay(props: Props) {
 						<Box px={2} pt={2}>
 							<Text
 								textTransform="capitalize"
-								color={
-									props.isFocusItem
-										? 'gray.100'
-										: isHovered
-											? 'gray.100'
-											: 'initial'
-								}
+								style={getFocusableStyles('LYRICS_LABEL_TEXT', props.isFocusItem, props.isCurrentPanel)}
+								// color={
+								// 	props.isFocusItem
+								// 		? 'gray.100'
+								// 		: isHovered
+								// 			? 'gray.100'
+								// 			: 'initial'
+								// }
 								fontWeight={600}
 							>
 								{props.lyric.label}
@@ -77,7 +77,7 @@ export default function LyricDisplay(props: Props) {
 					</Show>
 
 					<Box
-						py={1.5}
+						py={2}
 						px={2}
 						style={getFocusableStyles('LYRICS_TEXT_CONTAINER', props.isFocusItem, props.isCurrentPanel)}
 						// color={

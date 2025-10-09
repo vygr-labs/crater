@@ -11,7 +11,8 @@ interface FocusEventSubscriberFnReturnVal {
     name: string
     coreFocusId: () => FocusType;
     fluidFocusId: () => FocusType;
-    isCurrentPanel: () => boolean
+    isCurrentPanel: () => boolean;
+    changeFocus: ChangeFocusFn;
 }
 
 interface FocusEventHandlerParams {
@@ -112,7 +113,7 @@ export default function FocusContextProvider(props: ParentProps) {
         if (clickedContext && clickedContext.clickHandlers && clickedContext?.clickHandlers[eventKey]) {
             const focusId = parseInt(target.getAttribute("data-focusId") ?? "") ?? null;
             
-            if (focusPanel) {
+            if (focusPanel && focusPanel !== store.current) {
                 changeFocusPanel(focusPanel)
             }
 
@@ -144,7 +145,8 @@ export default function FocusContextProvider(props: ParentProps) {
             name,
             isCurrentPanel: createMemo(() => store.current === name),
             coreFocusId: createMemo(() => store.subscribers[name].coreFocusId),
-            fluidFocusId: createMemo(() => store.subscribers[name].fluidFocusId)
+            fluidFocusId: createMemo(() => store.subscribers[name].fluidFocusId),
+            changeFocus: (newId: FocusType) => changeFocus({contextName: name, newFocusId: newId})
         }
     }
 

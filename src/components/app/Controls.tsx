@@ -14,6 +14,7 @@ import ControlsMain from "./ControlsMain";
 import FocusContextProvider from "~/layouts/FocusContext";
 import PreviewPanel from "./PreviewPanel";
 import NamingModal from "../modals/NamingModal";
+import LivePanel from "./LivePanel";
 
 export default function AppControls() {
 	return (
@@ -35,7 +36,7 @@ export default function AppControls() {
 							<PreviewPanel />
 						</Box>
 						<Box w="1/3" h="full" border="1px solid" borderColor="gray.700">
-							{/* <LiveComponent /> */}
+							<LivePanel />
 						</Box>
 					</Flex>
 

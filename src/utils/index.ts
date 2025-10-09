@@ -134,7 +134,7 @@ const mappings: Record<string, {
 						"background-color": token.var(`colors.${defaultPalette}.900`)
 					},
 					false: {
-						"background-color": token.var("colors.gray.800")
+						"background-color": token.var("colors.gray.600")
 					}
 				}
 			}
@@ -148,15 +148,27 @@ const mappings: Record<string, {
 						"background-color": token.var(`colors.${defaultPalette}.800`)
 					},
 					false: {
-						"background-color": token.var("colors.transparent")
+						"background-color": token.var("colors.gray.800")
+					}
+				}
+			}
+		}
+	},
+	LYRICS_LABEL_TEXT: {
+		isFluid: {
+			true: {
+				isCurrentPanel: {
+					true: {
+						color: token.var(`colors.gray.100`)
+					},
+					false: {
+						color: "initial"
 					}
 				}
 			}
 		}
 	}
 }
-// virtualItem.index === fluidFocusId()
-// isCurrentPanel()
 
 type FocusStylesGetter = (key: string, isFluid?: boolean, isCurrentPanel?: boolean, isCore?: boolean) => JSX.CSSProperties;
 export const getBaseFocusStyles = (key: string) => {
@@ -166,7 +178,7 @@ export const getBaseFocusStyles = (key: string) => {
 // to improve performance, make this into a hook that returns a store, so we can take advantage of fine-grained reactivity
 // or better still, set the isFluid & isCore values using data-attributes that our pre-built css file applies styles based on these attributes. Check panda docs
 export const getFocusableStyles: FocusStylesGetter = (key, isFluid, isCurrentPanel, isCore) => {
-	console.log(isFluid, isCurrentPanel, isCore)
+	// TODO: console.log(isFluid, isCurrentPanel, isCore)
 	let fluidStyles = {}
 	let coreStyles = {}
 

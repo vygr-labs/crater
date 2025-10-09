@@ -67,6 +67,20 @@ export default function SongSelection() {
             return applyQueryFilter(allSongs())
         }
     });
+    const pushToLive = (itemId?: number | null, isLive?: boolean) => {
+        const focusId = itemId;
+        if (typeof focusId !== "number" || !filteredSongs().length || !isCurrentPanel()) return;
+
+        const metadata = filteredSongs()[focusId]
+        window.electronAPI.fetchSongLyrics(metadata.id).then(songData => {
+            setAppStore(isLive ? "liveItem" : "previewItem", {
+                metadata,
+                type: "song",
+                data: songData,
+                index: 0,
+            })
+        });
+    }
 
     let virtualizerParentRef!: HTMLDivElement
     const rowVirtualizer = createMemo(() => createVirtualizer({
@@ -75,6 +89,7 @@ export default function SongSelection() {
         estimateSize: () => 36,
         overscan: 5,
     }))
+
 
     const { subscribeEvent, changeFocusPanel, currentPanel } = useFocusContext();
     const { name, coreFocusId, fluidFocusId } = subscribeEvent({
@@ -103,7 +118,8 @@ export default function SongSelection() {
             },
             onDblClick: ({ changeFocus, focusId }) => {
                 if (typeof focusId === "number") {
-                    changeFocus(focusId)
+                    changeFocus(focusId);
+                    pushToLive(focusId, true)
                 }
             },
             onRightClick: ({ changeFluidFocus, focusId }) => {
@@ -149,18 +165,7 @@ export default function SongSelection() {
 
     // send current fluid item to preview-menu
     createEffect(() => {
-        const previewFocusId = fluidFocusId()
-        if (typeof previewFocusId !== "number" || !filteredSongs().length || !isCurrentPanel()) return;
-
-        const metadata = filteredSongs()[previewFocusId]
-        window.electronAPI.fetchSongLyrics(metadata.id).then(songData => {
-            setAppStore("previewItem", {
-                metadata,
-                type: "song",
-                data: songData,
-                index: 0,
-            })
-        });
+        pushToLive(fluidFocusId(), false)
     })
 
     const handleSongEdit = () => {

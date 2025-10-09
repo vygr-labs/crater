@@ -9,16 +9,21 @@ import { useFocusContext } from "~/layouts/FocusContext";
 import { createEffect, createMemo, For, Match, Switch } from "solid-js";
 import { createVirtualizer } from "@tanstack/solid-virtual";
 import ContextMenu from "./ContextMenu";
-import LyricDisplay from "./song/LyricDisplay";
-import type { SongLyric } from "~/types/context";
+import ItemDisplay from "./ItemDisplay";
 
 export default function PreviewPanel() {
     const { appStore, setAppStore } = useAppContext();
     const previewData = createMemo(() => appStore.previewItem?.data ?? [])
     const itemType = createMemo(() => appStore.previewItem?.type);
 
+    const pushToLive = (focusId?: number | null) => {
+        // const focusId = itemIndex;
+        if (typeof focusId !== "number") return; // || !isCurrentPanel()
+        setAppStore("liveItem", { ...appStore.previewItem, index: focusId });
+    }
+
     const { subscribeEvent, changeFocusPanel, currentPanel } = useFocusContext();
-    const { name, coreFocusId, fluidFocusId } = subscribeEvent({
+    const { name, coreFocusId, fluidFocusId, changeFocus } = subscribeEvent({
         name: PREVIEW_PANEL_FOCUS_NAME,
         defaultCoreFocus: 0,
         defaultFluidFocus: 0,
@@ -37,16 +42,22 @@ export default function PreviewPanel() {
         },
         clickHandlers: {
             onClick: ({ changeFluidFocus, focusId, event }) => {
-                console.log(event.target, focusId)
                 if (typeof focusId === "number") {
                     changeFluidFocus(focusId)
                 }
             },
             onDblClick: ({ changeFocus, focusId }) => {
                 if (typeof focusId === "number") {
-                    changeFocus(focusId)
+                    changeFocus(focusId);
+                    pushToLive(focusId)
                 }
             }
+        }
+    })
+
+    createEffect(() => {
+        if (previewData()) {
+            changeFocus(appStore.previewItem?.index)
         }
     })
 
@@ -86,68 +97,27 @@ export default function PreviewPanel() {
                     width: '100%',
                     position: 'relative',
                 }}>
-                        <Box pos="absolute"
-                            top={0}
-                            left={0}
-                            w="full"
-                            style={{
-                                transform: `translateY(${rowVirtualizer().getVirtualItems()[0]?.start ?? 0}px)`,
-                                // "background-color": virtualItem.index === fluidFocusId() ? token.var(`colors.${defaultPalette}.900`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
-                                // color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
+                    <Box pos="absolute"
+                        top={0}
+                        left={0}
+                        w="full"
+                        style={{
+                            transform: `translateY(${rowVirtualizer().getVirtualItems()[0]?.start ?? 0}px)`,
+                            // "background-color": virtualItem.index === fluidFocusId() ? token.var(`colors.${defaultPalette}.900`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
+                            // color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
+                        }}
+                    >
+                        <For each={rowVirtualizer().getVirtualItems()}>
+                            {virtualItem => {
+                                const item = previewData()[virtualItem.index]
+                                return (
+                                    <Box data-index={virtualItem.index} ref={rowVirtualizer().measureElement}>
+                                        <ItemDisplay type={itemType()} index={virtualItem.index} item={item} isFocusItem={fluidFocusId() === virtualItem.index} panelName={name} isCurrentPanel={currentPanel() === name} />
+                                    </Box>
+                                )
                             }}
-                        >
-                    <For each={rowVirtualizer().getVirtualItems()}>
-                        {virtualItem => {
-                            const item = previewData()[virtualItem.index]
-                            return (
-                                <Box data-index={virtualItem.index} ref={rowVirtualizer().measureElement}>
-                                    <Switch>
-                                        <Match when={itemType() === "song"}>
-                                            <LyricDisplay index={virtualItem.index} lyric={item as SongLyric} isFocusItem={fluidFocusId() === virtualItem.index} panelName={name} isCurrentPanel={currentPanel() === name} />
-                                        </Match>
-                                        <Match when={true}>
-                                            No display for this, yet;
-                                        </Match>
-                                    </Switch>
-                                </Box>
-                                // <HStack
-                                //     // class={focusStyles(getFocusVariant(name, virtualItem.index, coreFocusId(), fluidFocusId()))}
-                                //     pos="absolute"
-                                //     top={0}
-                                //     left={0}
-                                //     w="full"
-                                //     textAlign="left"
-                                //     userSelect="none"
-                                //     fontSize="14px"
-                                //     pl={2}
-                                //     cursor="pointer"
-                                //     py={1.5}
-                                //     css={{
-                                    //         "& *": {
-                                        //             pointerEvents: "none",
-                                        //         },
-                                        //         _hover: {
-                                            //             bgColor: "purple.800/40"
-                                            //         }
-                                            //     }
-                                            //     }
-                                            //     style={{
-                                                //         height: `${virtualItem.size}px`,
-                                                //         transform: `translateY(${virtualItem.start}px)`,
-                                                //         "background-color": virtualItem.index === fluidFocusId() ? token.var(`colors.${defaultPalette}.900`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
-                                                //         color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
-                                                //     }}
-                                                //     data-panel={PREVIEW_PANEL_FOCUS_NAME}
-                                                //     data-focusId={virtualItem.index}
-                                                // >
-                                                //     <Text>{song.title}</Text>
-                                                //     <Text>{song.author}</Text>
-                                                //     <Text>{song.copyright}</Text>
-                                                // </HStack>
-                                            )
-                                        }}
-                    </For>
-                                        </Box>
+                        </For>
+                    </Box>
                 </Box>
             </ContextMenu>
 
