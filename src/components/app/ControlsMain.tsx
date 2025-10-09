@@ -17,7 +17,7 @@ export default function ControlsMain() {
 				w="full"
 				h="full"
 				variant="line"
-				colorPalette="purple"
+				colorPalette={defaultPalette}
 				display="flex"
 				flexDir="column"
 				defaultValue={DEFAULT_PANEL}

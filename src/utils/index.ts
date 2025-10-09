@@ -1,3 +1,4 @@
+import type { FocusType } from '~/layouts/FocusContext'
 import type { BookInfo, ChapterCountObj, HighlightedVerse } from '../types'
 
 export function getName(book?: BookInfo) {
@@ -55,7 +56,7 @@ export function getKeyByValue(object, value) {
 export const getToastType = (success: boolean) =>
 	success ? 'success' : 'error'
 
-export const getFocusVariant = (contextName: string, currentItemId: number,coreFocusId?: number, fluidFocusId?: number) => ({
+export const getFocusVariant = (contextName: string, currentItemId: number,coreFocusId?: FocusType, fluidFocusId?: FocusType) => ({
 	panel: contextName,
 	isCurrentCore: currentItemId === coreFocusId,
 	isCurrentFluid: currentItemId === fluidFocusId

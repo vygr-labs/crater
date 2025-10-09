@@ -1,5 +1,5 @@
 import { cva } from "styled-system/css";
-import { defaultPalette, SCRIPTURE_TAB_FOCUS_NAME, SONGS_TAB_FOCUS_NAME } from "./constants";
+import { SCRIPTURE_TAB_FOCUS_NAME, SONGS_TAB_FOCUS_NAME } from "./constants";
 
 // necessary styles for @tanstack/virtual list
 const tanstackVirtualStyles = {
@@ -12,20 +12,20 @@ const tanstackVirtualStyles = {
 export const focusStyles = cva({
     variants: {
         panel: {
-            [SONGS_TAB_FOCUS_NAME]: {
+            [SONGS_TAB_FOCUS_NAME as string]: {
                 ...tanstackVirtualStyles,
                 // additional styles
                 textAlign: "left",
                 userSelect: "none",
                 fontSize: "14px",
-                pl: 4,
+                pl: 2,
                 cursor: "pointer",
                 py: 1.5,
                 "& *": {
                     pointerEvents: "none",
                 },
             },
-            [SCRIPTURE_TAB_FOCUS_NAME]: {
+            [SCRIPTURE_TAB_FOCUS_NAME as string]: {
                 ...tanstackVirtualStyles,
                 // additional styles
                 fontSize: "14px",
@@ -35,6 +35,9 @@ export const focusStyles = cva({
                 userSelect: "none",
                 "& *": {
                     pointerEvents: "none",
+                },
+                _hover: {
+                    bgColor: "purple.800/40"
                 }
             },
         },
@@ -48,21 +51,22 @@ export const focusStyles = cva({
         }
     },
     compoundVariants: [
-        {
-            panel: SONGS_TAB_FOCUS_NAME,
-            isCurrentFluid: true,
-            css: {
-                bgColor: `${defaultPalette}.900`,
-                color: "white"
-            }
-        },
+        
         {
             panel: SONGS_TAB_FOCUS_NAME,
             isCurrentCore: true,
             css: {
-                bgColor: `${defaultPalette}.800`,
+                bgColor: `gray.800`,
+                color: "gray.100"
+            }
+        },
+        {
+            panel: SONGS_TAB_FOCUS_NAME,
+            isCurrentFluid: true,
+            css: {
+                bgColor: `colorPalette.900`,
                 color: "white"
             }
-        }
+        },
     ]
 })

@@ -30,6 +30,15 @@ export default defineConfig({
     layerStyles,
     animationStyles,
   },
+  staticCss: {
+    css: [
+      {
+        properties: {
+          colorPalette: [defaultPalette],
+        },
+      },
+    ],
+  },
   jsxFramework: "solid",
   outdir: "styled-system",
 });
