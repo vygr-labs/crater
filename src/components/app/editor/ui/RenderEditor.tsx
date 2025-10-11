@@ -4,7 +4,7 @@ import { Dynamic, For } from "solid-js/web";
 import NodeProvider, { NodeContext } from "../Node";
 import { cva } from "styled-system/css";
 import { useDrag, useGesture } from "solid-gesture";
-import type { DragState } from "@use-gesture/core/types";
+import type { FullGestureState } from "@use-gesture/core/types";
 import { createStore, unwrap } from "solid-js/store";
 import { createEffect, createMemo } from "solid-js";
 import { calculateParentOffset } from "~/utils";
@@ -131,7 +131,7 @@ export default function RenderEditor() {
 			console.log("Preserved Size: ", selectedNodeWidth(), selectedNodeHeight())
 			setStore("selectedNodeSize", { width: selectedNodeWidth(), height: selectedNodeHeight() })
 		},
-		onDrag: ({ xy, active, movement, initial, offset, delta, lastOffset, distance, target }: DragState) => {
+		onDrag: ({ xy, active, movement, initial, offset, delta, lastOffset, distance, target }: FullGestureState<"drag">) => {
 			// const boundaryStart = editorRootRef.getBoundingClientRect();
 			// const initialX = initial[0] - boundaryStart.x;
 			// const initialY = initial[1] - boundaryStart.y;

@@ -30,6 +30,7 @@ export default function Editor(props: Props) {
         console.log("Registering Node: ", id, ref);
         ref.dataset.editorNodeId = id;
         ref.onmousedown = () => {
+            if (editor.selectedId === id) return;
             console.log(unwrap(editor.nodes))
             const formerNode = getSelectedNode();
             console.log(unwrap(formerNode?.style))

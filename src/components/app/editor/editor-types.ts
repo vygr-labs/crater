@@ -1,11 +1,8 @@
 import type { Accessor, JSX, JSXElement, Setter } from "solid-js";
-import type { DragState } from "@use-gesture/core/types";
+import type { FullGestureState } from "@use-gesture/core/types";
 
 export type NodeId = string | undefined;
 
-// interface NodeEventHandlersObj {
-//     onDrag: (params: DragState) => void;
-// }
 export interface ExpectedNodeData {
     resize: ScaleValues
     [key: string]: any
@@ -22,7 +19,7 @@ export interface EditorNode {
 }
 
 export type EditorEvent = "selectNode" | "deselectNode" | "dragNode"
-export type NodeDragEventHandler = (params: DragState) => void;
+export type NodeDragEventHandler = (params: FullGestureState<"drag">) => void;
 
 export interface EditorStore {
     nodes: Record<string, EditorNode>;

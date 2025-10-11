@@ -6,11 +6,10 @@ import { createSpring, animated } from "solid-spring";
 import { useEditor } from "./Editor";
 import { css } from "styled-system/css";
 import type { SystemStyleObject } from "styled-system/types";
-import { createDraggable, useDragDropContext, type Draggable } from "@thisbeyond/solid-dnd";
 import { Box } from "styled-system/jsx";
 import { token } from "styled-system/tokens";
 import { useDrag } from "solid-gesture";
-import type { DragState } from "@use-gesture/core/types";
+import type { FullGestureState } from "@use-gesture/core/types";
 import { calculateParentOffset } from "~/utils";
 
 export interface NodeActions {
@@ -98,26 +97,27 @@ export default function NodeProvider(props: NodeProviderProps) {
 	});
 
 	const bindDrag = useDrag(
-		(dragState: DragState) => {
+		(dragState: FullGestureState<"drag">) => {
 			const {
-                active,
+				down,
 				movement: [mx, my],
 				offset: [left, top],
 				overflow,
 				target,
 			} = dragState;
 			// console.log("Debug: ", nodeStore.node.id, [mx, my], nodeStore.node.el)
-			if (!active) {
+			// console.log("ACTIVITY REVERSED: ", down, active)
+			if (!down) {
 				console.log("Setting position values for: ", nodeStore.node.id, nodeStore.node);
 				const rootEditorRect = getRootRef()?.getBoundingClientRect();
 				if (!rootEditorRect) return;
 				const boundingPosition = (target as HTMLElement).getBoundingClientRect();
 
 				const [relativeLeftPercent, relativeTopPercent] = calculateParentOffset(boundingPosition, rootEditorRect, true);
-				// console.log(boundingPosition, relativeTop, relativeLeft, relativeTopPercent, relativeLeftPercent);
+				console.log("Position Data: ", boundingPosition, relativeTopPercent, relativeLeftPercent);
 				setNodeStore("position", [relativeLeftPercent, relativeTopPercent]);
 			}
-			setNodeStore("coords", { x: active ? mx : 0, y: active ? my : 0 });
+			setNodeStore("coords", { x: down ? mx : 0, y: down ? my : 0 });
 			editor.handlers.dragNode.forEach((cb) => cb(dragState));
 		},
 		{
