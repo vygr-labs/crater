@@ -6,6 +6,7 @@ import SongSelection from "./song/SongSelection";
 import ScriptureSelection from "./scripture/ScriptureSelection";
 import { useFocusContext } from "~/layouts/FocusContext";
 import { DEFAULT_PANEL, defaultPalette, MEDIA_TAB_FOCUS_NAME, PRESENTATIONS_TAB_FOCUS_NAME, SCRIPTURE_TAB_FOCUS_NAME, SONGS_TAB_FOCUS_NAME, THEMES_TAB_FOCUS_NAME } from "~/utils/constants";
+import ThemeSelection from "./theme/ThemeSelection";
 
 export default function ControlsMain() {
 	const { changeFocusPanel } = useFocusContext();
@@ -89,7 +90,7 @@ export default function ControlsMain() {
 						Manage your tasks for freelancers
 					</Tabs.Content>
 					<Tabs.Content value={THEMES_TAB_FOCUS_NAME} h="full" py={0}>
-						{/* <ThemeSelection /> */}
+						<ThemeSelection />
 					</Tabs.Content>
 				</Tabs.ContentGroup>
 			</Tabs.Root>

@@ -5,6 +5,31 @@ import { defaultPalette, SONGS_TAB_FOCUS_NAME } from './constants'
 import type { JSX } from 'solid-js/jsx-runtime'
 import type { BooleanLiteral } from 'typescript'
 import { createToaster } from '@ark-ui/solid'
+import type { JSXElement } from 'solid-js'
+import type { EditorRenderComponent } from '~/components/app/editor/editor-types'
+
+export const createId = () => {
+	return window.crypto.randomUUID();
+}
+
+export const transformEditorComp = (comp: EditorRenderComponent) => {
+	Object.defineProperty(comp, "name", { value: comp.name.replace("[solid-refresh]", "") });
+	return comp;
+}
+
+export const calculateParentOffset = (childRect: DOMRect, parentRect: DOMRect, percent?: true) => {
+	const relativeTop = childRect.y - parentRect.y; // - demarcationBorderWidth;  
+	const relativeLeft = childRect.x - parentRect.x; // - demarcationBorderWidth;
+
+	if (percent) {
+		const relativeTopPercent = (relativeTop / parentRect.height) * 100;
+		const relativeLeftPercent = (relativeLeft / parentRect.width) * 100;
+
+		return [relativeLeftPercent, relativeTopPercent];
+	}
+
+	return [relativeLeft, relativeTop];
+}
 
 export function getName(book?: BookInfo) {
 	return book?.name?.toLowerCase() ?? ''

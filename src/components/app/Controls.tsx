@@ -16,6 +16,13 @@ import PreviewPanel from "./PreviewPanel";
 import NamingModal from "../modals/NamingModal";
 import LivePanel from "./LivePanel";
 import RenderToaster from "./RenderToaster";
+import ThemeEditor from "../modals/ThemeEditor";
+import Editor from "./editor/Editor";
+import EditorContainer from "../app/editor/ui/Container"
+
+const config = {
+    EditorContainer
+}
 
 export default function AppControls() {
 	return (
@@ -53,8 +60,11 @@ export default function AppControls() {
 					{/* <SongEditor /> */}
 
 					{/* <Editor resolver={{ UserContainer, UserText, UserRootContainer }}>
-					<ThemeEditor />
-				</Editor> */}
+						<ThemeEditor />
+					</Editor> */}
+					<Editor renderMap={config}>
+						<ThemeEditor />
+					</Editor>
 
 					<RenderToaster />
 				</Box>

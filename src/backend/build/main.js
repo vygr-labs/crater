@@ -99,7 +99,7 @@ function spawnProjectionWindow({ x, y }) {
         show: false,
         fullscreen: true,
         frame: false,
-        transparent: true, // Allow transparency
+        transparent: true,
         webPreferences: {
             backgroundThrottling: false,
             preload: PRELOAD_PATH,
