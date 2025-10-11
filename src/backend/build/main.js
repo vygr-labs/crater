@@ -78,7 +78,7 @@ const spawnAppWindow = async () => {
     });
     appWindow.loadURL(electronIsDev
         ? 'http://localhost:7241/controls'
-        : `file://${path.join(__dirname, '../../frontend/build/controls.html')}`);
+        : `file://${path.join(__dirname, '../../../dist/controls/index.html')}`);
     appWindow.maximize();
     // appWindow.setMenu(null)
     appWindow.show();
@@ -110,7 +110,7 @@ function spawnProjectionWindow({ x, y }) {
     });
     projectionWindow.loadURL(electronIsDev
         ? 'http://localhost:7241'
-        : `file://${path.join(__dirname, '../../frontend/build/index.html')}`);
+        : `file://${path.join(__dirname, '../../../dist/index.html')}`);
     projectionWindow.show();
     // projectionWindow.setIgnoreMouseEvents(true)
     // if (electronIsDev)
