@@ -37,6 +37,7 @@ export default defineConfig({
         properties: {
           colorPalette: [defaultPalette, defaultSupportingPalette],
           width: [PREVIEW_INDEX_WIDTH],
+          height: [PREVIEW_INDEX_WIDTH],
           margin: [PREVIEW_INDEX_WIDTH],
           padding: [PREVIEW_INDEX_WIDTH],
           paddingLeft: [PREVIEW_INDEX_WIDTH]

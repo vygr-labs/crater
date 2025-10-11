@@ -15,6 +15,7 @@ import FocusContextProvider from "~/layouts/FocusContext";
 import PreviewPanel from "./PreviewPanel";
 import NamingModal from "../modals/NamingModal";
 import LivePanel from "./LivePanel";
+import RenderToaster from "./RenderToaster";
 
 export default function AppControls() {
 	return (
@@ -55,7 +56,7 @@ export default function AppControls() {
 					<ThemeEditor />
 				</Editor> */}
 
-					{/* Naming Modal */}
+					<RenderToaster />
 				</Box>
 			</FocusContextProvider>
 		</AppContextProvider>

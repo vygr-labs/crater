@@ -2,7 +2,8 @@ import { Box, HStack, Stack } from "styled-system/jsx";
 import { Text } from "../ui/text";
 import { Menu } from "../ui/menu";
 import { Portal } from "solid-js/web";
-import { TbChevronDown, TbChevronRight, TbLayoutGrid } from "solid-icons/tb";
+import { TbChevronDown, TbChevronRight } from "solid-icons/tb";
+import { CgDisplayGrid } from "solid-icons/cg";
 import { useAppContext } from "~/layouts/AppContext";
 import { PREVIEW_INDEX_WIDTH, LIVE_PANEL_FOCUS_NAME } from "~/utils/constants";
 import { useFocusContext } from "~/layouts/FocusContext";
@@ -120,7 +121,7 @@ export default function LivePanel() {
                 position="absolute"
                 top={0}
                 w="full"
-                h={6}
+                h={PREVIEW_INDEX_WIDTH}
                 bg="gray.800"
                 color="gray.300"
             >
@@ -136,9 +137,9 @@ export default function LivePanel() {
                 <HStack>
                     <Menu.Root>
                         <Menu.Trigger asChild={triggerProps => (
-                            <HStack width={10} gap={1} h={6} px={2} py={0.5} cursor="pointer" {...triggerProps()}>
-                                <TbLayoutGrid size={22} />
-                                <TbChevronDown size={15} />
+                            <HStack gap={0.5} h={6} px={2} py={0.5} cursor="pointer" {...triggerProps()}>
+                                <CgDisplayGrid size={17} />
+                                <TbChevronDown size={10} />
                             </HStack>
                         )}>
                         </Menu.Trigger>

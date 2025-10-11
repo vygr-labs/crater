@@ -54,15 +54,16 @@
     "@pandacss/dev": "^1.4.1",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.6.2",
-    "@typescript-eslint/parser": "^8.45.0",
+    "@typescript-eslint/parser": "^5.0.1",
     "concurrently": "^9.2.1",
     "electron": "^38.2.1",
     "electron-builder": "^26.0.12",
     "electron-devtools-installer": "^4.0.0",
-    "eslint": "^9.37.0",
-    "prettier": "^3.6.2",
+    "eslint": "^8.52.0",
+    "prettier": "^3.1.0",
+    "prettier-eslint": "^16.1.2",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.3",
+    "typescript": "^4.4.4",
     "wait-on": "^9.0.1"
   }
 }

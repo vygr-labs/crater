@@ -4,7 +4,7 @@ import type { AppSettings, AppData, GroupCollectionObj } from "~/types/app-conte
 export const DEFAULT_SCRIPTURE_COLLECTION_ID = 1
 export const defaultPalette = "purple"
 export const defaultSupportingPalette = "orange";
-export const PREVIEW_INDEX_WIDTH = 8
+export const PREVIEW_INDEX_WIDTH = 7
 
 const DEFAULT_GROUPS: GroupCollectionObj = {
 	song: {

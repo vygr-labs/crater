@@ -4,10 +4,17 @@ import { token } from 'styled-system/tokens'
 import { defaultPalette, SONGS_TAB_FOCUS_NAME } from './constants'
 import type { JSX } from 'solid-js/jsx-runtime'
 import type { BooleanLiteral } from 'typescript'
+import { createToaster } from '@ark-ui/solid'
 
 export function getName(book?: BookInfo) {
 	return book?.name?.toLowerCase() ?? ''
 }
+
+export const toaster = createToaster({
+    overlap: true,
+    placement: 'bottom-end',
+    gap: 16
+})
 
 export function sendMessage(
 	channel: BroadcastChannel,

@@ -6,7 +6,7 @@ export const toastSlotRecipe = defineSlotRecipe({
   className: "chakra-toast",
   base: {
     root: {
-      width: "full",
+      width: "fit-content",
       display: "flex",
       alignItems: "flex-start",
       position: "relative",
@@ -81,6 +81,7 @@ export const toastSlotRecipe = defineSlotRecipe({
     },
     closeTrigger: {
       position: "absolute",
+      cursor: "pointer",
       top: "1",
       insetEnd: "1",
       padding: "1",
@@ -92,7 +93,8 @@ export const toastSlotRecipe = defineSlotRecipe({
       textStyle: "md",
       transition: "background 200ms",
       _icon: {
-        boxSize: "1em",
+        width: "1.1em",
+        height: "1.1em",
       },
     },
   },
