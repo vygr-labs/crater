@@ -1,4 +1,4 @@
-import { createContext, createEffect, createMemo, on, useContext, type Accessor, type JSX, type ParentProps, type Setter } from "solid-js";
+import { createContext, createEffect, createMemo, on, onCleanup, useContext, type Accessor, type JSX, type ParentProps, type Setter } from "solid-js";
 import { createStore, type SetStoreFunction } from "solid-js/store";
 import type { EditorNode, RegisterNodeFn, RegisterNodeFnWithId } from "./editor-types";
 import { useDraggable } from "solidjs-use";
@@ -90,7 +90,8 @@ export default function NodeProvider(props: NodeProviderProps) {
 	createEffect(() => {
         console.log("Setting styles: ", props.node.style, nodeStore.node.style)
 		setNodeStyle({
-			transform: `scale3d(${nodeStore.node.data.resize.x}, ${props.node.data.resize.y}, ${props.node.data.resize.z}) translate3d(${nodeStore.coords.x}px, ${nodeStore.coords.y}px, 0)`,
+			// scale3d(${nodeStore.node.data.resize.x}, ${props.node.data.resize.y}, ${props.node.data.resize.z}) 
+			transform: `translate3d(${nodeStore.coords.x}px, ${nodeStore.coords.y}px, 0)`,
 			top: nodeStore.position[1] + "%",
 			left: nodeStore.position[0] + "%",
 		});
@@ -104,8 +105,17 @@ export default function NodeProvider(props: NodeProviderProps) {
 				offset: [left, top],
 				overflow,
 				target,
+				// _blocked,
+				// canceled,
+				// locked,
+				// dragging, moving,
+				// memo, pressed, type
 			} = dragState;
 			// console.log("Debug: ", nodeStore.node.id, [mx, my], nodeStore.node.el)
+			// console.log(_blocked,
+			// 	canceled,
+			// 	locked,
+			// 	dragging, moving, memo, pressed, type)
 			// console.log("ACTIVITY REVERSED: ", down, active)
 			if (!down) {
 				console.log("Setting position values for: ", nodeStore.node.id, nodeStore.node);
@@ -122,6 +132,7 @@ export default function NodeProvider(props: NodeProviderProps) {
 		},
 		{
 			bounds: getRootRef(),
+			preventDefault: true
 			// enabled: !nodeStore.dragDisabled
 		},
 	);

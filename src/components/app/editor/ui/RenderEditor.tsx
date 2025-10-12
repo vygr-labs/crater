@@ -105,6 +105,7 @@ export default function RenderEditor() {
 	// });
 
 	useNodeDrag(({ target, offset }) => {
+		console.log("Node is being dragged: ")
 		const newPos = calculateParentOffset((target as HTMLElement).getBoundingClientRect(), editorRootRef.getBoundingClientRect(), true);
 		setStore(
 			"indicatorPos",
@@ -180,7 +181,7 @@ export default function RenderEditor() {
 					</NodeProvider>
 				)}
 			</For>
-			<Box ref={selectedIndicatorRef} pointerEvents="none" width="fit-content" borderWidth={demarcationBorderWidth} borderStyle="dashed" borderColor="red.400" position="absolute" boxSizing="content-box" style={selectedIndicatorPosition()} transformOrigin="top left">
+			<Box ref={selectedIndicatorRef} pointerEvents="none" width="fit-content" borderWidth={demarcationBorderWidth} borderStyle="dashed" borderColor="red.400" position="absolute" boxSizing="content-box" style={selectedIndicatorPosition()} transformOrigin="top left" touchAction="none">
 				<Box pointerEvents="auto" class={resizeHandlerRecipe({ position: "topLeft" })} />
 				<Box pointerEvents="auto" class={resizeHandlerRecipe({ position: "topRight" })} />
 				<Box pointerEvents="auto" class={resizeHandlerRecipe({ position: "bottomLeft" })} />

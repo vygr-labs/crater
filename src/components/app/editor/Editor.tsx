@@ -45,14 +45,17 @@ export default function Editor(props: Props) {
     }
 
     const useNodeSelect = (cb: NodeSelectHandler) => {
+        console.log("Setting handler: useNodeSelect")
         setEditor("handlers", "selectNode", editor.handlers.selectNode.length, () => cb);
     }
 
     const useNodeDrag = (cb: NodeDragEventHandler) => {
+        console.log("Setting handler: useNodeDrag")
         setEditor("handlers", "dragNode", editor.handlers.dragNode.length, () => cb);
     }
 
     const useResizeNode: UseResizeNodeFn = (id, scaleValues) => {
+        console.log("Setting data: useResizeNode")
         if (id) {
             setEditor("nodes", id, "data", "resize", scaleValues)
         }
@@ -70,6 +73,7 @@ export default function Editor(props: Props) {
 
     const connectors: EditorNodeConnectors = {
         create: (el, comp, additionalProps = {}) => {
+            console.log("Creating Node: ", el, comp)
             comp = transformEditorComp(comp);
 
             if (!canRender(comp.name)) {
@@ -98,14 +102,18 @@ export default function Editor(props: Props) {
         console.log("App Editor: ", editor.nodes)
     })
 
-    const setRootRef = (ref: HTMLElement) => setEditor("rootRef", ref);
+    const setRootRef = (ref: HTMLElement) => {
+        console.log("Setting Root Ref: ", ref)
+        setEditor("rootRef", ref);
+    }
     const getRootRef = () => editor.rootRef;
 
     const setNodeStyle: SetNodeStyleFn = (id, styles) => {
         if (id && editor.nodes[id]) {
             setEditor("nodes", id, "style", styles)
-            console.log(editor.nodes[id].style)
+            console.log("Setting Node Style: ", editor.nodes[id].style)
         }
+        console.log("Failed to set node style")
     }
 
     createEffect(() => {
