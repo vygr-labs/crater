@@ -61,6 +61,7 @@ export default function NodeProvider(props: NodeProviderProps) {
 	const {
 		editor,
 		getters: { getRootRef },
+		helpers: { selectNode }
 	} = useEditor();
 	const [nodeStore, setNodeStore] = createStore<NodeProviderStore>({
 		node: props.node,
@@ -97,8 +98,7 @@ export default function NodeProvider(props: NodeProviderProps) {
 		});
 	});
 
-	const bindDrag = useDrag(
-		(dragState: FullGestureState<"drag">) => {
+	const bindDrag = useDrag((dragState: FullGestureState<"drag">) => {
 			const {
 				down,
 				movement: [mx, my],
@@ -111,7 +111,8 @@ export default function NodeProvider(props: NodeProviderProps) {
 				// dragging, moving,
 				// memo, pressed, type
 			} = dragState;
-			// console.log("Debug: ", nodeStore.node.id, [mx, my], nodeStore.node.el)
+			if (editor.selectedId !== nodeStore.node.id) selectNode(nodeStore.node.id);
+			console.log("Debug: ", nodeStore.node.id, [mx, my], nodeStore.node.el)
 			// console.log(_blocked,
 			// 	canceled,
 			// 	locked,
@@ -132,7 +133,8 @@ export default function NodeProvider(props: NodeProviderProps) {
 		},
 		{
 			bounds: getRootRef(),
-			preventDefault: true
+			preventDefault: true,
+			// filterTaps: true
 			// enabled: !nodeStore.dragDisabled
 		},
 	);

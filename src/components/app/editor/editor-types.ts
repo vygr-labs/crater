@@ -80,6 +80,7 @@ export type ScaleValues = {
 }
 
 export type UseResizeNodeFn = (id: NodeId, scaleValues: ScaleValues) => void;
+export type SelectNodeFn = (id: NodeId) => void;
 
 export interface EditorContextValue {
     editor: EditorStore;
@@ -100,6 +101,9 @@ export interface EditorContextValue {
         useSelect: (callback: NodeSelectHandler) => void;
         useNodeDrag: (callback: NodeDragEventHandler) => void;
         useResizeNode: UseResizeNodeFn
+    };
+    helpers: {
+        selectNode: SelectNodeFn
     }
 }
 

@@ -1,5 +1,5 @@
 import { createEffect, createMemo, createUniqueId, For, Show, useContext, type JSX, type JSXElement, type ParentProps } from "solid-js";
-import type { CreateNodeFn, CreateNodeParams, EditorNode, EditorNodeConnectors, EditorRenderComponent, NodeDragEventHandler, NodeId, NodeSelectHandler, RegisterNodeFn, RegisterNodeFnWithId, SetNodeStyleFn, UseResizeNodeFn } from "./editor-types";
+import type { CreateNodeFn, CreateNodeParams, EditorNode, EditorNodeConnectors, EditorRenderComponent, NodeDragEventHandler, NodeId, NodeSelectHandler, RegisterNodeFn, RegisterNodeFnWithId, SelectNodeFn, SetNodeStyleFn, UseResizeNodeFn } from "./editor-types";
 import EditorContext from "./EditorContext";
 import { createStore, unwrap } from "solid-js/store";
 import type { EditorStore } from "./editor-types";
@@ -25,22 +25,26 @@ export default function Editor(props: Props) {
         return editor.selectedId ? editor.nodes[editor.selectedId] : null
     });
 
+    const selectNode: SelectNodeFn = (id) => {
+        console.log("FORMER ID: ", editor.selectedId, id)
+        if (!id || editor.selectedId === id) return;
+
+        console.log(unwrap(editor.nodes))
+        const formerNode = getSelectedNode();
+        console.log(unwrap(formerNode?.style))
+        const newSelection = editor.nodes[id];
+        console.log("Handling selection", formerNode?.id, newSelection?.id)
+        setEditor("selectedId", id)
+        editor.handlers["selectNode"].forEach(cb => cb({ formerSelected: formerNode, newSelected: newSelection }));
+        console.log("Setting selected Node: ", unwrap(editor.nodes), id, unwrap(editor.nodes[id]));
+        console.log("Selected Node Styles: ", unwrap(editor.nodes[id].style))
+    }
+
     const registerNodeEl: RegisterNodeFnWithId = ({id, ref}) => {
         if (!id) return;
         console.log("Registering Node: ", id, ref);
         ref.dataset.editorNodeId = id;
-        ref.onmousedown = () => {
-            if (editor.selectedId === id) return;
-            console.log(unwrap(editor.nodes))
-            const formerNode = getSelectedNode();
-            console.log(unwrap(formerNode?.style))
-            const newSelection = editor.nodes[id];
-            console.log("Handling selection", formerNode?.id, newSelection?.id)
-            setEditor("selectedId", id)
-            editor.handlers["selectNode"].forEach(cb => cb({ formerSelected: formerNode, newSelected: newSelection }));
-            console.log("Setting selected Node: ", unwrap(editor.nodes), id, unwrap(editor.nodes[id]));
-            console.log("Selected Node Styles: ", unwrap(editor.nodes[id].style))
-        }
+        // ref.addEventListener("mousedown", () => selectNode(id));
         setEditor("nodes", id, "el", ref);
     }
 
@@ -120,7 +124,7 @@ export default function Editor(props: Props) {
         console.log("Something in this item changed: ", editor.nodes?.[0], editor.nodes?.[0]?.id, editor.nodes?.[0]?.style)
     })
 
-    const contextValue = { editor, setEditor, createNode, connectors, getters: { getNode, getNodeRenderComp, getRootRef, getSelectedNode }, setters: { setRootRef, setNodeStyle }, hooks: { useSelect: useNodeSelect, useNodeDrag, useResizeNode } };
+    const contextValue = { editor, setEditor, createNode, connectors, getters: { getNode, getNodeRenderComp, getRootRef, getSelectedNode }, setters: { setRootRef, setNodeStyle }, hooks: { useSelect: useNodeSelect, useNodeDrag, useResizeNode }, helpers: { selectNode } };
 
     return <EditorContext.Provider value={contextValue}>
         {props.children}
