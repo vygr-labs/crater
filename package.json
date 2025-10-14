@@ -1,7 +1,7 @@
 {
   "name": "crater",
   "type": "module",
-  "version": "0.5.0",
+  "version": "0.0.1",
   "description": "Professional Scripture Projection Software",
   "author": {
     "name": "Eyetu Kingsley",
@@ -24,7 +24,7 @@
     "start": "concurrently -k \"yarn frontend:dev\" \"wait-on tcp:127.0.0.1:7241 && yarn boot\"",
     "prepare": "panda codegen",
     "pre-build": "yarn frontend:build && yarn backend:build",
-    "build": "yarn pre-build && electron-builder",
+    "build": "yarn pre-build",
     "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
