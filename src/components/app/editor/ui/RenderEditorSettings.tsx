@@ -2,20 +2,23 @@ import { Box } from "styled-system/jsx";
 import { useEditor } from "../Editor";
 import { Dynamic, For, Match, Switch } from "solid-js/web";
 import NodeProvider, { NodeContext } from "../Node";
-import { createEffect } from "solid-js";
+import { createEffect, createMemo, Show } from "solid-js";
 
 export default function RenderEditorSettings() {
-    const { editor, getters: { getSelectedNode } } = useEditor();    
+	const {
+		getters: { getSelectedNode, getRenderMap },
+	} = useEditor();
 
-    createEffect(() => {
-        console.log("selectedNode has changed", getSelectedNode(), getSelectedNode()?.comp.config.settings)
-    })
+	createEffect(() => {
+		console.log("selectedNode has changed", getSelectedNode(), getSelectedNode()?.comp.config.settings);
+	});
 
-    return (
-        <Switch>
-            <Match when={getSelectedNode()}>
-                <Dynamic component={getSelectedNode()?.comp.config.settings} />
-            </Match>
-        </Switch>
-    )
+	return (
+		<For each={Object.values(getRenderMap())}>
+			{(comp) => {
+				const isCurrent = () => getSelectedNode()?.compName === comp.name;
+				return <Dynamic component={comp.config.settings} node={isCurrent() ? getSelectedNode() : null} visible={isCurrent()} />;
+			}}
+		</For>
+	);
 }

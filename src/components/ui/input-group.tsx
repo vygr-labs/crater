@@ -42,7 +42,7 @@ export const InputGroup = (_props: InputGroupProps) => {
             {split.startElement?.()}
           </Box>
         </Show>
-        <Box ps={split.startElement ? `calc(var(--input-height) - ${split.startOffset})` : ""} pe={split.endElement ? `calc(var(--input-height) - ${split.endOffset})` : ""}>
+        <Box w="full" ps={split.startElement ? `calc(var(--input-height) - ${split.startOffset})` : ""} pe={split.endElement ? `calc(var(--input-height) - ${split.endOffset})` : ""}>
           {split.children}
         </Box>
         {/* <Dynamic component={split.children} ps={split.startElement && `calc(var(--input-height) - ${split.startOffset})`} pe={split.endElement && `calc(var(--input-height) - ${split.endOffset})`} /> */}

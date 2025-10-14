@@ -10,6 +10,9 @@ export const textareaRecipe = defineRecipe({
     appearance: "none",
     textAlign: "start",
     borderRadius: "l2",
+    py: 2,
+    px: 2,
+    border: "2px solid",
     _disabled: {
       layerStyle: "disabled",
     },

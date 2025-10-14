@@ -13,6 +13,7 @@ import Editor, { useEditor } from "../app/editor/Editor"
 import { Toolbox } from "../app/editor/ui/Toolbox"
 import RenderEditor from "../app/editor/ui/RenderEditor"
 import RenderEditorSettings from "../app/editor/ui/RenderEditorSettings"
+import { useFps } from "solidjs-use"
 
 interface Props {
     open: boolean
@@ -38,6 +39,7 @@ export default function ThemeEditor() {
     const onDialogOpen = (e: DialogOpenChangeDetails) =>
         setAppStore("themeEditor", { open: e.open })
 
+    const fps = useFps();
     return (
         <Dialog.Root
             placement="center"
@@ -54,18 +56,19 @@ export default function ThemeEditor() {
                         <Dialog.Header>
                             <Dialog.Title textTransform="capitalize">
                                 Theme Editor - {selected?.id}
+                                Frames Per Second: {fps()}
                             </Dialog.Title>
                         </Dialog.Header>
                         <Dialog.Body>
                             {/* <Editor renderMap={config}> */}
                                 <Flex>
-                                    <Box w="2/3">
+                                    <Box w="full">
                                         <Toolbox />
                                         <RenderEditor />
                                     </Box>
-                                    <Box w="1/3">
+                                    {/* <Box w="1/3">
                                         <RenderEditorSettings />
-                                    </Box>
+                                    </Box> */}
                                 </Flex>
                             {/* </Editor> */}
 

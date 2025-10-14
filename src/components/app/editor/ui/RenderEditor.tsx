@@ -6,12 +6,13 @@ import { cva } from "styled-system/css";
 import { useDrag, useGesture } from "solid-gesture";
 import type { FullGestureState } from "@use-gesture/core/types";
 import { createStore, unwrap } from "solid-js/store";
-import { createEffect, createMemo } from "solid-js";
+import { createEffect, createMemo, onMount } from "solid-js";
 import { calculateParentOffset } from "~/utils";
 import { useElementSize, usePointer } from "solidjs-use";
 
 const demarcationBorderWidth = 2;
 
+const axes = ["top-left", "top-right", "bottom-left", "bottom-right"];
 const resizeHandlerRecipe = cva({
 	base: {
 		backgroundColor: "red.400",
@@ -23,22 +24,22 @@ const resizeHandlerRecipe = cva({
 	},
 	variants: {
 		position: {
-			topLeft: {
+			"top-left": {
 				top: 0,
 				left: 0,
 				transform: "translate3d(-50%, -50%, 0)",
 			},
-			topRight: {
+			"top-right": {
 				top: 0,
 				right: 0,
 				transform: "translate3d(50%, -50%, 0)",
 			},
-			bottomLeft: {
+			"bottom-left": {
 				bottom: 0,
 				left: 0,
 				transform: "translate3d(-50%, 50%, 0)",
 			},
-			bottomRight: {
+			"bottom-right": {
 				bottom: 0,
 				right: 0,
 				transform: "translate3d(50%, 50%, 0)",
@@ -68,6 +69,7 @@ export default function RenderEditor() {
 		connectors: { register },
 		setters: { setRootRef, setNodeStyle },
 		hooks: { useSelect, useNodeDrag, useResizeNode },
+		helpers: { selectNode }
 	} = useEditor();
 	const [store, setStore] = createStore({
 		indicatorPos: [0, 0],
@@ -79,11 +81,16 @@ export default function RenderEditor() {
 	});
 	let editorRootRef!: HTMLDivElement;
 	let selectedIndicatorRef!: HTMLDivElement;
-	const { width: selectedNodeWidth, height: selectedNodeHeight } = useElementSize(() => getSelectedNode()?.el)
+	const { width: selectedNodeWidth, height: selectedNodeHeight } = useElementSize(() => {
+		console.log("Getting selected item: ", getSelectedNode())
+		return getSelectedNode()?.el
+	})
 	const selectedIndicatorPosition = createMemo(() => ({
 		width: selectedNodeWidth() + "px",
 		height: selectedNodeHeight() + "px",
 		transform: `scale3d(${store.scale.x}, ${store.scale.y}, ${store.scale.z}) translate3d(${store.indicatorPos[0]}px, ${store.indicatorPos[1]}px, 0)`,
+		opacity: getSelectedNode() ? 1 : 0,
+		visibility: getSelectedNode() ? "visible" : "hidden"
 		// top: store.indicatorPos[0] + "%",
 		// left: store.indicatorPos[1] + "%",
 	}));
@@ -127,10 +134,23 @@ export default function RenderEditor() {
 		}
 	};
 
-	const resizeBind = useGesture({
+	onMount(() => {
+		editorRootRef.addEventListener("click", e => {
+			console.log(e.target, e.currentTarget)
+			if (e.target === editorRootRef) {
+				console.log("deselecting current selection")
+				selectNode(null);
+			}
+		})
+	})
+
+	const axesGestureMap: Record<string, any> = {} 
+	axes.map(axis => {
+		axesGestureMap[axis] = useGesture({
 		onDragStart: () => {
 			console.log("Preserved Size: ", selectedNodeWidth(), selectedNodeHeight())
 			setStore("selectedNodeSize", { width: selectedNodeWidth(), height: selectedNodeHeight() })
+			// setNodeStyle(editor.selectedId, {"transform-origin": axis.replace("-", " ")})
 		},
 		onDrag: ({ xy, active, movement, initial, offset, delta, lastOffset, distance, target }: FullGestureState<"drag">) => {
 			// const boundaryStart = editorRootRef.getBoundingClientRect();
@@ -159,9 +179,46 @@ export default function RenderEditor() {
 		{
 			drag: {
 				bounds: editorRootRef,
+				preventDefault: true,
 			}
 		},
 	);
+	})
+	// const resizeBind = useGesture({
+	// 	onDragStart: () => {
+	// 		console.log("Preserved Size: ", selectedNodeWidth(), selectedNodeHeight())
+	// 		setStore("selectedNodeSize", { width: selectedNodeWidth(), height: selectedNodeHeight() })
+	// 	},
+	// 	onDrag: ({ xy, active, movement, initial, offset, delta, lastOffset, distance, target }: FullGestureState<"drag">) => {
+	// 		// const boundaryStart = editorRootRef.getBoundingClientRect();
+	// 		// const initialX = initial[0] - boundaryStart.x;
+	// 		// const initialY = initial[1] - boundaryStart.y;
+	// 		console.log("scaling debug: ", initial, movement, delta, offset, lastOffset, xy, distance);
+	// 		// const newX = xy[0] - boundaryStart.x;
+	// 		// const newY = xy[1] - boundaryStart.y;
+	// 		// const scaleX = newX / initialX;
+	// 		// const scaleY = newY / initialY;
+	// 		// const newWidth = selectedNodeWidth() + movement[0];
+	// 		// const newHeight = selectedNodeHeight() + movement[1];
+	// 		// console.log("scaling width value: ", selectedNodeWidth(), selectedNodeHeight(), newWidth, newHeight)
+
+	// 		// // console.log("scale value: ", newX, newY, scaleX, scaleY);
+	// 		// // console.log(movement, offset);
+	// 		updateSize(movement);
+	// 		// if (!down) {
+	// 		// }
+	// 		// setStore("dragHandlerCoords", "topLeft", { x: down ? movement[0] : 0, y: down ? movement[1] : 0 });
+			
+	// 		// setStore("scale", {x: scaleX, y: scaleY } )
+	// 		// useResizeNode(editor.selectedId, {x: scaleX, y: scaleY, z: 1, width: newWidth + "px", height: newHeight + "px" })
+	// 	},
+	// },
+	// 	{
+	// 		drag: {
+	// 			bounds: editorRootRef,
+	// 		}
+	// 	},
+	// );
 
 	return (
 		<Box
@@ -177,16 +234,16 @@ export default function RenderEditor() {
 			<For each={Object.keys(editor.nodes)}>
 				{(id) => (
 					<NodeProvider node={editor.nodes[id]} register={register}>
-						<Dynamic component={getNodeRenderComp(editor.nodes[id])} {...getNodeRenderComp(editor.nodes[id]).config.props} />
+						<Dynamic component={getNodeRenderComp(editor.nodes[id])} {...getNodeRenderComp(editor.nodes[id]).config.defaultData} />
 					</NodeProvider>
 				)}
 			</For>
-			<Box ref={selectedIndicatorRef} pointerEvents="none" width="fit-content" borderWidth={demarcationBorderWidth} borderStyle="dashed" borderColor="red.400" position="absolute" boxSizing="content-box" style={selectedIndicatorPosition()} transformOrigin="top left" touchAction="none">
-				<Box pointerEvents="auto" class={resizeHandlerRecipe({ position: "topLeft" })} />
-				<Box pointerEvents="auto" class={resizeHandlerRecipe({ position: "topRight" })} />
-				<Box pointerEvents="auto" class={resizeHandlerRecipe({ position: "bottomLeft" })} />
-				<Box pointerEvents="auto" class={resizeHandlerRecipe({ position: "bottomRight" })} {...resizeBind()} />
-				{/* style={handlePos()["topLeft"]} */}
+			<Box ref={selectedIndicatorRef} pointerEvents="none" width="fit-content" borderWidth={demarcationBorderWidth} borderStyle="dashed" borderColor="red.400" position="absolute" boxSizing="content-box" style={selectedIndicatorPosition()} transformOrigin="top left" touchAction="none" zIndex={999}>
+				<For each={axes}>
+					{
+						axis => <Box pointerEvents="auto" class={resizeHandlerRecipe({ position: axis })} {...axesGestureMap[axis]()} />
+					}
+				</For>
 			</Box>
 		</Box>
 	);

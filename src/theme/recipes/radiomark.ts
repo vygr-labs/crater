@@ -42,7 +42,9 @@ export const radiomarkRecipe = defineRecipe({
         borderWidth: "1px",
         borderColor: "border.emphasized",
         _checked: {
-          bg: "colorPalette.solid",
+          borderWidth: "4px",
+          bg: "white",
+          // bg: "colorPalette.solid",
           color: "colorPalette.contrast",
           borderColor: "colorPalette.solid",
         },

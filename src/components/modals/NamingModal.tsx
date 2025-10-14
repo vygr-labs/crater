@@ -2,7 +2,7 @@ import { createEffect, createMemo, createSignal } from "solid-js"
 import { useAppContext } from "~/layouts/AppContext"
 import type { GroupCategory, GroupType } from "~/types"
 import { Dialog } from "../ui/dialog"
-import { Field } from "../ui/field"
+import { Field, GenericField } from "../ui/field"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
 import type { DialogOpenChangeDetails } from "@ark-ui/solid"
@@ -77,14 +77,14 @@ export default function NamingModal() {
                             </Dialog.Title>
                         </Dialog.Header>
                         <Dialog.Body>
-                            <Field label={`Name`}>
+                            <GenericField label={`Name`}>
                                 <Input
                                     placeholder="My Star"
                                     variant="outline"
                                     value={name()}
                                     onChange={e => setName(e.target.value)}
                                 />
-                            </Field>
+                            </GenericField>
                         </Dialog.Body>
                         <Dialog.Footer>
                             {/* <DialogActionTrigger asChild> */}

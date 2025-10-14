@@ -1,12 +1,12 @@
 import { createEffect, createMemo, createUniqueId, For, Show, useContext, type JSX, type JSXElement, type ParentProps } from "solid-js";
-import type { CreateNodeFn, CreateNodeParams, EditorNode, EditorNodeConnectors, EditorRenderComponent, NodeDragEventHandler, NodeId, NodeSelectHandler, RegisterNodeFn, RegisterNodeFnWithId, SelectNodeFn, SetNodeStyleFn, UseResizeNodeFn } from "./editor-types";
+import type { CreateNodeFn, CreateNodeParams, EditorNode, EditorNodeConnectors, EditorRenderComponent, EditorRenderMap, NodeDragEventHandler, NodeId, NodeSelectHandler, RegisterNodeFn, RegisterNodeFnWithId, SelectNodeFn, SetNodeDataFn, SetNodeStyleFn, UseResizeNodeFn } from "./editor-types";
 import EditorContext from "./EditorContext";
 import { createStore, unwrap } from "solid-js/store";
 import type { EditorStore } from "./editor-types";
 import { createId, transformEditorComp } from "~/utils";
 
 interface Props extends ParentProps {
-    renderMap: Record<string, EditorRenderComponent>
+    renderMap: EditorRenderMap
 }
 const defaultNodeData = { 
     resize: {
@@ -24,20 +24,21 @@ export default function Editor(props: Props) {
         console.log("SELECTED NODE: ", unwrap(editor.nodes[editor.selectedId ?? ""]?.style))
         return editor.selectedId ? editor.nodes[editor.selectedId] : null
     });
+    const getRenderMap = () => props.renderMap;
 
     const selectNode: SelectNodeFn = (id) => {
         console.log("FORMER ID: ", editor.selectedId, id)
-        if (!id || editor.selectedId === id) return;
+        if (editor.selectedId === id) return;
 
         console.log(unwrap(editor.nodes))
         const formerNode = getSelectedNode();
         console.log(unwrap(formerNode?.style))
-        const newSelection = editor.nodes[id];
+        const newSelection = id ? editor.nodes[id] : null;
         console.log("Handling selection", formerNode?.id, newSelection?.id)
         setEditor("selectedId", id)
         editor.handlers["selectNode"].forEach(cb => cb({ formerSelected: formerNode, newSelected: newSelection }));
-        console.log("Setting selected Node: ", unwrap(editor.nodes), id, unwrap(editor.nodes[id]));
-        console.log("Selected Node Styles: ", unwrap(editor.nodes[id].style))
+        // console.log("Setting selected Node: ", unwrap(editor.nodes), id, unwrap(newSelection));
+        // console.log("Selected Node Styles: ", unwrap(newSelection?.style))
     }
 
     const registerNodeEl: RegisterNodeFnWithId = ({id, ref}) => {
@@ -76,8 +77,8 @@ export default function Editor(props: Props) {
     }
 
     const connectors: EditorNodeConnectors = {
-        create: (el, comp, additionalProps = {}) => {
-            console.log("Creating Node: ", el, comp)
+        create: (comp, additionalProps = {}) => {
+            console.log("Creating Node: ", comp)
             comp = transformEditorComp(comp);
 
             if (!canRender(comp.name)) {
@@ -86,13 +87,13 @@ export default function Editor(props: Props) {
 
             const id = createId();
             console.log("Created ID to Assign: ", id)
-            console.log(el, comp)
+            console.log(comp)
             setEditor("nodes", id, {
                 id,
-                data: {...props.renderMap[comp.name].config.props, ...additionalProps, ...defaultNodeData},
+                data: {...props.renderMap[comp.name].config.defaultData, ...additionalProps, ...defaultNodeData},
                 comp,
                 compName: comp.name,
-                style: {}
+                style: {...props.renderMap[comp.name].config.defaultStyles}
             })
             console.log(unwrap(editor));
         },
@@ -116,15 +117,21 @@ export default function Editor(props: Props) {
         if (id && editor.nodes[id]) {
             setEditor("nodes", id, "style", styles)
             console.log("Setting Node Style: ", editor.nodes[id].style)
-        }
-        console.log("Failed to set node style")
+        } else { console.log("Failed to set node style") }
+    }
+    
+    const setNodeData: SetNodeDataFn = (id, data) => {
+        if (id && editor.nodes[id]) {
+            setEditor("nodes", id, "data", data)
+            console.log("updated node data: ", editor.nodes[id].style)
+        } else { console.log("could not set node data") }
     }
 
     createEffect(() => {
         console.log("Something in this item changed: ", editor.nodes?.[0], editor.nodes?.[0]?.id, editor.nodes?.[0]?.style)
     })
 
-    const contextValue = { editor, setEditor, createNode, connectors, getters: { getNode, getNodeRenderComp, getRootRef, getSelectedNode }, setters: { setRootRef, setNodeStyle }, hooks: { useSelect: useNodeSelect, useNodeDrag, useResizeNode }, helpers: { selectNode } };
+    const contextValue = { editor, setEditor, createNode, connectors, getters: { getNode, getNodeRenderComp, getRootRef, getSelectedNode, getRenderMap }, setters: { setRootRef, setNodeStyle, setNodeData }, hooks: { useSelect: useNodeSelect, useNodeDrag, useResizeNode }, helpers: { selectNode } };
 
     return <EditorContext.Provider value={contextValue}>
         {props.children}

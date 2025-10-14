@@ -1,7 +1,7 @@
 import type { Accessor, JSX, JSXElement, Setter } from "solid-js";
 import type { FullGestureState } from "@use-gesture/core/types";
 
-export type NodeId = string | undefined;
+export type NodeId = string | undefined | null;
 
 export interface ExpectedNodeData {
     resize: ScaleValues
@@ -49,15 +49,16 @@ export interface CreateNodeReturnVal {
 export type NodeData = Record<string, any>;
 
 export type CreateNodeFn = (params: CreateNodeParams) => CreateNodeReturnVal;
-export type ConnectNodeFn = (ref: HTMLElement, element: EditorRenderComponent, props?: NodeData) => void;
+export type ConnectNodeFn = (element: EditorRenderComponent, props?: NodeData) => void;
 export interface EditorNodeConnectors {
     create: ConnectNodeFn;
     register: RegisterNodeFnWithId;
 }
 
 export interface RenderComponentConfig {
-    props?: Record<string, any>;
+    defaultData?: Record<string, any>;
     settings?: () => JSXElement;
+    defaultStyles: JSX.CSSProperties
 }
 
 export interface EditorRenderComponent {
@@ -67,6 +68,7 @@ export interface EditorRenderComponent {
 
 export type SelectedEditorNode = EditorNode | null | undefined;
 export type SetNodeStyleFn = (id: NodeId, styles: JSX.CSSProperties) => void;
+export type SetNodeDataFn = (id: NodeId, data: Record<string, any>) => void;
 export type NodeSelectHandler = (params: { formerSelected: SelectedEditorNode, newSelected: SelectedEditorNode }) => void;
 
 export type ScaleAxis = "x" | "y" | "z"
@@ -81,6 +83,7 @@ export type ScaleValues = {
 
 export type UseResizeNodeFn = (id: NodeId, scaleValues: ScaleValues) => void;
 export type SelectNodeFn = (id: NodeId) => void;
+export type EditorRenderMap = Record<string, EditorRenderComponent>;
 
 export interface EditorContextValue {
     editor: EditorStore;
@@ -92,10 +95,12 @@ export interface EditorContextValue {
         getNodeRenderComp: (node: EditorNode) => EditorRenderComponent;
         getRootRef: Accessor<HTMLElement | undefined>;
         getSelectedNode: Accessor<EditorNode | null>;
+        getRenderMap: Accessor<EditorRenderMap>
     };
     setters: {
         setRootRef: (ref: HTMLElement) => void;
         setNodeStyle: SetNodeStyleFn
+        setNodeData: SetNodeDataFn
     },
     hooks: {
         useSelect: (callback: NodeSelectHandler) => void;
@@ -109,4 +114,9 @@ export interface EditorContextValue {
 
 export interface NodeCompProps {
     nodeId: NodeId;
+}
+
+export interface NodeSettings {
+    node: EditorNode;
+    visible: boolean;
 }

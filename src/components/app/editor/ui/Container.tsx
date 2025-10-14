@@ -1,56 +1,104 @@
-import { Box, styled, type BoxProps } from "styled-system/jsx";
+import { Box, HStack, VStack, type BoxProps } from "styled-system/jsx";
 import { useNode } from "../Node";
 import { useEditor } from "../Editor";
-import { createEffect, Show, type JSX } from "solid-js";
+import { createEffect, createMemo, Match, onMount, Show, Switch, type JSX } from "solid-js";
+import { TbBorderRadius, TbPhoto, TbRadiusTopLeft } from "solid-icons/tb";
+import { ControlIconBtn } from "./Buttons";
+import { ColorUpdateInput, PopoverButton, SliderWithInput } from "./Inputs";
+import { token } from "styled-system/tokens";
 import { defaultPalette } from "~/utils/constants";
-import { css } from "styled-system/css";
-import { animated } from "solid-spring";
-import { ColorUpdateInput } from "./Inputs";
+import { AiOutlineRadiusBottomleft, AiOutlineRadiusBottomright, AiOutlineRadiusSetting, AiOutlineRadiusUpleft, AiOutlineRadiusUpright } from "solid-icons/ai";
+import type { NodeSettings } from "../editor-types";
+import { HiSolidPhoto } from "solid-icons/hi";
+import { Button } from "~/components/ui/button";
 
-interface EditorContainer extends BoxProps { }
+interface EditorContainer extends BoxProps {}
 
 export default function EditorContainer(props: EditorContainer) {
-    const { editor } = useEditor();
-    const { node, register, styles, bindDrag } = useNode();
-    const magicNum = () => Object.keys(editor.nodes).findIndex(id => id === node.id)
+	const { editor } = useEditor();
+	const { node, register, styles, bindDrag } = useNode();
+	const magicNum = () => Object.keys(editor.nodes).findIndex((id) => id === node.id);
 
-    createEffect(() => {
-        console.log("Here is the node: ", node)
-    })
+	createEffect(() => {
+		console.log("Here is the node: ", node);
+	});
 
-    return (
-        <Box position="absolute" ref={register} class={css({ w: 50, h: 40, bgColor: "purple.800" })} {...bindDrag()} style={styles} transformOrigin="top left">
-            {/* use:draggable */}
-        </Box>
-    )
+	return (
+		<Box position="absolute" ref={register} {...bindDrag()} style={styles} transformOrigin="top left">
+			{/* use:draggable */}
+		</Box>
+	);
 }
 
+export interface EditorContainerSettings extends NodeSettings {}
+export function EditorContainerSettings(props: EditorContainerSettings) {
+	const {
+		editor,
+		// getters: { getSelectedNode },
+		setters: { setNodeStyle },
+	} = useEditor();
+	const styles = createMemo(() => {
+		console.log("Recalculating Styles");
+		return props.node?.style ?? {};
+	});
 
-export function EditorContainerSettings(props: EditorContainer) {
-    const { editor, getters: { getSelectedNode }, setters: { setNodeStyle } } = useEditor();
+	onMount(() => {
+		console.log("Settings are being Mounted: ", props.node);
+	});
 
-    createEffect(() => {
-        console.log("Here is the selected node: ", getSelectedNode())
-    })
+	createEffect(() => {
+		console.log("Here is the selected node: ", props.node);
+	});
+	const setStyle = (styles: JSX.CSSProperties) => setNodeStyle(props.node?.id, styles);
 
-    return (
-        <Show when={getSelectedNode()}>
-            {
-                selected => (
-                    <Box>
-                        <ColorUpdateInput label="Text Color" defaultValue={selected().style["background-color"]} styleKey="background-color" setStyle={(style: JSX.CSSProperties) => setNodeStyle(selected().id, style)} />
-                    </Box>
-                )
-            }
-        </Show>
-    )
+	const handleChangeBackground = () => {}
+ 
+	return (
+		<Show when={props.visible}>
+			<HStack w="full" gap={4} rounded="md">
+				<ColorUpdateInput styleKey="background-color" styles={styles()} setStyle={setStyle} />
+
+				<PopoverButton
+					trigger={
+						<ControlIconBtn>
+							<TbBorderRadius />
+						</ControlIconBtn>
+					}
+				>
+					<VStack>
+						<SliderWithInput styleKey="border-top-left-radius" label={<AiOutlineRadiusUpleft size={24} />} styles={styles()} setStyle={setStyle} />
+						<SliderWithInput styleKey="border-top-right-radius" label={<AiOutlineRadiusUpright size={24} />} styles={styles()} setStyle={setStyle} />
+						<SliderWithInput styleKey="border-bottom-left-radius" label={<AiOutlineRadiusBottomleft size={24} />} styles={styles()} setStyle={setStyle} />
+						<SliderWithInput styleKey="border-bottom-right-radius" label={<AiOutlineRadiusBottomright size={24} />} styles={styles()} setStyle={setStyle} />
+					</VStack>
+				</PopoverButton>
+
+				<PopoverButton
+					enabled={false}
+					trigger={
+						<ControlIconBtn onclick={handleChangeBackground}>
+							<HiSolidPhoto />
+						</ControlIconBtn>
+					}
+				>
+					<VStack>
+						<Button>Change Background</Button>
+					</VStack>
+				</PopoverButton>
+			</HStack>
+		</Show>
+	);
 }
 
 EditorContainer.config = {
-    props: {
-        width: 300,
-        height: 300,
-        // bgColor: defaultPalette
-    },
-    settings: EditorContainerSettings
-}
+	defaultData: {
+		// bgColor: defaultPalette
+	},
+	defaultStyles: {
+		width: "50px",
+		height: "160px",
+		"background-color": token(`colors.${defaultPalette}.800`),
+		"z-index": 10,
+	},
+	settings: EditorContainerSettings,
+};

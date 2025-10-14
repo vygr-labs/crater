@@ -4,7 +4,7 @@ import { type ComboboxVariantProps, combobox } from 'styled-system/recipes'
 import type { HTMLStyledProps } from 'styled-system/types'
 import { createStyleContext } from './utils/create-style-context'
 
-const { withRootProvider, withContext } = createStyleContext(combobox)
+const { withRootProvider, withProvider, withContext } = createStyleContext(combobox)
 
 export type RootProviderProps = ComponentProps<typeof RootProvider>
 export const RootProvider = withRootProvider<
@@ -15,12 +15,12 @@ export const RootProvider = withRootProvider<
 >(Combobox.RootProvider)
 
 export type RootProps = ComponentProps<typeof Root>
-export const Root = withRootProvider<
+export const Root = withProvider<
   Assign<
     Assign<HTMLStyledProps<'div'>, Combobox.RootBaseProps<Combobox.CollectionItem>>,
     ComboboxVariantProps
   >
->(Combobox.Root)
+>(Combobox.Root, "root")
 
 export const ClearTrigger = withContext<
   Assign<HTMLStyledProps<'button'>, Combobox.ClearTriggerBaseProps>
@@ -34,6 +34,11 @@ export const Content = withContext<Assign<HTMLStyledProps<'div'>, Combobox.Conte
 export const Control = withContext<Assign<HTMLStyledProps<'div'>, Combobox.ControlBaseProps>>(
   Combobox.Control,
   'control',
+)
+
+export const IndicatorGroup = withContext<HTMLStyledProps<'div'>>(
+  "div",
+  'indicatorGroup',
 )
 
 export const Input = withContext<Assign<HTMLStyledProps<'input'>, Combobox.InputBaseProps>>(

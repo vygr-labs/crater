@@ -222,3 +222,12 @@ export const getFocusableStyles: FocusStylesGetter = (key, isFluid, isCurrentPan
 	}
 	return {...fluidStyles, ...coreStyles}
 }
+
+
+export const getNum = (styles: JSX.CSSProperties, property: keyof JSX.CSSProperties) => {
+	return parseInt(styles[property] ?? "0");
+}
+
+export const getColor = (styles: JSX.CSSProperties, property: keyof JSX.CSSProperties): string => {
+	return styles[property]?.toString() ?? "#00000000";
+}

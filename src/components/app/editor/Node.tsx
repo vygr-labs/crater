@@ -112,7 +112,7 @@ export default function NodeProvider(props: NodeProviderProps) {
 				// memo, pressed, type
 			} = dragState;
 			if (editor.selectedId !== nodeStore.node.id) selectNode(nodeStore.node.id);
-			console.log("Debug: ", nodeStore.node.id, [mx, my], nodeStore.node.el)
+			console.log("Debug: ", nodeStore.node.id, [mx, my], nodeStore.node.el, down)
 			// console.log(_blocked,
 			// 	canceled,
 			// 	locked,
@@ -124,6 +124,7 @@ export default function NodeProvider(props: NodeProviderProps) {
 				if (!rootEditorRect) return;
 				const boundingPosition = (target as HTMLElement).getBoundingClientRect();
 
+				console.log("child -> parent", boundingPosition, rootEditorRect)
 				const [relativeLeftPercent, relativeTopPercent] = calculateParentOffset(boundingPosition, rootEditorRect, true);
 				console.log("Position Data: ", boundingPosition, relativeTopPercent, relativeLeftPercent);
 				setNodeStore("position", [relativeLeftPercent, relativeTopPercent]);

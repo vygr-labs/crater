@@ -176,7 +176,7 @@ export const colorPickerSlotRecipe = defineSlotRecipe({
       xs: {
         channelInput: inputRecipe.variants?.size?.xs,
         swatch: { "--swatch-size": "sizes.5" },
-        trigger: { "--input-height": "sizes.8" },
+        trigger: { "--input-height": "sizes.5" },
         area: { "--thumb-size": "sizes.3.5" },
         channelSlider: {
           "--slider-height": "sizes.3.5",

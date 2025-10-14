@@ -19,9 +19,11 @@ import RenderToaster from "./RenderToaster";
 import ThemeEditor from "../modals/ThemeEditor";
 import Editor from "./editor/Editor";
 import EditorContainer from "../app/editor/ui/Container"
+import EditorText from "./editor/ui/Text";
 
 const config = {
-    EditorContainer
+    EditorContainer,
+	EditorText
 }
 
 export default function AppControls() {
