@@ -42,7 +42,7 @@ import { Box, HStack, Stack, VStack } from "styled-system/jsx";
 import { Tabs } from "../ui/tabs";
 import { Dialog } from "../ui/dialog";
 import { Select } from "../ui/select";
-import { Field } from "../ui/field";
+import { Field, GenericField } from "../ui/field";
 import { Input } from "../ui/input";
 import { useAppContext } from "~/layouts/AppContext";
 import { toggleTheme, updateDisplayBounds, updateProjectionDisplayId } from "~/utils/store-helpers";
@@ -158,38 +158,38 @@ export function AppSettingsDialog() {
 									</Select.Root>
 
 									<HStack gap="3" width="full">
-										<Field label="Left">
+										<GenericField label="Left">
 											<Input
 												placeholder="0"
 												value={settings.projectionBounds?.x}
 												// onChange={e => handleBoundChange('x', e)}
 												variant="outline"
 											/>
-										</Field>
-										<Field label="Top">
+										</GenericField>
+										<GenericField label="Top">
 											<Input
 												placeholder="0"
 												value={settings.projectionBounds?.y}
 												// onChange={e => handleBoundChange('x', e)}
 												variant="outline"
 											/>
-										</Field>
-										<Field label="Width">
+										</GenericField>
+										<GenericField label="Width">
 											<Input
 												placeholder="1920"
 												value={settings.projectionBounds?.width}
 												// onChange={e => handleBoundChange('x', e)}
 												variant="outline"
 											/>
-										</Field>
-										<Field label="Height">
+										</GenericField>
+										<GenericField label="Height">
 											<Input
 												placeholder="1080"
 												value={settings.projectionBounds?.height}
 												// onInput={e => handleBoundChange('x', e)}
 												variant="outline"
 											/>
-										</Field>
+										</GenericField>
 									</HStack>
 
 									<HStack w="full">
@@ -235,7 +235,7 @@ export function AppSettingsDialog() {
 						<Button variant="outline">Cancel</Button>
 						{/* </Dialog.ActionTrigger> */}
 						{/* <Dialog.ActionTrigger asChild> */}
-						<Button>Save</Button>
+						<Button onClick={() => setAppStore("openSettings", false)}>Save</Button>
 						{/* </Dialog.ActionTrigger> */}
 					</Dialog.Footer>
 					<Dialog.CloseTrigger />

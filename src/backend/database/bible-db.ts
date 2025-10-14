@@ -4,12 +4,12 @@ import Database from 'better-sqlite3'
 import { join as pathJoin } from 'path'
 // import { app } from 'electron'
 // import electronIsDev from 'electron-is-dev'
-import { RESOURCES_PATH } from '../constants.js'
+import { DB_PATH } from '../constants.js'
 
 // const __dirname = dirname(fileURLToPath(import.meta.url))
 // const dbPath = resolve(__dirname, 'bibles.sqlite')
 // const interMediaries = electronIsDev ? 'backend/database' : ''
-const dbPath = pathJoin(RESOURCES_PATH, 'store', 'bibles.sqlite')
+const dbPath = pathJoin(DB_PATH, 'bibles.sqlite')
 const db = new Database(dbPath)
 
 // Create Tables

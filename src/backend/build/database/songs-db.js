@@ -3,10 +3,10 @@ import Database from 'better-sqlite3';
 // import { app } from 'electron'
 import { join as pathJoin } from 'path';
 // import electronIsDev from 'electron-is-dev'
-import { RESOURCES_PATH } from '../constants.js';
+import { DB_PATH } from '../constants.js';
 // Define the path for the songs database file
 // const interMediaries = electronIsDev ? 'backend/database' : ''
-const dbPath = pathJoin(RESOURCES_PATH, 'store', 'songs.sqlite');
+const dbPath = pathJoin(DB_PATH, 'songs.sqlite');
 const db = new Database(dbPath);
 // Create Tables
 db.prepare(`

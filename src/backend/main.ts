@@ -5,6 +5,8 @@ import {
 	dialog,
 	ipcMain,
 	nativeTheme,
+	net,
+	protocol,
 	session,
 } from 'electron'
 import log from 'electron-log'
@@ -47,6 +49,7 @@ import {
 import processSongs from './scripts/songs-importer/index.js'
 import { getMediaDestination } from './utils.js'
 import { SONG_DB_PATHS } from './types.js'
+import { pathToFileURL } from 'node:url'
 // import processSongs from './scripts/songs-importer/index.js'
 // import grandiose from 'grandiose'
 // const { GrandioseFinder } = grandiose
@@ -179,6 +182,10 @@ app.on('ready', async () => {
 	spawnAppWindow()
 
 	await session.defaultSession.loadExtension(reactDevToolsPath)
+	protocol.handle('media', (request) => {
+		const filePath = request.url.slice('media://'.length)
+		return net.fetch(pathToFileURL(path.join(__dirname, filePath)).toString())
+	})
 })
 
 app.on('window-all-closed', () => {
@@ -251,6 +258,7 @@ ipcMain.on('dark-mode:system', () => {
 
 ipcMain.on('open-projection', (_, { x, y }: { x: number; y: number }) => {
 	const coords = { x, y }
+	console.log("Triggered open Projection Window: ", x, y)
 	if (!projectionWindow) {
 		const display = screen.getDisplayNearestPoint({ x, y })
 		if (!display) {

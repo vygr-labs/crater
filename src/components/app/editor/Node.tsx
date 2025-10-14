@@ -1,13 +1,7 @@
-import { createContext, createEffect, createMemo, on, onCleanup, useContext, type Accessor, type JSX, type ParentProps, type Setter } from "solid-js";
+import { createContext, createEffect, useContext, type Accessor, type JSX, type ParentProps, type Setter } from "solid-js";
 import { createStore, type SetStoreFunction } from "solid-js/store";
 import type { EditorNode, RegisterNodeFn, RegisterNodeFnWithId } from "./editor-types";
-import { useDraggable } from "solidjs-use";
-import { createSpring, animated } from "solid-spring";
 import { useEditor } from "./Editor";
-import { css } from "styled-system/css";
-import type { SystemStyleObject } from "styled-system/types";
-import { Box } from "styled-system/jsx";
-import { token } from "styled-system/tokens";
 import { useDrag } from "solid-gesture";
 import type { FullGestureState } from "@use-gesture/core/types";
 import { calculateParentOffset } from "~/utils";

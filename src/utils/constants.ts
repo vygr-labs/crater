@@ -50,16 +50,23 @@ const DEFAULT_GROUPS: GroupCollectionObj = {
 		}
 	},
 	theme: {
-		all: {
-			title: "All Songs",
+		song: {
+			title: "Song Themes",
+			type: "songs",
 			subGroups: null
 		},
-		favorite: {
-			title: "My Favorites",
-			subGroups: []
+		scripture: {
+			title: "Scripture Themes",
+			type: "scriptures",
+			subGroups: null
+		},
+		presentation: {
+			title: "Presentation Themes",
+			type: "presentations",
+			subGroups: null
 		},
 		collection: {
-			title: "My Collections",
+			title: "Theme Collections",
 			subGroups: []
 		}
 	}

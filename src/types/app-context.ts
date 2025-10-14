@@ -21,6 +21,7 @@ export interface DisplayCollection {
 
 export type PanelCollection = {
 	title: string;
+	type?: "songs" | "scriptures" | "presentations"
 	subGroups: DisplayCollection[] | null;
 }
 

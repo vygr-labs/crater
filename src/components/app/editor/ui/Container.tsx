@@ -8,25 +8,32 @@ import { ColorUpdateInput, PopoverButton, SliderWithInput } from "./Inputs";
 import { token } from "styled-system/tokens";
 import { defaultPalette } from "~/utils/constants";
 import { AiOutlineRadiusBottomleft, AiOutlineRadiusBottomright, AiOutlineRadiusSetting, AiOutlineRadiusUpleft, AiOutlineRadiusUpright } from "solid-icons/ai";
-import type { NodeSettings } from "../editor-types";
+import type { NodeSettings, RenderEditorItemProps } from "../editor-types";
 import { HiSolidPhoto } from "solid-icons/hi";
 import { Button } from "~/components/ui/button";
+import { Text } from "~/components/ui/text";
 
 interface EditorContainer extends BoxProps {}
 
 export default function EditorContainer(props: EditorContainer) {
-	const { editor } = useEditor();
 	const { node, register, styles, bindDrag } = useNode();
-	const magicNum = () => Object.keys(editor.nodes).findIndex((id) => id === node.id);
 
 	createEffect(() => {
 		console.log("Here is the node: ", node);
 	});
 
 	return (
-		<Box position="absolute" ref={register} {...bindDrag()} style={styles} transformOrigin="top left">
-			{/* use:draggable */}
-		</Box>
+		<Box position="absolute" ref={register} {...bindDrag()} style={styles} transformOrigin="top left" />
+	);
+}
+
+export function RenderEditorContainer(props: RenderEditorItemProps) {
+	createEffect(() => {
+		console.log("Rendering node: ", props.node);
+	});
+
+	return (
+		<Box position="absolute" style={props.node.style} transformOrigin="top left" />
 	);
 }
 

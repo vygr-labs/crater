@@ -55,15 +55,17 @@ export interface EditorNodeConnectors {
     register: RegisterNodeFnWithId;
 }
 
-export interface RenderComponentConfig {
+export interface RenderComponentConfig<ConfigSettings> {
     defaultData?: Record<string, any>;
-    settings?: () => JSXElement;
+    settings?: (props: ConfigSettings) => JSXElement;
     defaultStyles: JSX.CSSProperties
 }
 
-export interface EditorRenderComponent {
+export type ThemeRenderComponent = {
     (props: any): JSXElement;
-    config: RenderComponentConfig;
+}
+export interface EditorRenderComponent<ConfigSettings = any> extends ThemeRenderComponent {
+    config: RenderComponentConfig<ConfigSettings>;
 }
 
 export type SelectedEditorNode = EditorNode | null | undefined;
@@ -80,10 +82,14 @@ export type ScaleValues = {
     z: number;
     // [axis in ScaleAxis]: number;
 }
+export interface ExportedTheme {
+    nodes: Pick<EditorNode, "id" | "compName" | "data" | "style">[]
+}
 
 export type UseResizeNodeFn = (id: NodeId, scaleValues: ScaleValues) => void;
 export type SelectNodeFn = (id: NodeId) => void;
 export type EditorRenderMap = Record<string, EditorRenderComponent>;
+export type ThemeRenderMap = Record<string, ThemeRenderComponent>;
 
 export interface EditorContextValue {
     editor: EditorStore;
@@ -109,6 +115,7 @@ export interface EditorContextValue {
     };
     helpers: {
         selectNode: SelectNodeFn
+        exportTheme: () => ExportedTheme;
     }
 }
 
@@ -119,4 +126,8 @@ export interface NodeCompProps {
 export interface NodeSettings {
     node: EditorNode;
     visible: boolean;
+}
+
+export interface RenderEditorItemProps {
+    node: EditorNode;
 }

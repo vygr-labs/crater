@@ -41,6 +41,7 @@
     "electron-updater": "^6.6.2",
     "fast-safe-stringify": "^2.1.1",
     "fs": "^0.0.1-security",
+    "html2canvas": "^1.4.1",
     "lodash": "^4.17.21",
     "mime": "^4.1.0",
     "rtf-parse": "^0.1.0",

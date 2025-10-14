@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { app, BrowserWindow, dialog, ipcMain, nativeTheme, session, } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, nativeTheme, net, protocol, session, } from 'electron';
 import log from 'electron-log';
 import electronUpdater from 'electron-updater';
 import electronIsDev from 'electron-is-dev';
@@ -14,6 +14,7 @@ import { screen } from 'electron/main';
 import { addTheme, deleteTheme, fetchAllThemes, fetchThemeById, updateTheme, filterThemes, } from './database/theme-operations.js';
 import processSongs from './scripts/songs-importer/index.js';
 import { getMediaDestination } from './utils.js';
+import { pathToFileURL } from 'node:url';
 // import processSongs from './scripts/songs-importer/index.js'
 // import grandiose from 'grandiose'
 // const { GrandioseFinder } = grandiose
@@ -126,6 +127,12 @@ app.on('ready', async () => {
     new AppUpdater();
     spawnAppWindow();
     await session.defaultSession.loadExtension(reactDevToolsPath);
+    app.whenReady().then(() => {
+        protocol.handle('media', (request) => {
+            const filePath = request.url.slice('media://'.length);
+            return net.fetch(pathToFileURL(path.join(__dirname, filePath)).toString());
+        });
+    });
 });
 app.on('window-all-closed', () => {
     appReady = false;

@@ -10,7 +10,7 @@ const __dirname = dirname(__filename)
 const RESOURCES_PATH = electronIsDev
 	? path.join(__dirname, '../../assets')
 	: path.join(process.resourcesPath, 'assets')
-const userData = app.getPath('userData')
+const userData = electronIsDev ? path.join(RESOURCES_PATH, 'store') : app.getPath('userData')
 
 const APP = 'crater-bible-project'
 const DB_PATH = path.join(userData, 'databases')

@@ -49,6 +49,8 @@ import { IoSettings } from 'solid-icons/io';
 import { Portal } from 'solid-js/web';
 import { toggleClearDisplay, toggleLive, toggleLogo } from '~/utils/store-helpers';
 import type { SwitchCheckedChangeDetails } from '@ark-ui/solid';
+import { BsDisplayFill } from 'solid-icons/bs';
+import { unwrap } from 'solid-js/store';
 
 export type Props = {
 	// openAppSettings: () => void
@@ -77,12 +79,13 @@ export default function MenuBar(props: Props) {
 		})
 	}
 
-	function handleLiveToggle({ checked }: SwitchCheckedChangeDetails) {
+	function handleLiveToggle() {
 		toggleLive(setAppStore); // toggleLive(setAppStore, checked)
-		if (checked) {
-			window.electronAPI.openProjectionWindow(settings.projectionBounds)
-		} else {
+		if (appStore.isLive) {
 			window.electronAPI.closeProjectionWindow()
+		} else {
+			console.log(settings.projectionBounds);
+			window.electronAPI.openProjectionWindow(unwrap(settings.projectionBounds))
 		}
 	}
 
@@ -165,7 +168,10 @@ export default function MenuBar(props: Props) {
 					</Button>
 				</HStack>
 
-				<ArkSwitch.Root
+				<Button variant={appStore.isLive ? "solid" : "surface"} colorPalette={defaultPalette} onclick={handleLiveToggle}>
+					<BsDisplayFill /> Go Live
+				</Button>
+				{/* <ArkSwitch.Root
 					size="lg"
 					checked={appStore.isLive}
 					onCheckedChange={handleLiveToggle}
@@ -176,7 +182,7 @@ export default function MenuBar(props: Props) {
 						<ArkSwitch.Thumb />
 					</ArkSwitch.Control>
 					<ArkSwitch.Label fontSize="xs">Go Live</ArkSwitch.Label>
-				</ArkSwitch.Root>
+				</ArkSwitch.Root> */}
 			</HStack>
 		</HStack>
 	)

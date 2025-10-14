@@ -14,7 +14,7 @@ import { defaultPalette } from "~/utils/constants";
 import { defineStyles } from "@pandacss/dev";
 import { getNum } from "~/utils";
 import { Text } from "~/components/ui/text";
-import type { NodeSettings } from "../editor-types";
+import type { NodeSettings, RenderEditorItemProps } from "../editor-types";
 import { BsTextCenter, BsTextLeft, BsTextParagraph, BsTextRight } from "solid-icons/bs";
 import { ImTextHeight, ImTextWidth } from "solid-icons/im";
 import { VsLink } from "solid-icons/vs";
@@ -24,13 +24,12 @@ import { IconButton } from "~/components/ui/icon-button";
 import { RadioGroup } from "~/components/ui/radio-group";
 import { Field } from "~/components/ui/field";
 import { Dynamic } from "solid-js/web";
+import type { TextAlign } from "~/types";
 
 interface EditorContainer extends BoxProps {}
 
 export default function EditorText(props: EditorContainer) {
-	const { editor } = useEditor();
 	const { node, register, styles, bindDrag } = useNode();
-	const magicNum = () => Object.keys(editor.nodes).findIndex((id) => id === node.id);
 
 	createEffect(() => {
 		console.log("Here is the node: ", node);
@@ -39,6 +38,19 @@ export default function EditorText(props: EditorContainer) {
 	return (
 		<Box position="absolute" ref={register} {...bindDrag()} style={styles} transformOrigin="top left">
 			<Text userSelect="none">{node.data.text}</Text>
+			{/* use:draggable */}
+		</Box>
+	);
+}
+
+export function RenderEditorText(props: RenderEditorItemProps) {
+	createEffect(() => {
+		console.log("Rendering node: ", props.node);
+	});
+
+	return (
+		<Box position="absolute" style={props.node.style} transformOrigin="top left">
+			<Text userSelect="none">{props.node.data.text}</Text>
 			{/* use:draggable */}
 		</Box>
 	);
@@ -58,10 +70,10 @@ const textLinkOptions = [
 ];
 
 const textAlignMap = {
-    left: BsTextLeft,
-    center: BsTextCenter,
-    right: BsTextRight
-}
+	left: BsTextLeft,
+	center: BsTextCenter,
+	right: BsTextRight,
+};
 
 export interface EditorTextSettingsProps extends NodeSettings {}
 export function EditorTextSettings(props: EditorTextSettingsProps) {
@@ -102,15 +114,13 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 							}
 						>
 							<HStack>
-                                <For each={Object.entries(textAlignMap)}>
-                                    {
-                                        ([value, icon]) => (
-                                            <IconButton variant={styles()["text-align"] === value ? "solid" : "surface"} size="md" onclick={() => setStyle({"text-align": value})}>
-                                                <Dynamic component={icon} />
-                                            </IconButton>
-                                        )
-                                    }
-                                </For>
+								<For each={Object.entries(textAlignMap)}>
+									{([value, icon]) => (
+										<IconButton variant={styles()["text-align"] === value ? "solid" : "surface"} size="md" onclick={() => setStyle({ "text-align": value as TextAlign })}>
+											<Dynamic component={icon} />
+										</IconButton>
+									)}
+								</For>
 								{/* <IconButton variant={styles()["text-align"] === "center" ? "solid" : "surface"} size="md">
 									<BsTextCenter />
 								</IconButton>
@@ -152,8 +162,10 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 							<Switch>
 								<Match when={props.node.data.linkage === LINKAGES.CUSTOM}>
 									<Field.Root mt={4}>
-										<Field.Label fontSize="xs" fontWeight={400}>Update Text</Field.Label>
-										<Field.Textarea colorPalette="purple" bg="bg.muted" border="2px solid" borderColor="purple.700" py={1.5} px={3} value={props.node.data.text} oninput={e => setData({text: e.target.value})} autoresize />
+										<Field.Label fontSize="xs" fontWeight={400}>
+											Update Text
+										</Field.Label>
+										<Field.Textarea colorPalette="purple" bg="bg.muted" border="2px solid" borderColor="purple.700" py={1.5} px={3} value={props.node.data.text} oninput={(e) => setData({ text: e.target.value })} autoresize />
 										<Field.HelperText>Some additional Info</Field.HelperText>
 										<Field.ErrorText>Error Info</Field.ErrorText>
 									</Field.Root>
@@ -169,7 +181,7 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 
 EditorText.config = {
 	defaultData: {
-        linkage: LINKAGES.CUSTOM,
+		linkage: LINKAGES.CUSTOM,
 		text: "Learning New Things",
 		// bgColor: defaultPalette
 	},
@@ -178,8 +190,8 @@ EditorText.config = {
 		height: "50px",
 		color: token(`colors.whiteAlpha.900`),
 		"line-height": "20px",
-        "text-align": "left",
-        "z-index": 20
+		"text-align": "left",
+		"z-index": 20,
 	},
 	settings: EditorTextSettings,
 };

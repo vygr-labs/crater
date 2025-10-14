@@ -3,16 +3,16 @@ import { useEditor } from "../Editor";
 import { Dynamic, For } from "solid-js/web";
 import NodeProvider, { NodeContext } from "../Node";
 import { cva } from "styled-system/css";
-import { useDrag, useGesture } from "solid-gesture";
+import { useGesture } from "solid-gesture";
 import type { FullGestureState } from "@use-gesture/core/types";
 import { createStore, unwrap } from "solid-js/store";
-import { createEffect, createMemo, onMount } from "solid-js";
+import { createEffect, createMemo, onMount, type JSX } from "solid-js";
 import { calculateParentOffset } from "~/utils";
 import { useElementSize, usePointer } from "solidjs-use";
 
 const demarcationBorderWidth = 2;
 
-const axes = ["top-left", "top-right", "bottom-left", "bottom-right"];
+const axes = ["top-left", "top-right", "bottom-left", "bottom-right"] as const;
 const resizeHandlerRecipe = cva({
 	base: {
 		backgroundColor: "red.400",
@@ -90,7 +90,7 @@ export default function RenderEditor() {
 		height: selectedNodeHeight() + "px",
 		transform: `scale3d(${store.scale.x}, ${store.scale.y}, ${store.scale.z}) translate3d(${store.indicatorPos[0]}px, ${store.indicatorPos[1]}px, 0)`,
 		opacity: getSelectedNode() ? 1 : 0,
-		visibility: getSelectedNode() ? "visible" : "hidden"
+		visibility: getSelectedNode() ? "visible" : "hidden" as JSX.CSSProperties["visibility"]
 		// top: store.indicatorPos[0] + "%",
 		// left: store.indicatorPos[1] + "%",
 	}));
