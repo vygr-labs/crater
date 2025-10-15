@@ -43,6 +43,8 @@ type ThemeControlsData = {
 	contextMenuOpen: boolean;
 };
 
+const NUM_OF_DISPLAY_LANES = 5
+
 export default function ThemeSelection() {
 	const { appStore, setAppStore } = useAppContext();
 	const allThemes = createAsyncMemo(async () => {
@@ -76,8 +78,9 @@ export default function ThemeSelection() {
 		createVirtualizer({
 			count: filteredThemes().length,
 			getScrollElement: () => virtualizerParentRef,
-			estimateSize: () => 36,
+			estimateSize: () => 100,
 			overscan: 5,
+			lanes: NUM_OF_DISPLAY_LANES
 		}),
 	);
 
@@ -87,12 +90,20 @@ export default function ThemeSelection() {
 		defaultCoreFocus: 0,
 		defaultFluidFocus: 0,
 		handlers: {
-			ArrowDown: ({ coreFocusId, fluidFocusId, changeFocus, changeCoreFocus, changeFluidFocus }) => {
-				const newCoreFocusId = Math.min((fluidFocusId ?? 0) + 1, filteredThemes().length);
+			ArrowLeft: ({ coreFocusId, fluidFocusId, changeFocus, changeCoreFocus, changeFluidFocus }) => {
+				const newCoreFocusId = Math.max((fluidFocusId ?? 0) - 1, 0);
+				changeFluidFocus(newCoreFocusId);
+			},
+			ArrowRight: ({ coreFocusId, fluidFocusId, changeFocus, changeCoreFocus, changeFluidFocus }) => {
+				const newCoreFocusId = Math.min((fluidFocusId ?? 0) + 1, filteredThemes().length - 1);
 				changeFluidFocus(newCoreFocusId);
 			},
 			ArrowUp: ({ coreFocusId, fluidFocusId, changeFocus, changeCoreFocus, changeFluidFocus }) => {
-				const newCoreFocusId = Math.max((fluidFocusId ?? 0) - 1, 0);
+				const newCoreFocusId = Math.max((fluidFocusId ?? 0) - NUM_OF_DISPLAY_LANES, 0);
+				changeFluidFocus(newCoreFocusId);
+			},
+			ArrowDown: ({ coreFocusId, fluidFocusId, changeFocus, changeCoreFocus, changeFluidFocus }) => {
+				const newCoreFocusId = Math.min((fluidFocusId ?? 0) + NUM_OF_DISPLAY_LANES, filteredThemes().length - 1);
 				changeFluidFocus(newCoreFocusId);
 			},
 			Enter: ({ coreFocusId, fluidFocusId, changeFocus, changeCoreFocus, changeFluidFocus }) => {
@@ -203,30 +214,32 @@ export default function ThemeSelection() {
 					<For each={rowVirtualizer().getVirtualItems()}>
 						{(virtualItem) => {
 							const theme = filteredThemes()[virtualItem.index];
-                            console.log("Render Theme: ", theme)
 							return (
-								// <Box >
-									<VStack
+									<Box
 										px={1}
 										py={2}
 										w="full"
 										h="full"
                                         class="disable-child-clicks"
 										style={{
+											position: "absolute",
+											top: 0,
 											height: `${virtualItem.size}px`,
 											transform: `translateY(${virtualItem.start}px)`,
+											left: `${virtualItem.lane * 20}%`,
+											width: "20%",
 											...getBaseFocusStyles(THEMES_TAB_FOCUS_NAME),
 											...getFocusableStyles(THEMES_TAB_FOCUS_NAME, virtualItem.index === fluidFocusId(), isCurrentPanel(), virtualItem.index === coreFocusId()),
 										}}
                                         data-panel={THEMES_TAB_FOCUS_NAME}
                                         data-focusId={virtualItem.index}
 									>
-										<img class={css({ width: "full", height: "full", aspectRatio: 16 / 9 })} src={"file://" + theme.preview_path} alt={theme.title} />
-										<Text maxW="full" textStyle="sm" height="25px" truncate>
+										{/* width: "full", height: "auto", aspectRatio: 16 / 9 */}
+										<img class={css({ })} src={"file://" + theme.preview_path} alt={theme.title} />
+										<Text mt={1.5} textAlign="center" maxW="full" textStyle="sm" truncate>
 											{theme.title}
 										</Text>
-									</VStack>
-								// </Box>
+									</Box>
 								// <HStack
 								//     pos="absolute"
 								//     top={0}

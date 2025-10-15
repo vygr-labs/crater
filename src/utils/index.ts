@@ -1,7 +1,7 @@
 import type { FocusType } from '~/layouts/FocusContext'
 import type { BookInfo, ChapterCountObj, HighlightedVerse } from '../types'
 import { token } from 'styled-system/tokens'
-import { defaultPalette, SONGS_TAB_FOCUS_NAME } from './constants'
+import { defaultPalette, SONGS_TAB_FOCUS_NAME, THEMES_TAB_FOCUS_NAME } from './constants'
 import type { JSX } from 'solid-js/jsx-runtime'
 import type { BooleanLiteral } from 'typescript'
 import { createToaster } from '@ark-ui/solid'
@@ -109,6 +109,37 @@ const mappings: Record<string, {
 	[SONGS_TAB_FOCUS_NAME]: {
 		base: {
 			border: "4px solid transparent"
+		},
+		isFluid: {
+			true: {
+				isCurrentPanel: {
+					true: {
+						"background-color": token.var(`colors.${defaultPalette}.900`),
+						color: token.var(`colors.white`)
+					},
+					false: {
+						"background-color": token.var(`colors.gray.800`),
+						color: token.var("colors.gray.100")
+					}
+				}
+			},
+			// false: { isCurrentPanel: { true: {}, false: {} } }
+		},
+		isCore: {
+			true: {
+				isCurrentPanel: {
+					true: {
+						"border-left-color": token.var(`colors.${defaultPalette}.700`),
+						color: token.var(`colors.gray.100`)
+					},
+					false: {}
+				}
+			},
+			// false: { isCurrentPanel: { true: {}, false: {} } }
+		}
+	},
+	[THEMES_TAB_FOCUS_NAME]: {
+		base: {
 		},
 		isFluid: {
 			true: {
