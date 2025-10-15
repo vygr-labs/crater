@@ -9,8 +9,8 @@ const initialItems = ["React", "Solid", "Vue", "Svelte"];
 
 interface Props {
 	label?: JSXElement;
-  rootProps?: ComboboxRootProps<any>;
-  maxWidth: string | number;
+	rootProps?: ComboboxRootProps<any>;
+	maxWidth: string | number;
 }
 
 export const GenericCombobox = (props: Props) => {
@@ -25,18 +25,24 @@ export const GenericCombobox = (props: Props) => {
 	};
 
 	return (
-		<Combobox.Root w="fit" maxW={props.maxWidth} {...props.rootProps} collection={collection()} onInputValueChange={handleInputChange}>
+		<Combobox.Root
+			w="fit"
+			maxW={props.maxWidth}
+			{...props.rootProps}
+			collection={collection()}
+			onInputValueChange={handleInputChange}
+		>
 			<Show when={props.label}>
 				<Combobox.Label>{props.label}</Combobox.Label>
 			</Show>
 			<Combobox.Control>
 				<Combobox.Input placeholder="Font" />
-        <Combobox.IndicatorGroup>
-				<Combobox.Trigger color="gray.300">
-					<TbArrowsUpDown />
-				</Combobox.Trigger>
-				<Combobox.ClearTrigger>Clear</Combobox.ClearTrigger>
-        </Combobox.IndicatorGroup>
+				<Combobox.IndicatorGroup>
+					<Combobox.Trigger color="gray.300">
+						<TbArrowsUpDown />
+					</Combobox.Trigger>
+					<Combobox.ClearTrigger>Clear</Combobox.ClearTrigger>
+				</Combobox.IndicatorGroup>
 			</Combobox.Control>
 			<Portal>
 				<Combobox.Positioner>

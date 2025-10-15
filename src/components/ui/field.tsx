@@ -9,7 +9,8 @@ export interface FieldProps extends Omit<ArkField.RootProps, "label"> {
 }
 
 export const GenericField = (props: FieldProps) => {
-	const { label, children, helperText, errorText, optionalText, ...rest } = props;
+	const { label, children, helperText, errorText, optionalText, ...rest } =
+		props;
 	return (
 		<ArkField.Root ref={props.ref} {...rest}>
 			<Show when={props.label}>

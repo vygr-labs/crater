@@ -33,28 +33,32 @@
 // import { getToastType } from '@/utils'
 // import { useTransition } from 'react'
 // import { defaultPalette } from '@/utils/constants'
-import { HStack } from 'styled-system/jsx';
-import { useAppContext } from '~/layouts/AppContext'
-import { Menu } from '../ui/menu';
-import { Button } from '../ui/button';
-import { Icon } from '../ui/icon';
-import { FaSolidChevronDown } from 'solid-icons/fa';
-import { IconButton } from '../ui/icon-button';
-import { ArkSwitch } from '../ui/switch';
-import { Text } from '../ui/text';
-import { TbArrowsRightDown, TbClearAll } from 'solid-icons/tb';
-import { TiSortNumerically } from 'solid-icons/ti';
-import { defaultPalette } from '~/utils/constants';
-import { IoSettings } from 'solid-icons/io';
-import { Portal } from 'solid-js/web';
-import { toggleClearDisplay, toggleLive, toggleLogo } from '~/utils/store-helpers';
-import type { SwitchCheckedChangeDetails } from '@ark-ui/solid';
-import { BsDisplayFill } from 'solid-icons/bs';
-import { unwrap } from 'solid-js/store';
+import { HStack } from "styled-system/jsx";
+import { useAppContext } from "~/layouts/AppContext";
+import { Menu } from "../ui/menu";
+import { Button } from "../ui/button";
+import { Icon } from "../ui/icon";
+import { FaSolidChevronDown } from "solid-icons/fa";
+import { IconButton } from "../ui/icon-button";
+import { ArkSwitch } from "../ui/switch";
+import { Text } from "../ui/text";
+import { TbArrowsRightDown, TbClearAll } from "solid-icons/tb";
+import { TiSortNumerically } from "solid-icons/ti";
+import { defaultPalette } from "~/utils/constants";
+import { IoSettings } from "solid-icons/io";
+import { Portal } from "solid-js/web";
+import {
+	toggleClearDisplay,
+	toggleLive,
+	toggleLogo,
+} from "~/utils/store-helpers";
+import type { SwitchCheckedChangeDetails } from "@ark-ui/solid";
+import { BsDisplayFill } from "solid-icons/bs";
+import { unwrap } from "solid-js/store";
 
 export type Props = {
 	// openAppSettings: () => void
-}
+};
 
 export default function MenuBar(props: Props) {
 	// const isHidden = useAppSelector(state => state.app.hideLive)
@@ -66,29 +70,33 @@ export default function MenuBar(props: Props) {
 	const { appStore, setAppStore, settings, updateSettings } = useAppContext();
 
 	function openImportDialog() {
-		setAppStore("loading", { reason: 'Importing Database...', isLoading: true })
+		setAppStore("loading", {
+			reason: "Importing Database...",
+			isLoading: true,
+		});
 		window.electronAPI.importEswSongs().then(({ success, message }) => {
-			console.log('Result from Dialog: ', message)
+			console.log("Result from Dialog: ", message);
 			// toaster.create({
 			//     type: getToastType(success),
 			//     title: message,
 			// })
 
-			setAppStore("songsUpdateCounter", former => former++)
-			setAppStore("loading", { reason: 'Finished task', isLoading: false })
-		})
+			setAppStore("songsUpdateCounter", (former) => former++);
+			setAppStore("loading", { reason: "Finished task", isLoading: false });
+		});
 	}
 
 	function handleLiveToggle() {
 		toggleLive(setAppStore); // toggleLive(setAppStore, checked)
 		if (appStore.isLive) {
-			window.electronAPI.closeProjectionWindow()
+			window.electronAPI.closeProjectionWindow();
 		} else {
 			console.log(settings.projectionBounds);
-			window.electronAPI.openProjectionWindow(unwrap(settings.projectionBounds))
+			window.electronAPI.openProjectionWindow(
+				unwrap(settings.projectionBounds),
+			);
 		}
 	}
-
 
 	return (
 		<HStack
@@ -101,15 +109,16 @@ export default function MenuBar(props: Props) {
 		>
 			<HStack gap={3}>
 				<Menu.Root>
-					<Menu.Trigger asChild={parentProps => (
-						<Button variant="outline" size="sm" {...parentProps}>
-							Schedule
-							<Icon fontSize="sm">
-								<FaSolidChevronDown />
-							</Icon>
-						</Button>
-					)}>
-					</Menu.Trigger>
+					<Menu.Trigger
+						asChild={(parentProps) => (
+							<Button variant="outline" size="sm" {...parentProps}>
+								Schedule
+								<Icon fontSize="sm">
+									<FaSolidChevronDown />
+								</Icon>
+							</Button>
+						)}
+					></Menu.Trigger>
 					<Portal>
 						<Menu.Positioner>
 							<Menu.Content>
@@ -127,7 +136,7 @@ export default function MenuBar(props: Props) {
 					color="white"
 					size="sm"
 					onClick={() => {
-						setAppStore("openSettings", true)
+						setAppStore("openSettings", true);
 					}}
 				>
 					<IoSettings />
@@ -145,7 +154,7 @@ export default function MenuBar(props: Props) {
 				<HStack gap={3}>
 					<Button
 						onClick={() => toggleLogo(setAppStore)}
-						variant={appStore.showLogo ? 'solid' : 'surface'}
+						variant={appStore.showLogo ? "solid" : "surface"}
 						colorPalette={defaultPalette}
 					>
 						<Icon fontSize="2xl" aria-label="Show Logo">
@@ -155,10 +164,8 @@ export default function MenuBar(props: Props) {
 					</Button>
 
 					<Button
-						onClick={() =>
-							toggleClearDisplay(setAppStore)
-						}
-						variant={appStore.hideLive ? 'solid' : 'surface'}
+						onClick={() => toggleClearDisplay(setAppStore)}
+						variant={appStore.hideLive ? "solid" : "surface"}
 						colorPalette="red"
 					>
 						<Icon fontSize="2xl" aria-label="Clear Display">
@@ -168,7 +175,11 @@ export default function MenuBar(props: Props) {
 					</Button>
 				</HStack>
 
-				<Button variant={appStore.isLive ? "solid" : "surface"} colorPalette={defaultPalette} onclick={handleLiveToggle}>
+				<Button
+					variant={appStore.isLive ? "solid" : "surface"}
+					colorPalette={defaultPalette}
+					onclick={handleLiveToggle}
+				>
 					<BsDisplayFill /> Go Live
 				</Button>
 				{/* <ArkSwitch.Root
@@ -185,5 +196,5 @@ export default function MenuBar(props: Props) {
 				</ArkSwitch.Root> */}
 			</HStack>
 		</HStack>
-	)
+	);
 }

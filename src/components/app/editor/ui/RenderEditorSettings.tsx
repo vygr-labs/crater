@@ -10,14 +10,24 @@ export default function RenderEditorSettings() {
 	} = useEditor();
 
 	createEffect(() => {
-		console.log("selectedNode has changed", getSelectedNode(), getSelectedNode()?.comp.config.settings);
+		console.log(
+			"selectedNode has changed",
+			getSelectedNode(),
+			getSelectedNode()?.comp.config.settings,
+		);
 	});
 
 	return (
 		<For each={Object.values(getRenderMap())}>
 			{(comp) => {
 				const isCurrent = () => getSelectedNode()?.compName === comp.name;
-				return <Dynamic component={comp.config.settings} node={isCurrent() ? getSelectedNode() : null} visible={isCurrent()} />;
+				return (
+					<Dynamic
+						component={comp.config.settings}
+						node={isCurrent() ? getSelectedNode() : null}
+						visible={isCurrent()}
+					/>
+				);
 			}}
 		</For>
 	);

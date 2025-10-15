@@ -7,15 +7,15 @@ import ContextMenu from "./ContextMenu";
 
 interface Props {
 	open: boolean;
-    contextMenuContent: JSXElement
-    actionBarMenu: JSXElement
-    children: JSXElement
-    ref: Ref<Element>;
+	contextMenuContent: JSXElement;
+	actionBarMenu: JSXElement;
+	children: JSXElement;
+	ref: Ref<Element>;
 }
 
 export default function ControlTabDisplay(props: Props) {
-    return (
-     <>
+	return (
+		<>
 			<Box
 				w="3/4"
 				h="full"
@@ -25,7 +25,11 @@ export default function ControlTabDisplay(props: Props) {
 				borderColor="gray.700"
 				pb={7}
 			>
-				<ContextMenu open={props.open} content={props.contextMenuContent} ref={props.ref}>
+				<ContextMenu
+					open={props.open}
+					content={props.contextMenuContent}
+					ref={props.ref}
+				>
 					{props.children}
 				</ContextMenu>
 
@@ -38,9 +42,9 @@ export default function ControlTabDisplay(props: Props) {
 					h={6}
 					bg="gray.700"
 				>
-                    {props.actionBarMenu}
+					{props.actionBarMenu}
 				</HStack>
 			</Box>
-		</>   
-    )
+		</>
+	);
 }

@@ -1,21 +1,47 @@
 import { Box, HStack, styled, VStack, type BoxProps } from "styled-system/jsx";
 import { useNode } from "../Node";
 import { useEditor } from "../Editor";
-import { createEffect, createMemo, For, Index, Match, onMount, Show, Switch, type JSX } from "solid-js";
+import {
+	createEffect,
+	createMemo,
+	For,
+	Index,
+	Match,
+	onMount,
+	Show,
+	Switch,
+	type JSX,
+} from "solid-js";
 import { css } from "styled-system/css";
-import { TbContainer, TbPhoto, TbRadiusTopLeft, TbShadow, TbVideo } from "solid-icons/tb";
+import {
+	TbContainer,
+	TbPhoto,
+	TbRadiusTopLeft,
+	TbShadow,
+	TbVideo,
+} from "solid-icons/tb";
 import { ColorPicker } from "~/components/ui/color-picker";
 import { ControlIconBtn } from "./Buttons";
 import { createStore } from "solid-js/store";
 import { parseColor } from "@ark-ui/solid";
-import { ColorUpdateInput, PopoverButton, RadioInput, SliderWithInput } from "./Inputs";
+import {
+	ColorUpdateInput,
+	PopoverButton,
+	RadioInput,
+	SliderWithInput,
+} from "./Inputs";
 import { token } from "styled-system/tokens";
 import { defaultPalette } from "~/utils/constants";
 import { defineStyles } from "@pandacss/dev";
 import { getNum } from "~/utils";
 import { Text } from "~/components/ui/text";
 import type { NodeSettings, RenderEditorItemProps } from "../editor-types";
-import { BsTextCenter, BsTextLeft, BsTextParagraph, BsTextRight } from "solid-icons/bs";
+import {
+	BsTextCenter,
+	BsTextLeft,
+	BsTextParagraph,
+	BsTextRight,
+} from "solid-icons/bs";
 import { ImTextHeight, ImTextWidth } from "solid-icons/im";
 import { VsLink } from "solid-icons/vs";
 import { FiLink } from "solid-icons/fi";
@@ -36,7 +62,13 @@ export default function EditorText(props: EditorContainer) {
 	});
 
 	return (
-		<Box position="absolute" ref={register} {...bindDrag()} style={styles} transformOrigin="top left">
+		<Box
+			position="absolute"
+			ref={register}
+			{...bindDrag()}
+			style={styles}
+			transformOrigin="top left"
+		>
 			<Text userSelect="none">{node.data.text}</Text>
 			{/* use:draggable */}
 		</Box>
@@ -49,7 +81,11 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 	});
 
 	return (
-		<Box position="absolute" style={props.node.style} transformOrigin="top left">
+		<Box
+			position="absolute"
+			style={props.node.style}
+			transformOrigin="top left"
+		>
 			<Text userSelect="none">{props.node.data.text}</Text>
 			{/* use:draggable */}
 		</Box>
@@ -98,13 +134,19 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 		<Show when={props.visible}>
 			{(selected) => {
 				console.log("getting setStyle fn for: ", selected());
-				const setStyle = (styles: JSX.CSSProperties) => setNodeStyle(props.node.id, styles);
-				const setData = (data: Record<string, any>) => setNodeData(props.node.id, data);
+				const setStyle = (styles: JSX.CSSProperties) =>
+					setNodeStyle(props.node.id, styles);
+				const setData = (data: Record<string, any>) =>
+					setNodeData(props.node.id, data);
 				return (
 					<HStack w="full" gap={4} rounded="md">
 						<GenericCombobox maxWidth={36} />
 
-						<ColorUpdateInput styleKey="color" styles={styles()} setStyle={setStyle} />
+						<ColorUpdateInput
+							styleKey="color"
+							styles={styles()}
+							setStyle={setStyle}
+						/>
 
 						<PopoverButton
 							trigger={
@@ -116,7 +158,15 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 							<HStack>
 								<For each={Object.entries(textAlignMap)}>
 									{([value, icon]) => (
-										<IconButton variant={styles()["text-align"] === value ? "solid" : "surface"} size="md" onclick={() => setStyle({ "text-align": value as TextAlign })}>
+										<IconButton
+											variant={
+												styles()["text-align"] === value ? "solid" : "surface"
+											}
+											size="md"
+											onclick={() =>
+												setStyle({ "text-align": value as TextAlign })
+											}
+										>
 											<Dynamic component={icon} />
 										</IconButton>
 									)}
@@ -137,7 +187,12 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 								</ControlIconBtn>
 							}
 						>
-							<SliderWithInput styleKey="line-height" label={<ImTextHeight size={14} />} styles={styles()} setStyle={setStyle} />
+							<SliderWithInput
+								styleKey="line-height"
+								label={<ImTextHeight size={14} />}
+								styles={styles()}
+								setStyle={setStyle}
+							/>
 						</PopoverButton>
 
 						<PopoverButton
@@ -147,7 +202,13 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 								</ControlIconBtn>
 							}
 						>
-							<SliderWithInput styleKey="letter-spacing" label={<ImTextWidth size={16} />} styles={styles()} setStyle={setStyle} rootProps={{ max: 20 }} />
+							<SliderWithInput
+								styleKey="letter-spacing"
+								label={<ImTextWidth size={16} />}
+								styles={styles()}
+								setStyle={setStyle}
+								rootProps={{ max: 20 }}
+							/>
 						</PopoverButton>
 
 						<PopoverButton
@@ -157,7 +218,12 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 								</ControlIconBtn>
 							}
 						>
-							<RadioInput options={textLinkOptions} label="Link Text" value={props.node.data.linkage} onValueChange={(d) => setData({ linkage: d.value })} />
+							<RadioInput
+								options={textLinkOptions}
+								label="Link Text"
+								value={props.node.data.linkage}
+								onValueChange={(d) => setData({ linkage: d.value })}
+							/>
 
 							<Switch>
 								<Match when={props.node.data.linkage === LINKAGES.CUSTOM}>
@@ -165,7 +231,17 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 										<Field.Label fontSize="xs" fontWeight={400}>
 											Update Text
 										</Field.Label>
-										<Field.Textarea colorPalette="purple" bg="bg.muted" border="2px solid" borderColor="purple.700" py={1.5} px={3} value={props.node.data.text} oninput={(e) => setData({ text: e.target.value })} autoresize />
+										<Field.Textarea
+											colorPalette="purple"
+											bg="bg.muted"
+											border="2px solid"
+											borderColor="purple.700"
+											py={1.5}
+											px={3}
+											value={props.node.data.text}
+											oninput={(e) => setData({ text: e.target.value })}
+											autoresize
+										/>
 										<Field.HelperText>Some additional Info</Field.HelperText>
 										<Field.ErrorText>Error Info</Field.ErrorText>
 									</Field.Root>

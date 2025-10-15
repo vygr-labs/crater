@@ -1,10 +1,10 @@
 export const isObject = (v: any): v is Record<string, any> =>
-  v != null && typeof v === "object" && !Array.isArray(v)
+	v != null && typeof v === "object" && !Array.isArray(v);
 
-export const isCssVar = (v: string): boolean => /^var\(--.+\)$/.test(v)
+export const isCssVar = (v: string): boolean => /^var\(--.+\)$/.test(v);
 
-export const isString = (v: any): v is string => typeof v === "string"
+export const isString = (v: any): v is string => typeof v === "string";
 
-type AnyFunction = (...args: any[]) => any
+type AnyFunction = (...args: any[]) => any;
 
-export const isFunction = (v: any): v is AnyFunction => typeof v === "function"
+export const isFunction = (v: any): v is AnyFunction => typeof v === "function";

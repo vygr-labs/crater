@@ -1,6 +1,18 @@
-import { createContext, createEffect, useContext, type Accessor, type JSX, type ParentProps, type Setter } from "solid-js";
+import {
+	createContext,
+	createEffect,
+	useContext,
+	type Accessor,
+	type JSX,
+	type ParentProps,
+	type Setter,
+} from "solid-js";
 import { createStore, type SetStoreFunction } from "solid-js/store";
-import type { EditorNode, RegisterNodeFn, RegisterNodeFnWithId } from "./editor-types";
+import type {
+	EditorNode,
+	RegisterNodeFn,
+	RegisterNodeFnWithId,
+} from "./editor-types";
 import { useEditor } from "./Editor";
 import { useDrag } from "solid-gesture";
 import type { FullGestureState } from "@use-gesture/core/types";
@@ -21,7 +33,11 @@ export interface NodeContextValue {
 }
 
 export type DragCoord = { x: number; y: number };
-export type ResizeHandlePosition = "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
+export type ResizeHandlePosition =
+	| "topLeft"
+	| "topRight"
+	| "bottomLeft"
+	| "bottomRight";
 
 export const NodeContext = createContext<NodeContextValue>();
 
@@ -55,7 +71,7 @@ export default function NodeProvider(props: NodeProviderProps) {
 	const {
 		editor,
 		getters: { getRootRef },
-		helpers: { selectNode }
+		helpers: { selectNode },
 	} = useEditor();
 	const [nodeStore, setNodeStore] = createStore<NodeProviderStore>({
 		node: props.node,
@@ -77,22 +93,23 @@ export default function NodeProvider(props: NodeProviderProps) {
 	});
 	const [nodeStyle, setNodeStyle] = createStore(nodeStore.node.style);
 
-    createEffect(() => {
-        console.log("Updating Node Width: ", nodeStyle.width)
-    })
+	createEffect(() => {
+		console.log("Updating Node Width: ", nodeStyle.width);
+	});
 
 	// const dragStyles = createMemo(() => ({ transform: `scale3d(${nodeStore.node.data.resize.x}, ${props.node.data.resize.y}, ${props.node.data.resize.z}) translate3d(${nodeStore.coords.x}px, ${nodeStore.coords.y}px, 0)`, top: nodeStore.position[1] + "%", left: nodeStore.position[0] + "%", width: nodeStore.node.data.resize.width, height: nodeStore.node.data.resize.height }));
 	createEffect(() => {
-        console.log("Setting styles: ", props.node.style, nodeStore.node.style)
+		console.log("Setting styles: ", props.node.style, nodeStore.node.style);
 		setNodeStyle({
-			// scale3d(${nodeStore.node.data.resize.x}, ${props.node.data.resize.y}, ${props.node.data.resize.z}) 
+			// scale3d(${nodeStore.node.data.resize.x}, ${props.node.data.resize.y}, ${props.node.data.resize.z})
 			transform: `translate3d(${nodeStore.coords.x}px, ${nodeStore.coords.y}px, 0)`,
 			top: nodeStore.position[1] + "%",
 			left: nodeStore.position[0] + "%",
 		});
 	});
 
-	const bindDrag = useDrag((dragState: FullGestureState<"drag">) => {
+	const bindDrag = useDrag(
+		(dragState: FullGestureState<"drag">) => {
 			const {
 				down,
 				movement: [mx, my],
@@ -105,22 +122,44 @@ export default function NodeProvider(props: NodeProviderProps) {
 				// dragging, moving,
 				// memo, pressed, type
 			} = dragState;
-			if (editor.selectedId !== nodeStore.node.id) selectNode(nodeStore.node.id);
-			console.log("Debug: ", nodeStore.node.id, [mx, my], nodeStore.node.el, down)
+			if (editor.selectedId !== nodeStore.node.id)
+				selectNode(nodeStore.node.id);
+			console.log(
+				"Debug: ",
+				nodeStore.node.id,
+				[mx, my],
+				nodeStore.node.el,
+				down,
+			);
 			// console.log(_blocked,
 			// 	canceled,
 			// 	locked,
 			// 	dragging, moving, memo, pressed, type)
 			// console.log("ACTIVITY REVERSED: ", down, active)
 			if (!down) {
-				console.log("Setting position values for: ", nodeStore.node.id, nodeStore.node);
+				console.log(
+					"Setting position values for: ",
+					nodeStore.node.id,
+					nodeStore.node,
+				);
 				const rootEditorRect = getRootRef()?.getBoundingClientRect();
 				if (!rootEditorRect) return;
-				const boundingPosition = (target as HTMLElement).getBoundingClientRect();
+				const boundingPosition = (
+					target as HTMLElement
+				).getBoundingClientRect();
 
-				console.log("child -> parent", boundingPosition, rootEditorRect)
-				const [relativeLeftPercent, relativeTopPercent] = calculateParentOffset(boundingPosition, rootEditorRect, true);
-				console.log("Position Data: ", boundingPosition, relativeTopPercent, relativeLeftPercent);
+				console.log("child -> parent", boundingPosition, rootEditorRect);
+				const [relativeLeftPercent, relativeTopPercent] = calculateParentOffset(
+					boundingPosition,
+					rootEditorRect,
+					true,
+				);
+				console.log(
+					"Position Data: ",
+					boundingPosition,
+					relativeTopPercent,
+					relativeLeftPercent,
+				);
 				setNodeStore("position", [relativeLeftPercent, relativeTopPercent]);
 			}
 			setNodeStore("coords", { x: down ? mx : 0, y: down ? my : 0 });
@@ -139,7 +178,16 @@ export default function NodeProvider(props: NodeProviderProps) {
 	};
 
 	return (
-		<NodeContext.Provider value={{ node: nodeStore.node, register: (ref: HTMLElement) => props.register({ id: nodeStore.node.id, ref }), styles: nodeStyle, actions: nodeActions, bindDrag }}>
+		<NodeContext.Provider
+			value={{
+				node: nodeStore.node,
+				register: (ref: HTMLElement) =>
+					props.register({ id: nodeStore.node.id, ref }),
+				styles: nodeStyle,
+				actions: nodeActions,
+				bindDrag,
+			}}
+		>
 			{/* ref={ref => props.register({id: nodeStore.node.id, ref})} */}
 			{/* <Box class={defaultStyles}> */}
 			{props.children}

@@ -1,11 +1,26 @@
 import { HStack, VStack } from "styled-system/jsx";
 import { Tabs } from "../ui/tabs";
 import { IconButton } from "../ui/icon-button";
-import { TbBible, TbMusic, TbPalette, TbPlus, TbPresentation, TbVideo } from "solid-icons/tb";
+import {
+	TbBible,
+	TbMusic,
+	TbPalette,
+	TbPlus,
+	TbPresentation,
+	TbVideo,
+} from "solid-icons/tb";
 import SongSelection from "./song/SongSelection";
 import ScriptureSelection from "./scripture/ScriptureSelection";
 import { useFocusContext } from "~/layouts/FocusContext";
-import { DEFAULT_PANEL, defaultPalette, MEDIA_TAB_FOCUS_NAME, PRESENTATIONS_TAB_FOCUS_NAME, SCRIPTURE_TAB_FOCUS_NAME, SONGS_TAB_FOCUS_NAME, THEMES_TAB_FOCUS_NAME } from "~/utils/constants";
+import {
+	DEFAULT_PANEL,
+	defaultPalette,
+	MEDIA_TAB_FOCUS_NAME,
+	PRESENTATIONS_TAB_FOCUS_NAME,
+	SCRIPTURE_TAB_FOCUS_NAME,
+	SONGS_TAB_FOCUS_NAME,
+	THEMES_TAB_FOCUS_NAME,
+} from "~/utils/constants";
 import ThemeSelection from "./theme/ThemeSelection";
 import { addToSchedule } from "~/utils/store-helpers";
 import { useAppContext } from "~/layouts/AppContext";
@@ -16,13 +31,13 @@ export default function ControlsMain() {
 	const { appStore, setAppStore } = useAppContext();
 	const handleAddToSchedule = () => {
 		if (appStore.previewItem) {
-			addToSchedule(setAppStore, [{...appStore.previewItem}])
+			addToSchedule(setAppStore, [{ ...appStore.previewItem }]);
 		}
-		console.log("Schedule Updated: ", appStore.scheduleItems)
-	}
+		console.log("Schedule Updated: ", appStore.scheduleItems);
+	};
 
-    return (
-        <VStack h="full">
+	return (
+		<VStack h="full">
 			<Tabs.Root
 				w="full"
 				h="full"
@@ -43,9 +58,9 @@ export default function ControlsMain() {
 						fontFamily="heading"
 						css={{
 							"& [data-part=trigger]": {
-								px: 4, 
-								_focus: { outline: 'none' }
-							}
+								px: 4,
+								_focus: { outline: "none" },
+							},
 						}}
 					>
 						<Tabs.Trigger value={SONGS_TAB_FOCUS_NAME}>
@@ -106,5 +121,5 @@ export default function ControlsMain() {
 				</Tabs.ContentGroup>
 			</Tabs.Root>
 		</VStack>
-    )
+	);
 }

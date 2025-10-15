@@ -9,7 +9,7 @@ linux:
 mac:
   target: dmg
   category: public.app-category.social-networking
-files: ['src/backend/build/**/*', 'build/**/*']
-extraResources: ['./assets/**']
+files: ["src/backend/build/**/*", "build/**/*"]
+extraResources: ["./assets/**"]
 directories:
-  buildResources: 'assets'
+  buildResources: "assets"

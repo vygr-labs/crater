@@ -18,14 +18,14 @@ import LivePanel from "./LivePanel";
 import RenderToaster from "./RenderToaster";
 import ThemeEditor from "../modals/ThemeEditor";
 import Editor from "./editor/Editor";
-import EditorContainer from "../app/editor/ui/Container"
+import EditorContainer from "../app/editor/ui/Container";
 import EditorText from "./editor/ui/Text";
 import SchedulePanel from "./SchedulePanel";
 
 const config = {
-    EditorContainer,
-	EditorText
-}
+	EditorContainer,
+	EditorText,
+};
 
 export default function AppControls() {
 	return (
@@ -73,5 +73,5 @@ export default function AppControls() {
 				</Box>
 			</FocusContextProvider>
 		</AppContextProvider>
-	)
+	);
 }

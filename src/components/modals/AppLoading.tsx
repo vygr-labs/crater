@@ -1,12 +1,12 @@
-import { Box, Center } from "styled-system/jsx"
-import { useAppContext } from "~/layouts/AppContext"
+import { Box, Center } from "styled-system/jsx";
+import { useAppContext } from "~/layouts/AppContext";
 import { Spinner } from "../ui/spinner";
 import { Text } from "../ui/text";
 import { IconButton } from "../ui/icon-button";
 import { TbX } from "solid-icons/tb";
 
 export default function AppLoading() {
-    const { appStore, setAppStore } = useAppContext();
+	const { appStore, setAppStore } = useAppContext();
 
 	return (
 		<Box
@@ -16,7 +16,7 @@ export default function AppLoading() {
 			pos="fixed"
 			inset={0}
 			opacity={appStore.loading?.isLoading ? 1 : 0}
-			visibility={appStore.loading?.isLoading ? 'visible' : 'hidden'}
+			visibility={appStore.loading?.isLoading ? "visible" : "hidden"}
 		>
 			<Box w="full" h="full" bg="blackAlpha.600"></Box>
 			<Center
@@ -33,7 +33,7 @@ export default function AppLoading() {
 			>
 				<Spinner size="lg" />
 				<Text textStyle="lg" fontWeight="700">
-					{appStore.loading?.reason ?? 'Loading...'}
+					{appStore.loading?.reason ?? "Loading..."}
 				</Text>
 				{/* <ProgressRoot maxW="240px" striped animated>
 					<ProgressBar />
@@ -46,11 +46,11 @@ export default function AppLoading() {
 				variant="ghost"
 				aria-label="Close"
 				onClick={() => {
-					setAppStore("loading", { reason: '', isLoading: false })
+					setAppStore("loading", { reason: "", isLoading: false });
 				}}
 			>
 				<TbX />
 			</IconButton>
 		</Box>
-	)
+	);
 }

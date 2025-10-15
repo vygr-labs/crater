@@ -4,7 +4,13 @@ import { defaultPalette } from "~/utils/constants";
 import { useEditor } from "../Editor";
 import { Box, Divider, HStack } from "styled-system/jsx";
 import { IoText } from "solid-icons/io";
-import { TbContainer, TbPhoto, TbRadiusTopLeft, TbShadow, TbTextCaption } from "solid-icons/tb";
+import {
+	TbContainer,
+	TbPhoto,
+	TbRadiusTopLeft,
+	TbShadow,
+	TbTextCaption,
+} from "solid-icons/tb";
 import EditorContainer from "./Container";
 import { IconButton, type IconButtonProps } from "~/components/ui/icon-button";
 import { ColorPicker } from "~/components/ui/color-picker";
@@ -21,7 +27,13 @@ interface ControlBtnProps extends ParentProps {
 const AddNodeBtn = (props: ControlBtnProps) => {
 	const { connectors } = useEditor();
 	return (
-		<IconButton size="sm" variant="surface" colorPalette={defaultPalette} onclick={() => connectors.create(props.editorComponent)} {...props.extraProps}>
+		<IconButton
+			size="sm"
+			variant="surface"
+			colorPalette={defaultPalette}
+			onclick={() => connectors.create(props.editorComponent)}
+			{...props.extraProps}
+		>
 			{props.children}
 		</IconButton>
 	);
@@ -46,7 +58,12 @@ export const Toolbox = () => {
 					<TbTextCaption />
 				</AddNodeBtn>
 			</HStack>
-			<Divider orientation="vertical" thickness="2" h={7} color="bg.emphasized" />
+			<Divider
+				orientation="vertical"
+				thickness="2"
+				h={7}
+				color="bg.emphasized"
+			/>
 			<RenderEditorSettings />
 			{/* <ControlBtn>
                 <TbShadow />

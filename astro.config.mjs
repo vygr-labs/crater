@@ -1,12 +1,12 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig } from "astro/config";
 
-import solidJs from '@astrojs/solid-js';
+import solidJs from "@astrojs/solid-js";
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [solidJs()],
-  server: {
-    port: 7241
-  }
+	integrations: [solidJs()],
+	server: {
+		port: 7241,
+	},
 });

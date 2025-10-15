@@ -1,5 +1,18 @@
-import { parseColor, type RadioGroupValueChangeDetails, type SliderRootProps } from "@ark-ui/solid";
-import { createEffect, createMemo, createSignal, Index, mergeProps, type JSX, type JSXElement, type ParentProps } from "solid-js";
+import {
+	parseColor,
+	type RadioGroupValueChangeDetails,
+	type SliderRootProps,
+} from "@ark-ui/solid";
+import {
+	createEffect,
+	createMemo,
+	createSignal,
+	Index,
+	mergeProps,
+	type JSX,
+	type JSXElement,
+	type ParentProps,
+} from "solid-js";
 import type { SetStoreFunction } from "solid-js/store";
 import { ColorPicker } from "~/components/ui/color-picker";
 import { Popover } from "~/components/ui/popover";
@@ -28,7 +41,9 @@ export function ColorUpdateInput(props: ColorUpdateInputProps) {
 		<ColorPicker.Root
 			size="xs"
 			value={parseColor(getColor(props.styles, props.styleKey))}
-			onValueChange={(v) => props.setStyle({ [props.styleKey]: v.valueAsString })}
+			onValueChange={(v) =>
+				props.setStyle({ [props.styleKey]: v.valueAsString })
+			}
 			css={{
 				"--input-height": token.var("sizes.5"),
 			}}
@@ -40,7 +55,9 @@ export function ColorUpdateInput(props: ColorUpdateInputProps) {
 			</ColorPicker.Control>
 			<ColorPicker.Positioner>
 				<ColorPicker.Content>
-					<ColorPicker.FormatTrigger>Toggle ColorFormat</ColorPicker.FormatTrigger>
+					<ColorPicker.FormatTrigger>
+						Toggle ColorFormat
+					</ColorPicker.FormatTrigger>
 					<ColorPicker.FormatSelect />
 					<ColorPicker.Area>
 						<ColorPicker.AreaBackground />
@@ -81,7 +98,9 @@ export function ColorUpdateInput(props: ColorUpdateInputProps) {
 						<ColorPicker.ChannelInput channel="saturation" />
 						<ColorPicker.ChannelInput channel="lightness" />
 					</ColorPicker.View>
-					<ColorPicker.EyeDropperTrigger>Pick color</ColorPicker.EyeDropperTrigger>
+					<ColorPicker.EyeDropperTrigger>
+						Pick color
+					</ColorPicker.EyeDropperTrigger>
 				</ColorPicker.Content>
 			</ColorPicker.Positioner>
 			<ColorPicker.HiddenInput />
@@ -95,11 +114,21 @@ export interface SliderWithInputProps extends PropUpdateComponent {
 }
 export const SliderWithInput = (props: SliderWithInputProps) => {
 	const sliderValue = createMemo(() => getNum(props.styles, props.styleKey));
-	const setValue = (value: number) => props.setStyle({ [props.styleKey]: value + "px" });
+	const setValue = (value: number) =>
+		props.setStyle({ [props.styleKey]: value + "px" });
 
 	return (
-		<Slider.Root orientation={props.orientation} w={props.orientation ? undefined : 56} value={[sliderValue()]} onValueChange={(v) => setValue(v.value[0])} {...props.rootProps}>
-			<Dynamic component={props.orientation === "vertical" ? VStack : HStack} gap={5}>
+		<Slider.Root
+			orientation={props.orientation}
+			w={props.orientation ? undefined : 56}
+			value={[sliderValue()]}
+			onValueChange={(v) => setValue(v.value[0])}
+			{...props.rootProps}
+		>
+			<Dynamic
+				component={props.orientation === "vertical" ? VStack : HStack}
+				gap={5}
+			>
 				<Slider.Label>{props.label}</Slider.Label>
 				<Slider.Control cursor="pointer">
 					<Slider.Track>
@@ -109,7 +138,11 @@ export const SliderWithInput = (props: SliderWithInputProps) => {
 						<Slider.HiddenInput />
 					</Slider.Thumb>
 				</Slider.Control>
-				<NumberInput.Root maxW={16} value={sliderValue().toString()} onValueChange={(nv) => setValue(nv.valueAsNumber)}>
+				<NumberInput.Root
+					maxW={16}
+					value={sliderValue().toString()}
+					onValueChange={(nv) => setValue(nv.valueAsNumber)}
+				>
 					<NumberInput.Input />
 					<NumberInput.Control>
 						<NumberInput.IncrementTrigger>
@@ -147,7 +180,7 @@ export const PopoverButton = (props: PopoverBtnProps) => {
 
 export interface RadioInputProps extends ParentProps {
 	label?: JSXElement;
-	options: { text: string, value: any }[];
+	options: { text: string; value: any }[];
 	value: string;
 	onValueChange: (d: RadioGroupValueChangeDetails) => void;
 }
@@ -163,7 +196,12 @@ export const RadioInput = (props: RadioInputProps) => {
 			<VStack gap={3} alignItems="start">
 				<Index each={props.options}>
 					{(option) => (
-						<RadioGroup.Item value={option().value} fontWeight={400} _checked={{ colorPalette: "purple" }} cursor="pointer">
+						<RadioGroup.Item
+							value={option().value}
+							fontWeight={400}
+							_checked={{ colorPalette: "purple" }}
+							cursor="pointer"
+						>
 							<RadioGroup.ItemControl />
 							<RadioGroup.ItemText>{option().text}</RadioGroup.ItemText>
 							<RadioGroup.ItemHiddenInput />

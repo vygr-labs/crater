@@ -1,5 +1,5 @@
-import { Show, children } from 'solid-js'
-export * as NumberInput from './styled/number-input'
+import { Show, children } from "solid-js";
+export * as NumberInput from "./styled/number-input";
 
 // export interface NumberInputProps extends StyledNumberInput.RootProps {}
 

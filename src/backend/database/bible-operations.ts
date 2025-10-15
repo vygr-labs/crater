@@ -1,41 +1,41 @@
-import bibleDB from './bible-db.js'
+import bibleDB from "./bible-db.js";
 
 // Define the database interface and utility types
 interface ScriptureTranslation {
-	id: number
-	version: string
-	description: string
+	id: number;
+	version: string;
+	description: string;
 }
 
 interface BaseText {
-	text: string
+	text: string;
 }
 
 interface Scripture extends BaseText {
-	verse: number
+	verse: number;
 }
 
 type BookChapterCount = {
-	book_name: string
-	number_of_chapters: number
-}
+	book_name: string;
+	number_of_chapters: number;
+};
 
 type ChapterCount = {
-	[bookName: string]: number
-}
+	[bookName: string]: number;
+};
 
 type FetchChapterParams = {
-	book: string
-	chapter: number
-	version: string
-}
+	book: string;
+	chapter: number;
+	version: string;
+};
 
 type FetchScriptureParams = {
-	book: string
-	chapter: number
-	verse: number
-	version: string
-}
+	book: string;
+	chapter: number;
+	verse: number;
+	version: string;
+};
 
 const fetchTranslations = (): ScriptureTranslation[] => {
 	// Query to get all the translations
@@ -44,16 +44,16 @@ const fetchTranslations = (): ScriptureTranslation[] => {
 			`
       SELECT *
       FROM bibles
-    `
+    `,
 		)
-		.all() as ScriptureTranslation[]
+		.all() as ScriptureTranslation[];
 
-	return result
-}
+	return result;
+};
 
 // Function to load books and chapters into memory
 const fetchChapterCounts = (): ChapterCount => {
-	const result: ChapterCount = {}
+	const result: ChapterCount = {};
 
 	// Query to get the maximum chapter number for each book
 	const rows = bibleDB
@@ -62,17 +62,17 @@ const fetchChapterCounts = (): ChapterCount => {
       SELECT book_name, MAX(chapter) AS number_of_chapters
       FROM scriptures
       GROUP BY book_name
-    `
+    `,
 		)
-		.all() as BookChapterCount[]
+		.all() as BookChapterCount[];
 
 	// Build the result object with book_name as keys and number_of_chapters as values
 	rows.forEach((row: { book_name: string; number_of_chapters: number }) => {
-		result[row.book_name] = row.number_of_chapters
-	})
+		result[row.book_name] = row.number_of_chapters;
+	});
 
-	return result
-}
+	return result;
+};
 
 const fetchChapter = ({
 	book,
@@ -88,13 +88,13 @@ const fetchChapter = ({
         AND chapter = ?
         AND version = ?
       ORDER BY verse ASC
-    `
+    `,
 		)
-		.all(book, chapter, version) as Scripture[]
+		.all(book, chapter, version) as Scripture[];
 	// console.log('Chapter Fetched: ', response)
 
-	return response
-}
+	return response;
+};
 
 const fetchScripture = ({
 	book,
@@ -111,14 +111,14 @@ const fetchScripture = ({
         AND chapter = ?
         AND verse = ?
         AND version = ?
-    `
+    `,
 		)
-		.get(book, chapter, verse, version) as BaseText
+		.get(book, chapter, verse, version) as BaseText;
 
-	console.log('Scripture Fetched: ', response)
+	console.log("Scripture Fetched: ", response);
 
-	return response ?? { text: '' }
-}
+	return response ?? { text: "" };
+};
 
 const fetchAllScripture = (version: string) => {
 	try {
@@ -136,15 +136,15 @@ const fetchAllScripture = (version: string) => {
 					JOIN bibles b ON s.bible_id = b.id
 					WHERE b.version = ?
 					ORDER BY s.book_id, s.chapter, s.verse
-			`
+			`;
 
-		const rows = bibleDB.prepare(query).all(version)
-		return rows
+		const rows = bibleDB.prepare(query).all(version);
+		return rows;
 	} catch (error) {
-		console.error('Error fetching verses by version:', error)
-		throw error
+		console.error("Error fetching verses by version:", error);
+		throw error;
 	}
-}
+};
 
 export {
 	fetchTranslations,
@@ -152,4 +152,4 @@ export {
 	fetchChapter,
 	fetchScripture,
 	fetchAllScripture,
-}
+};

@@ -1,14 +1,14 @@
 // Songs Database Initialization for SQLite
-import Database from 'better-sqlite3'
+import Database from "better-sqlite3";
 // import { app } from 'electron'
-import { join as pathJoin } from 'path'
+import { join as pathJoin } from "path";
 // import electronIsDev from 'electron-is-dev'
-import { DB_PATH } from '../constants.js'
+import { DB_PATH } from "../constants.js";
 
 // Define the path for the songs database file
 // const interMediaries = electronIsDev ? 'backend/database' : ''
-const dbPath = pathJoin(DB_PATH, 'songs.sqlite')
-const db = new Database(dbPath)
+const dbPath = pathJoin(DB_PATH, "songs.sqlite");
+const db = new Database(dbPath);
 
 // Create Tables
 db.prepare(
@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS songs (
     copyright TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-)`
-).run()
+)`,
+).run();
 
 db.prepare(
 	`
@@ -32,16 +32,16 @@ CREATE TABLE IF NOT EXISTS song_lyrics (
     lyrics TEXT NOT NULL, -- JSON array to store the lines
     "order" INTEGER NOT NULL,
     FOREIGN KEY (song_id) REFERENCES songs (id) ON DELETE CASCADE
-)`
-).run()
+)`,
+).run();
 
 db.prepare(
 	`
 CREATE INDEX IF NOT EXISTS idx_song_lyrics_song_order
 ON song_lyrics (song_id, "order");
-`
-).run()
+`,
+).run();
 
-console.log('Songs database initialized successfully!')
+console.log("Songs database initialized successfully!");
 
-export default db
+export default db;

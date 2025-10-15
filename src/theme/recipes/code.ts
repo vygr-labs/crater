@@ -1,16 +1,16 @@
-import { defineRecipe } from "@pandacss/dev"
-import { badgeRecipe } from "./badge"
+import { defineRecipe } from "@pandacss/dev";
+import { badgeRecipe } from "./badge";
 
-const { variants, defaultVariants } = badgeRecipe
+const { variants, defaultVariants } = badgeRecipe;
 
 export const codeRecipe = defineRecipe({
-  className: "chakra-code",
-  base: {
-    fontFamily: "mono",
-    alignItems: "center",
-    display: "inline-flex",
-    borderRadius: "l2",
-  },
-  variants,
-  defaultVariants,
-})
+	className: "chakra-code",
+	base: {
+		fontFamily: "mono",
+		alignItems: "center",
+		display: "inline-flex",
+		borderRadius: "l2",
+	},
+	variants,
+	defaultVariants,
+});

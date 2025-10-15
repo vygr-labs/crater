@@ -1,8 +1,8 @@
-import { Box } from "styled-system/jsx"
-import { Input, type InputProps } from "../ui/input"
+import { Box } from "styled-system/jsx";
+import { Input, type InputProps } from "../ui/input";
 
 interface Props extends InputProps {
-	firstBookMatch: string
+	firstBookMatch: string;
 }
 
 export default function SearchInput(props: Props) {
@@ -21,13 +21,13 @@ export default function SearchInput(props: Props) {
 				// borderWidth={2}
 				// borderColor="border.emphasized"
 				rounded="none"
-                border="unset"
+				border="unset"
 				px="2"
 				h="9"
 				outline="none"
 				w="full"
 				_selection={{
-					bgColor: '#3A3A3A',
+					bgColor: "#3A3A3A",
 				}}
 				value={props.value}
 				{...props}
@@ -40,7 +40,7 @@ export default function SearchInput(props: Props) {
 				left={0}
 				// zIndex={10}
 				variant="outline"
-                border="unset"
+				border="unset"
 				// borderWidth={2}
 				// borderColor="border.emphasized"
 				rounded="none"
@@ -49,7 +49,7 @@ export default function SearchInput(props: Props) {
 				outline="none"
 				w="full"
 				_selection={{
-					bgColor: '#3A3A3A',
+					bgColor: "#3A3A3A",
 				}}
 				color="white"
 				{...props}
@@ -57,5 +57,5 @@ export default function SearchInput(props: Props) {
 				value={props.firstBookMatch}
 			/>
 		</Box>
-	)
+	);
 }

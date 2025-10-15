@@ -36,7 +36,10 @@
 // 	updateProjectionDisplayId,
 // } from '@/utils/redux/settingsSlice'
 
-import { createListCollection, type SelectValueChangeDetails } from "@ark-ui/solid";
+import {
+	createListCollection,
+	type SelectValueChangeDetails,
+} from "@ark-ui/solid";
 import { createEffect, createMemo, createSignal, For, Switch } from "solid-js";
 import { Box, HStack, Stack, VStack } from "styled-system/jsx";
 import { Tabs } from "../ui/tabs";
@@ -45,7 +48,11 @@ import { Select } from "../ui/select";
 import { Field, GenericField } from "../ui/field";
 import { Input } from "../ui/input";
 import { useAppContext } from "~/layouts/AppContext";
-import { toggleTheme, updateDisplayBounds, updateProjectionDisplayId } from "~/utils/store-helpers";
+import {
+	toggleTheme,
+	updateDisplayBounds,
+	updateProjectionDisplayId,
+} from "~/utils/store-helpers";
 import { Button } from "../ui/button";
 import type { DisplayBounds } from "~/types";
 import type { Display } from "electron";
@@ -56,10 +63,10 @@ import { FaSolidMoon, FaSolidSun } from "solid-icons/fa";
 import { ArkSwitch, GenericSwitch } from "../ui/switch";
 
 export function AppSettingsDialog() {
-	const [displays, setDisplays] = createSignal<Display[]>([])
+	const [displays, setDisplays] = createSignal<Display[]>([]);
 	const [displayBounds, setDisplayBounds] = createSignal<
 		DisplayBounds | undefined
-	>()
+	>();
 	// const dispatch = useAppDispatch()
 	// const bounds = useAppSelector(state => state.settings.projectionBounds)
 	// const displayId = useAppSelector(state => state.settings.projectionDisplayId)
@@ -67,34 +74,33 @@ export function AppSettingsDialog() {
 
 	createEffect(() => {
 		if (settings.projectionBounds) {
-			setDisplayBounds(settings.projectionBounds)
+			setDisplayBounds(settings.projectionBounds);
 		}
-	})
+	});
 
 	createEffect(() => {
 		if (appStore.openSettings) {
-			window.electronAPI.getConnectedDisplays().then(result => {
-				setDisplays(result)
-			})
+			window.electronAPI.getConnectedDisplays().then((result) => {
+				setDisplays(result);
+			});
 		}
-	})
+	});
 
-	const displaySelectCollection = createMemo(
-		() =>
-			createListCollection({
-				items: displays().map((val, index) => ({
-					...val,
-					label: `Display ${index + 1}`,
-					value: val.id,
-				})),
-			})
-	)
+	const displaySelectCollection = createMemo(() =>
+		createListCollection({
+			items: displays().map((val, index) => ({
+				...val,
+				label: `Display ${index + 1}`,
+				value: val.id,
+			})),
+		}),
+	);
 
 	function handleDisplayChange(details: SelectValueChangeDetails) {
-		console.log(details)
+		console.log(details);
 		// setDisplayBounds(details)
-		updateDisplayBounds(updateSettings, { ...details.items[0].workArea })
-		updateProjectionDisplayId(updateSettings, details.items[0].id)
+		updateDisplayBounds(updateSettings, { ...details.items[0].workArea });
+		updateProjectionDisplayId(updateSettings, details.items[0].id);
 	}
 
 	// function handleBoundChange(bound, event) {
@@ -107,7 +113,7 @@ export function AppSettingsDialog() {
 			placement="center"
 			motionPreset="slide-in-top"
 			open={appStore.openSettings}
-			onOpenChange={e => setAppStore("openSettings", e.open)}
+			onOpenChange={(e) => setAppStore("openSettings", e.open)}
 		>
 			<Dialog.Backdrop />
 			<Dialog.Positioner>
@@ -146,7 +152,7 @@ export function AppSettingsDialog() {
 										<Select.Positioner>
 											<Select.Content>
 												<For each={displaySelectCollection().items}>
-													{display => (
+													{(display) => (
 														<Select.Item item={display}>
 															{display.label}
 															<Select.ItemIndicator />
@@ -195,10 +201,12 @@ export function AppSettingsDialog() {
 									<HStack w="full">
 										<Text>Change Theme</Text>
 										<Box onClick={() => toggleTheme(updateSettings)}>
-											<ArkSwitch.Root aria-label="Toggle color mode"
+											<ArkSwitch.Root
+												aria-label="Toggle color mode"
 												colorPalette="blue"
 												size="lg"
-												checked={settings.theme === 'light'}>
+												checked={settings.theme === "light"}
+											>
 												<ArkSwitch.Control>
 													<ArkSwitch.Thumb />
 												</ArkSwitch.Control>
@@ -224,7 +232,9 @@ export function AppSettingsDialog() {
 									</HStack>
 								</Stack>
 							</Tabs.Content>
-							<Tabs.Content value="scripture">Manage your projects</Tabs.Content>
+							<Tabs.Content value="scripture">
+								Manage your projects
+							</Tabs.Content>
 							<Tabs.Content value="songs">
 								Manage your tasks for freelancers
 							</Tabs.Content>
@@ -235,12 +245,14 @@ export function AppSettingsDialog() {
 						<Button variant="outline">Cancel</Button>
 						{/* </Dialog.ActionTrigger> */}
 						{/* <Dialog.ActionTrigger asChild> */}
-						<Button onClick={() => setAppStore("openSettings", false)}>Save</Button>
+						<Button onClick={() => setAppStore("openSettings", false)}>
+							Save
+						</Button>
 						{/* </Dialog.ActionTrigger> */}
 					</Dialog.Footer>
 					<Dialog.CloseTrigger />
 				</Dialog.Content>
 			</Dialog.Positioner>
 		</Dialog.Root>
-	)
+	);
 }

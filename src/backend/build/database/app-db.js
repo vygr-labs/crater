@@ -1,9 +1,10 @@
-import Database from 'better-sqlite3';
-import { join as pathJoin } from 'path';
-import { DB_PATH } from '../constants.js';
-const dbPath = pathJoin(DB_PATH, 'app.sqlite');
+import Database from "better-sqlite3";
+import { join as pathJoin } from "path";
+import { DB_PATH } from "../constants.js";
+const dbPath = pathJoin(DB_PATH, "app.sqlite");
 const db = new Database(dbPath);
-db.prepare(`
+db.prepare(
+	`
 CREATE TABLE IF NOT EXISTS themes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT UNIQUE NOT NULL,
@@ -13,6 +14,7 @@ CREATE TABLE IF NOT EXISTS themes (
     theme_data TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )`).run();
-console.log('Themes database initialized successfully!');
+  )`,
+).run();
+console.log("Themes database initialized successfully!");
 export default db;

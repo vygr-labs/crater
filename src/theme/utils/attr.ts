@@ -1,4 +1,4 @@
-type Booleanish = boolean | "true" | "false"
+type Booleanish = boolean | "true" | "false";
 
 export const dataAttr = (condition: boolean | undefined) =>
-  (condition ? "" : undefined) as Booleanish
+	(condition ? "" : undefined) as Booleanish;

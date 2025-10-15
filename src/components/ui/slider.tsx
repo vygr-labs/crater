@@ -1,6 +1,6 @@
 // import { Index, type JSX, Show, children, splitProps } from 'solid-js'
 // import * as StyledSlider from './styled/slider'
-export * as Slider from "./styled/slider"
+export * as Slider from "./styled/slider";
 
 // export interface SliderProps extends StyledSlider.RootProps {
 //   marks?: {

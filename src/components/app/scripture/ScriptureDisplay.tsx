@@ -4,14 +4,18 @@ import { token } from "styled-system/tokens";
 import { Text } from "~/components/ui/text";
 import type { SongLyric } from "~/types/context";
 import { getFocusableStyles } from "~/utils";
-import { defaultPalette, defaultSupportingPalette, PREVIEW_INDEX_WIDTH } from "~/utils/constants";
+import {
+	defaultPalette,
+	defaultSupportingPalette,
+	PREVIEW_INDEX_WIDTH,
+} from "~/utils/constants";
 
 export interface DisplayScripture {
-	book: string
-	chapter: string
-	verse: string
-	version: string
-	text: string
+	book: string;
+	chapter: string;
+	verse: string;
+	version: string;
+	text: string;
 }
 
 interface Props {
@@ -34,8 +38,8 @@ export default function ScriptureDisplay(props: Props) {
 			data-panel={props.panelName}
 			display="flex"
 			gap={0}
-		// onMouseEnter={() => setIsHovered(true)}
-		// onMouseLeave={() => setIsHovered(false)}
+			// onMouseEnter={() => setIsHovered(true)}
+			// onMouseLeave={() => setIsHovered(false)}
 		>
 			<Flex
 				w="full"
@@ -44,10 +48,14 @@ export default function ScriptureDisplay(props: Props) {
 				gap={0.5}
 				position="relative"
 				pl={PREVIEW_INDEX_WIDTH}
-				style={getFocusableStyles('LYRICS_PARENT_CONTAINER', props.isFocusItem, props.isCurrentPanel)}
-			// style={{
-			// 	// "background-color": props.isFocusItem ? token.var(`colors.${defaultPalette}.800`) : isHovered ? token.var(`colors.${defaultSupportingPalette}.800`) : 'transparent'
-			// }}
+				style={getFocusableStyles(
+					"LYRICS_PARENT_CONTAINER",
+					props.isFocusItem,
+					props.isCurrentPanel,
+				)}
+				// style={{
+				// 	// "background-color": props.isFocusItem ? token.var(`colors.${defaultPalette}.800`) : isHovered ? token.var(`colors.${defaultSupportingPalette}.800`) : 'transparent'
+				// }}
 			>
 				<Box
 					w={PREVIEW_INDEX_WIDTH}
@@ -58,10 +66,14 @@ export default function ScriptureDisplay(props: Props) {
 					left={0}
 					bottom={0}
 					top={0}
-					style={getFocusableStyles('LYRICS_INDEX_CONTAINER', props.isFocusItem, props.isCurrentPanel)}
-				// bgColor={
-				// 	props.isFocusItem ? `${defaultPalette}.700` : isHovered ? `${defaultPalette}.700/50` : 'gray.800'
-				// }
+					style={getFocusableStyles(
+						"LYRICS_INDEX_CONTAINER",
+						props.isFocusItem,
+						props.isCurrentPanel,
+					)}
+					// bgColor={
+					// 	props.isFocusItem ? `${defaultPalette}.700` : isHovered ? `${defaultPalette}.700/50` : 'gray.800'
+					// }
 				>
 					<Text>{props.index + 1}</Text>
 				</Box>
@@ -76,17 +88,26 @@ export default function ScriptureDisplay(props: Props) {
 							// 			? 'gray.100'
 							// 			: 'initial'
 							// }
-							style={getFocusableStyles('LYRICS_TEXT_CONTAINER', props.isFocusItem, props.isCurrentPanel)}
+							style={getFocusableStyles(
+								"LYRICS_TEXT_CONTAINER",
+								props.isFocusItem,
+								props.isCurrentPanel,
+							)}
 							fontWeight={600}
 						>
-							{props.scripture.book} {props.scripture.chapter}:{props.scripture.verse}
+							{props.scripture.book} {props.scripture.chapter}:
+							{props.scripture.verse}
 						</Text>
 					</Box>
 
 					<Box
 						py={2}
 						px={2}
-						style={getFocusableStyles('LYRICS_TEXT_CONTAINER', props.isFocusItem, props.isCurrentPanel)}
+						style={getFocusableStyles(
+							"LYRICS_TEXT_CONTAINER",
+							props.isFocusItem,
+							props.isCurrentPanel,
+						)}
 						// color={
 						// 	props.isFocusItem ? 'gray.200' : isHovered ? 'gray.200' : 'fg.muted'
 						// }
@@ -97,5 +118,5 @@ export default function ScriptureDisplay(props: Props) {
 				</Stack>
 			</Flex>
 		</Box>
-	)
+	);
 }

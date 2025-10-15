@@ -1,91 +1,95 @@
 import type { OpenEditData } from "~/types";
-import type { AppSettings, AppData, GroupCollectionObj } from "~/types/app-context";
+import type {
+	AppSettings,
+	AppData,
+	GroupCollectionObj,
+} from "~/types/app-context";
 
-export const DEFAULT_SCRIPTURE_COLLECTION_ID = 1
-export const defaultPalette = "purple"
+export const DEFAULT_SCRIPTURE_COLLECTION_ID = 1;
+export const defaultPalette = "purple";
 export const defaultSupportingPalette = "orange";
-export const PREVIEW_INDEX_WIDTH = 7
+export const PREVIEW_INDEX_WIDTH = 7;
 
 const DEFAULT_GROUPS: GroupCollectionObj = {
 	song: {
 		all: {
 			title: "All Songs",
-			subGroups: null
+			subGroups: null,
 		},
 		favorite: {
 			title: "My Favorites",
-			subGroups: []
+			subGroups: [],
 		},
 		collection: {
 			title: "My Collections",
-			subGroups: []
-		}
+			subGroups: [],
+		},
 	},
 	scripture: {
 		all: {
 			title: "All Songs",
-			subGroups: null
+			subGroups: null,
 		},
 		favorite: {
 			title: "My Favorites",
-			subGroups: []
+			subGroups: [],
 		},
 		collection: {
 			title: "My Collections",
-			subGroups: []
-		}
+			subGroups: [],
+		},
 	},
 	media: {
 		all: {
 			title: "All Songs",
-			subGroups: null
+			subGroups: null,
 		},
 		favorite: {
 			title: "My Favorites",
-			subGroups: []
+			subGroups: [],
 		},
 		collection: {
 			title: "My Collections",
-			subGroups: []
-		}
+			subGroups: [],
+		},
 	},
 	theme: {
 		song: {
 			title: "Song Themes",
 			type: "songs",
-			subGroups: null
+			subGroups: null,
 		},
 		scripture: {
 			title: "Scripture Themes",
 			type: "scriptures",
-			subGroups: null
+			subGroups: null,
 		},
 		presentation: {
 			title: "Presentation Themes",
 			type: "presentations",
-			subGroups: null
+			subGroups: null,
 		},
 		collection: {
 			title: "Theme Collections",
-			subGroups: []
-		}
-	}
-}
+			subGroups: [],
+		},
+	},
+};
 
 // adding arrays to app state takes a few reloads to show in redux/persist and are undefined till then
 export const defaultAppStore: AppData = {
 	user: undefined,
-	panelFocus: 'scripture',
+	panelFocus: "scripture",
 	scriptureTheme: undefined,
 	songTheme: undefined,
 	presentationTheme: undefined,
 	displayData: undefined,
 	hideLive: false,
 	showLogo: false,
-	logoBg: '',
+	logoBg: "",
 	songsUpdateCounter: 0,
 	loading: {
-		reason: 'Nothing is loading',
+		reason: "Nothing is loading",
 		isLoading: false,
 	},
 	previewItem: undefined,
@@ -94,7 +98,7 @@ export const defaultAppStore: AppData = {
 	displayGroups: DEFAULT_GROUPS,
 	// favorites: APP_FAVORITES,
 	themeEditor: {
-		type: 'song',
+		type: "song",
 		open: false,
 		initial: null,
 	},
@@ -109,27 +113,27 @@ export const defaultAppStore: AppData = {
 		song: null,
 	},
 	namingModal: {
-		type: 'song',
-		group: 'collection',
+		type: "song",
+		group: "collection",
 		open: false,
 	},
 	isLive: false,
-    openSettings: false
-}
-
-export const defaultAppSettings: AppSettings = {
-    theme: 'light',
-    language: 'en',
-    projectionBounds: {
-        height: 0,
-        width: 0,
-        x: 0,
-        y: 0,
-    },
-    projectionDisplayId: 0,
+	openSettings: false,
 };
 
-export const CLOSE_SONG_EDIT: OpenEditData = { open: false, song: null }
+export const defaultAppSettings: AppSettings = {
+	theme: "light",
+	language: "en",
+	projectionBounds: {
+		height: 0,
+		width: 0,
+		x: 0,
+		y: 0,
+	},
+	projectionDisplayId: 0,
+};
+
+export const CLOSE_SONG_EDIT: OpenEditData = { open: false, song: null };
 
 export const SONGS_TAB_FOCUS_NAME = "SONGS";
 export const SCRIPTURE_TAB_FOCUS_NAME = "SCRIPTURE";

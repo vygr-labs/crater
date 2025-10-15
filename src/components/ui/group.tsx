@@ -90,7 +90,6 @@
 //   },
 // })
 
-
 // type VariantProps = InferRecipeProps<typeof StyledGroup>
 
 // export interface GroupProps extends HTMLChakraProps<"div", VariantProps> {

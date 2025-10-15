@@ -1,39 +1,39 @@
-import { GroupType } from '@/components/app/songs/SongSelection'
+import { GroupType } from "@/components/app/songs/SongSelection";
 import {
 	AppData,
 	CacheBustMedia,
 	LyricScopes,
 	ScriptureScopes,
-} from './appSlice'
-import { createSelector } from '@reduxjs/toolkit'
-import { RootState } from './store'
-import { DisplayInfo, DisplayType, Theme, ThemeType } from '../types'
-import { getReference } from '..'
-import { DEFAULT_SCRIPTURE_COLLECTION_ID } from '../constants'
+} from "./appSlice";
+import { createSelector } from "@reduxjs/toolkit";
+import { RootState } from "./store";
+import { DisplayInfo, DisplayType, Theme, ThemeType } from "../types";
+import { getReference } from "..";
+import { DEFAULT_SCRIPTURE_COLLECTION_ID } from "../constants";
 
-const selectApp = (state: RootState) => state.app
-export const selectAllFavorites = (state: RootState) => state.app.favorites
-export const selectAllCollections = (state: RootState) => state.app.collections
-export const selectType = (state: RootState, type: GroupType) => type
+const selectApp = (state: RootState) => state.app;
+export const selectAllFavorites = (state: RootState) => state.app.favorites;
+export const selectAllCollections = (state: RootState) => state.app.collections;
+export const selectType = (state: RootState, type: GroupType) => type;
 
 export const selectCollections = createSelector(
 	[selectAllCollections, selectType],
 	(collections, type) =>
-		collections.filter(collection => collection.type === type)
-)
+		collections.filter((collection) => collection.type === type),
+);
 export const selectFavorites = createSelector(
 	[selectAllFavorites, selectType],
-	(favorites, type) => favorites.find(favorite => favorite.type === type)
-)
+	(favorites, type) => favorites.find((favorite) => favorite.type === type),
+);
 export const selectDefaultScriptureCollection = createSelector(
 	selectAllCollections,
-	collections => {
-		console.log('Selecting Default Scripture Collection: ', collections)
+	(collections) => {
+		console.log("Selecting Default Scripture Collection: ", collections);
 		const result = collections.find(
-			collection =>
-				collection.type === 'scripture' &&
-				collection.id === DEFAULT_SCRIPTURE_COLLECTION_ID
-		)
+			(collection) =>
+				collection.type === "scripture" &&
+				collection.id === DEFAULT_SCRIPTURE_COLLECTION_ID,
+		);
 		if (!result) {
 			// collections.push({
 			// 	id: DEFAULT_SCRIPTURE_COLLECTION_ID,
@@ -43,18 +43,18 @@ export const selectDefaultScriptureCollection = createSelector(
 			// })
 			// console.log('Created: ', collections)
 		}
-		return result
-	}
-)
+		return result;
+	},
+);
 
 // Selector to get the lyricScopes from the app state
-const selectLyricScopes = (state: RootState) => state.app.lyricScopes
-const selectScriptureScopes = (state: RootState) => state.app.scriptureScopes
+const selectLyricScopes = (state: RootState) => state.app.lyricScopes;
+const selectScriptureScopes = (state: RootState) => state.app.scriptureScopes;
 
 // Selector to get the displayData from the app state
-const selectDisplayData = (state: RootState) => state.app.displayData
+const selectDisplayData = (state: RootState) => state.app.displayData;
 
-const selectRenderScope = (state: RootState, scope?: string) => scope
+const selectRenderScope = (state: RootState, scope?: string) => scope;
 
 /**
  * Selector factory that returns a selector for the lyric data based on the provided scope.
@@ -70,23 +70,23 @@ export const selectLyric = createSelector(
 	(
 		lyricScopes: LyricScopes,
 		displayData: DisplayInfo | null,
-		scope?: string
+		scope?: string,
 	): string[] => {
 		// If a scope is provided, return the data from lyricScopes for that scope
-		console.log('Selecting Lyric: ', scope, lyricScopes)
+		console.log("Selecting Lyric: ", scope, lyricScopes);
 		if (scope && lyricScopes && lyricScopes[scope]) {
-			return lyricScopes[scope].text
+			return lyricScopes[scope].text;
 		}
 
 		// If no scope is provided, check displayData
-		if (displayData && displayData.type === 'song' && displayData.song?.text) {
-			return displayData.song.text
+		if (displayData && displayData.type === "song" && displayData.song?.text) {
+			return displayData.song.text;
 		}
 
 		// Default fallback if neither condition is met
-		return []
-	}
-)
+		return [];
+	},
+);
 
 export const selectScripture = createSelector(
 	selectScriptureScopes,
@@ -95,38 +95,38 @@ export const selectScripture = createSelector(
 	(
 		scriptureScopes: ScriptureScopes,
 		displayData: DisplayInfo | null,
-		scope?: string
+		scope?: string,
 	): { reference: string; text: string } => {
 		// If a scope is provided, return the data from lyricScopes for that scope
-		console.log('Selecting Verse: ', scope, scriptureScopes)
-		let scripture
+		console.log("Selecting Verse: ", scope, scriptureScopes);
+		let scripture;
 
 		if (scope && scriptureScopes && scriptureScopes[scope]) {
-			scripture = scriptureScopes[scope]
+			scripture = scriptureScopes[scope];
 		}
 
 		// If no scope is provided, check displayData
 		if (
 			displayData &&
-			displayData.type === 'scripture' &&
+			displayData.type === "scripture" &&
 			displayData.scripture
 		) {
-			scripture = displayData.scripture
+			scripture = displayData.scripture;
 		}
 
 		if (scripture) {
-			return { reference: getReference(scripture), text: scripture.text }
+			return { reference: getReference(scripture), text: scripture.text };
 		}
 
-		return { reference: '', text: '' }
-	}
-)
+		return { reference: "", text: "" };
+	},
+);
 
 const selectDefaultScriptureTheme = (state: RootState) =>
-	state.app.scriptureTheme
-const selectDefaultSongTheme = (state: RootState) => state.app.songTheme
+	state.app.scriptureTheme;
+const selectDefaultSongTheme = (state: RootState) => state.app.songTheme;
 const selectDefaultPresentationTheme = (state: RootState) =>
-	state.app.presentationTheme
+	state.app.presentationTheme;
 
 export const getDefaultThemeIDs = createSelector(
 	selectDefaultScriptureTheme,
@@ -136,26 +136,26 @@ export const getDefaultThemeIDs = createSelector(
 		scriptureId: scriptureTheme?.id,
 		songId: songTheme?.id,
 		presentationId: presentationTheme?.id,
-	})
-)
+	}),
+);
 
-const selectCacheBuster = state => state.app.cacheBuster
-const selectMediaPath = (state, path: string) => path
+const selectCacheBuster = (state) => state.app.cacheBuster;
+const selectMediaPath = (state, path: string) => path;
 
 export const getMediaPath = createSelector(
 	selectCacheBuster,
 	selectMediaPath,
 	(cacheBuster: CacheBustMedia, path: string) => {
-		console.log('CacheBuster in Selector: ', cacheBuster)
-		if (cacheBuster.paths.includes(path) || cacheBuster.paths === 'all') {
-			return `${path}?v=${cacheBuster.version}`
+		console.log("CacheBuster in Selector: ", cacheBuster);
+		if (cacheBuster.paths.includes(path) || cacheBuster.paths === "all") {
+			return `${path}?v=${cacheBuster.version}`;
 		} else {
-			return path
+			return path;
 		}
-	}
-)
+	},
+);
 
-const selectThemeType = (state, type: DisplayType) => type
+const selectThemeType = (state, type: DisplayType) => type;
 export const getDefaultTheme = createSelector(
 	selectThemeType,
 	selectDefaultScriptureTheme,
@@ -165,18 +165,18 @@ export const getDefaultTheme = createSelector(
 		type: DisplayType,
 		scriptureTheme?: Theme,
 		songTheme?: Theme,
-		presentationTheme?: Theme
+		presentationTheme?: Theme,
 	) => {
-		console.log('WIll return for: ', type, scriptureTheme, songTheme)
+		console.log("WIll return for: ", type, scriptureTheme, songTheme);
 		switch (type) {
-			case 'scripture':
-				return scriptureTheme
-			case 'song':
-				return songTheme
-			case 'presentation':
-				return presentationTheme
+			case "scripture":
+				return scriptureTheme;
+			case "song":
+				return songTheme;
+			case "presentation":
+				return presentationTheme;
 			default:
-				return null
+				return null;
 		}
-	}
-)
+	},
+);

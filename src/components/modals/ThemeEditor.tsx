@@ -48,28 +48,35 @@ export default function ThemeEditor() {
 				preview = await blob.arrayBuffer();
 			}
 			console.log("Here is the preview blob: ", preview);
-            
-            const theme: ThemeInput = {
-                title: name(),
-                author: "Eyetu Kingsley",
-                type: type(),
-                theme_data: JSON.stringify(themeData),
-                preview,
-            };
-            console.log("THEME TO ADD: ", theme);
-            window.electronAPI.addTheme(theme).then((response) => {
-                console.log("Theme Added Successfully: ", response);
-            });
+
+			const theme: ThemeInput = {
+				title: name(),
+				author: "Eyetu Kingsley",
+				type: type(),
+				theme_data: JSON.stringify(themeData),
+				preview,
+			};
+			console.log("THEME TO ADD: ", theme);
+			window.electronAPI.addTheme(theme).then((response) => {
+				console.log("Theme Added Successfully: ", response);
+			});
 		});
 
 		// onDialogOpen({ open: false });
 	};
 
-	const onDialogOpen = (e: DialogOpenChangeDetails) => setAppStore("themeEditor", { open: e.open });
+	const onDialogOpen = (e: DialogOpenChangeDetails) =>
+		setAppStore("themeEditor", { open: e.open });
 
 	const fps = useFps();
 	return (
-		<Dialog.Root placement="center" motionPreset="slide-in-top" size="xl" open={open()} onOpenChange={onDialogOpen}>
+		<Dialog.Root
+			placement="center"
+			motionPreset="slide-in-top"
+			size="xl"
+			open={open()}
+			onOpenChange={onDialogOpen}
+		>
 			{/* <Portal> */}
 			<Dialog.Backdrop />
 			<Dialog.Positioner>
@@ -77,8 +84,7 @@ export default function ThemeEditor() {
 					<Box>
 						<Dialog.Header>
 							<Dialog.Title textTransform="capitalize">
-								{type()} Theme Editor
-								Frames Per Second: {fps()}
+								{type()} Theme Editor Frames Per Second: {fps()}
 							</Dialog.Title>
 						</Dialog.Header>
 						<Dialog.Body>
@@ -97,14 +103,24 @@ export default function ThemeEditor() {
 						<Dialog.Footer>
 							{/* <DialogActionTrigger asChild> */}
 							<GenericField maxW="xs">
-								<Input placeholder="Name your theme" variant="subtle" value={name()} onChange={(e) => setName(e.target.value)} />
+								<Input
+									placeholder="Name your theme"
+									variant="subtle"
+									value={name()}
+									onChange={(e) => setName(e.target.value)}
+								/>
 							</GenericField>
-							<Button variant="outline" onclick={() => onDialogOpen({ open: false })}>
+							<Button
+								variant="outline"
+								onclick={() => onDialogOpen({ open: false })}
+							>
 								Cancel
 							</Button>
 							{/* </DialogActionTrigger> */}
 							{/* <DialogActionTrigger asChild> */}
-							<Button type="submit" onclick={saveTheme}>Save</Button>
+							<Button type="submit" onclick={saveTheme}>
+								Save
+							</Button>
 							{/* </DialogActionTrigger> */}
 						</Dialog.Footer>
 					</Box>

@@ -1,5 +1,31 @@
-import { createEffect, createMemo, createUniqueId, For, Show, useContext, type JSX, type JSXElement, type ParentProps } from "solid-js";
-import type { CreateNodeFn, CreateNodeParams, EditorNode, EditorNodeConnectors, EditorRenderComponent, EditorRenderMap, NodeDragEventHandler, NodeId, NodeSelectHandler, RegisterNodeFn, RegisterNodeFnWithId, SelectNodeFn, SetNodeDataFn, SetNodeStyleFn, UseResizeNodeFn } from "./editor-types";
+import {
+	createEffect,
+	createMemo,
+	createUniqueId,
+	For,
+	Show,
+	useContext,
+	type JSX,
+	type JSXElement,
+	type ParentProps,
+} from "solid-js";
+import type {
+	CreateNodeFn,
+	CreateNodeParams,
+	EditorNode,
+	EditorNodeConnectors,
+	EditorRenderComponent,
+	EditorRenderMap,
+	NodeDragEventHandler,
+	NodeId,
+	NodeSelectHandler,
+	RegisterNodeFn,
+	RegisterNodeFnWithId,
+	SelectNodeFn,
+	SetNodeDataFn,
+	SetNodeStyleFn,
+	UseResizeNodeFn,
+} from "./editor-types";
 import EditorContext from "./EditorContext";
 import { createStore, unwrap } from "solid-js/store";
 import type { EditorStore } from "./editor-types";
@@ -24,9 +50,13 @@ export default function Editor(props: Props) {
 			dragNode: [],
 		},
 	});
-	const canRender = (compName: string) => Object.keys(props.renderMap).includes(compName);
+	const canRender = (compName: string) =>
+		Object.keys(props.renderMap).includes(compName);
 	const getSelectedNode = createMemo(() => {
-		console.log("SELECTED NODE: ", unwrap(editor.nodes[editor.selectedId ?? ""]?.style));
+		console.log(
+			"SELECTED NODE: ",
+			unwrap(editor.nodes[editor.selectedId ?? ""]?.style),
+		);
 		return editor.selectedId ? editor.nodes[editor.selectedId] : null;
 	});
 	const getRenderMap = () => props.renderMap;
@@ -41,7 +71,9 @@ export default function Editor(props: Props) {
 		const newSelection = id ? editor.nodes[id] : null;
 		console.log("Handling selection", formerNode?.id, newSelection?.id);
 		setEditor("selectedId", id);
-		editor.handlers["selectNode"].forEach((cb) => cb({ formerSelected: formerNode, newSelected: newSelection }));
+		editor.handlers["selectNode"].forEach((cb) =>
+			cb({ formerSelected: formerNode, newSelected: newSelection }),
+		);
 		// console.log("Setting selected Node: ", unwrap(editor.nodes), id, unwrap(newSelection));
 		// console.log("Selected Node Styles: ", unwrap(newSelection?.style))
 	};
@@ -56,12 +88,22 @@ export default function Editor(props: Props) {
 
 	const useNodeSelect = (cb: NodeSelectHandler) => {
 		console.log("Setting handler: useNodeSelect");
-		setEditor("handlers", "selectNode", editor.handlers.selectNode.length, () => cb);
+		setEditor(
+			"handlers",
+			"selectNode",
+			editor.handlers.selectNode.length,
+			() => cb,
+		);
 	};
 
 	const useNodeDrag = (cb: NodeDragEventHandler) => {
 		console.log("Setting handler: useNodeDrag");
-		setEditor("handlers", "dragNode", editor.handlers.dragNode.length, () => cb);
+		setEditor(
+			"handlers",
+			"dragNode",
+			editor.handlers.dragNode.length,
+			() => cb,
+		);
 	};
 
 	const useResizeNode: UseResizeNodeFn = (id, scaleValues) => {
@@ -95,7 +137,11 @@ export default function Editor(props: Props) {
 			console.log(comp);
 			setEditor("nodes", id, {
 				id,
-				data: { ...props.renderMap[comp.name].config.defaultData, ...additionalProps, ...defaultNodeData },
+				data: {
+					...props.renderMap[comp.name].config.defaultData,
+					...additionalProps,
+					...defaultNodeData,
+				},
 				comp,
 				compName: comp.name,
 				style: { ...props.renderMap[comp.name].config.defaultStyles },
@@ -106,7 +152,8 @@ export default function Editor(props: Props) {
 	};
 
 	const getNode = (id: NodeId) => (id ? editor.nodes[id] : null);
-	const getNodeRenderComp = (node: EditorNode) => props.renderMap[node.comp.name];
+	const getNodeRenderComp = (node: EditorNode) =>
+		props.renderMap[node.comp.name];
 
 	createEffect(() => {
 		console.log("App Editor: ", editor.nodes);
@@ -137,13 +184,20 @@ export default function Editor(props: Props) {
 	};
 
 	createEffect(() => {
-		console.log("Something in this item changed: ", editor.nodes?.[0], editor.nodes?.[0]?.id, editor.nodes?.[0]?.style);
+		console.log(
+			"Something in this item changed: ",
+			editor.nodes?.[0],
+			editor.nodes?.[0]?.id,
+			editor.nodes?.[0]?.style,
+		);
 	});
 
 	const exportTheme = () => {
 		const pickProperties = ["id", "compName", "data", "style"];
 		// const nodeData = Object.getOwnPropertyNames(editor.nodes).map(node => ({   }))
-		const nodeData = Object.entries(editor.nodes).filter(([key]) => !pickProperties.includes(key)).map(([key, node]) => node);
+		const nodeData = Object.entries(editor.nodes)
+			.filter(([key]) => !pickProperties.includes(key))
+			.map(([key, node]) => node);
 		return {
 			nodes: nodeData,
 		};
@@ -154,20 +208,32 @@ export default function Editor(props: Props) {
 		setEditor,
 		createNode,
 		connectors,
-		getters: { getNode, getNodeRenderComp, getRootRef, getSelectedNode, getRenderMap },
+		getters: {
+			getNode,
+			getNodeRenderComp,
+			getRootRef,
+			getSelectedNode,
+			getRenderMap,
+		},
 		setters: { setRootRef, setNodeStyle, setNodeData },
 		hooks: { useSelect: useNodeSelect, useNodeDrag, useResizeNode },
 		helpers: { selectNode, exportTheme },
 	};
 
-	return <EditorContext.Provider value={contextValue}>{props.children}</EditorContext.Provider>;
+	return (
+		<EditorContext.Provider value={contextValue}>
+			{props.children}
+		</EditorContext.Provider>
+	);
 }
 
 export const useEditor = () => {
 	const value = useContext(EditorContext);
 
 	if (!value) {
-		throw new Error("There has to be an Editor higher up in the component tree");
+		throw new Error(
+			"There has to be an Editor higher up in the component tree",
+		);
 	}
 
 	return value;
