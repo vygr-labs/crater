@@ -12,7 +12,7 @@ export const textareaRecipe = defineRecipe({
 		borderRadius: "l2",
 		py: 2,
 		px: 2,
-		border: "2px solid",
+		border: "1px solid transparent",
 		_disabled: {
 			layerStyle: "disabled",
 		},
@@ -76,10 +76,10 @@ export const textareaRecipe = defineRecipe({
 				borderBottomColor: "border",
 				borderRadius: "0",
 				px: "0",
-				_focusVisible: {
-					borderColor: "var(--focus-color)",
-					boxShadow: "0px 1px 0px 0px var(--focus-color)",
-				},
+				// _focusVisible: {
+				// 	borderColor: "var(--focus-color)",
+				// 	boxShadow: "0px 1px 0px 0px var(--focus-color)",
+				// },
 			},
 		},
 	},

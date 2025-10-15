@@ -46,7 +46,10 @@ export default function ControlsMain() {
 				display="flex"
 				flexDir="column"
 				defaultValue={DEFAULT_PANEL}
-				onValueChange={({ value }) => changeFocusPanel(value)}
+				onValueChange={({ value }) => {
+					console.log("About to change panel: ", value);
+					changeFocusPanel(value);
+				}}
 			>
 				<HStack pr={4}>
 					<Tabs.List

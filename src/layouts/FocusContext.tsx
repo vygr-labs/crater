@@ -60,7 +60,7 @@ type EventSubscriberParams = {
 };
 
 interface FocusStore {
-	previous?: string;
+	previous: string;
 	current: string;
 	subscribers: {
 		[name: string]: {
@@ -82,7 +82,7 @@ interface FocusContextReturnVal {
 	subscribeEvent: FocusEventSubscriberFn;
 	changeFocusPanel: ChangeContextFn;
 	currentPanel: Accessor<string | undefined>;
-	previousPanel?: string;
+	previousPanel: Accessor<string | undefined>;
 }
 
 const FocusContext = createContext<FocusContextReturnVal>();
@@ -91,8 +91,10 @@ export default function FocusContextProvider(props: ParentProps) {
 	const [store, setStore] = createStore<FocusStore>({
 		subscribers: {},
 		current: DEFAULT_PANEL,
+		previous: DEFAULT_PANEL,
 	});
 	const currentPanel = createMemo(() => store.current);
+	const previousPanel = createMemo(() => store.previous);
 	const currentSubscriber = createMemo(() => store.subscribers[store.current]);
 
 	const changeCoreFocus: InternalChangeFocusFn = ({
@@ -220,13 +222,15 @@ export default function FocusContextProvider(props: ParentProps) {
 	};
 
 	const changeFocusPanel: ChangeContextFn = (newContext) => {
-		console.log("Changing Focus Panel");
-		setStore(
-			produce((store) => {
-				store.previous = store.current;
-				store.current = newContext;
-			}),
-		);
+		console.log("Changing Focus Panel", newContext, store.current);
+		if (newContext !== store.current) {
+			setStore(
+				produce((store) => {
+					store.previous = store.current;
+					store.current = newContext;
+				}),
+			);
+		}
 	};
 
 	return (
@@ -234,7 +238,7 @@ export default function FocusContextProvider(props: ParentProps) {
 			value={{
 				subscribeEvent,
 				changeFocusPanel,
-				previousPanel: store.previous,
+				previousPanel: previousPanel,
 				currentPanel: currentPanel,
 			}}
 		>

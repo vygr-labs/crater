@@ -8,6 +8,7 @@ import { useAppContext } from "~/layouts/AppContext";
 
 interface ThemePanelContextMenuCompProps {
 	onThemeEdit: () => void;
+	onThemeDelete: () => void;
 }
 
 export const MainDisplayMenuContent = (
@@ -34,16 +35,16 @@ export const MainDisplayMenuContent = (
 				<Menu.Positioner>
 					<Menu.Content>
 						{/* {themeCollections.map((collection, index) => (
-                                                                <Menu.Item
-                                                                    key={index}
-                                                                    value={`sc-${collection.id}`}
-                                                                    onClick={() =>
-                                                                        handleAddToCollection(collection)
-                                                                    }
-                                                                >
-                                                                    {collection.name}
-                                                                </Menu.Item>
-                                                            ))} */}
+							<Menu.Item
+								key={index}
+								value={`sc-${collection.id}`}
+								onClick={() =>
+									handleAddToCollection(collection)
+								}
+							>
+								{collection.name}
+							</Menu.Item>
+						))} */}
 					</Menu.Content>
 				</Menu.Positioner>
 			</Menu.Root>
@@ -54,7 +55,7 @@ export const MainDisplayMenuContent = (
 			value="delete"
 			color="fg.error"
 			_hover={{ bg: "bg.error", color: "fg.error" }}
-			// onClick={() => onThemeDelete(themeListContextIndex)}
+			onClick={props.onThemeDelete}
 		>
 			Delete Theme
 		</Menu.Item>

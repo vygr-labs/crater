@@ -29,7 +29,12 @@ import { useAppContext } from "~/layouts/AppContext";
 import { useFocusContext } from "~/layouts/FocusContext";
 import { defaultPalette, THEMES_TAB_FOCUS_NAME } from "~/utils/constants";
 import { focusStyles } from "~/utils/atomic-recipes";
-import { getBaseFocusStyles, getFocusableStyles } from "~/utils";
+import {
+	getBaseFocusStyles,
+	getFocusableStyles,
+	getToastType,
+	toaster,
+} from "~/utils";
 import { css } from "styled-system/css";
 import { token } from "styled-system/tokens";
 import { createAsyncMemo } from "solidjs-use";
@@ -56,12 +61,13 @@ type ThemeControlsData = {
 	contextMenuOpen: boolean;
 };
 
-const NUM_OF_DISPLAY_LANES = 5;
+const NUM_OF_DISPLAY_LANES = 8;
+const laneItemSize = 100 / NUM_OF_DISPLAY_LANES;
 
 export default function ThemeSelection() {
 	const { appStore, setAppStore } = useAppContext();
 	const allThemes = createAsyncMemo(async () => {
-		// const updated = appStore.themesUpdateCounter
+		const updated = appStore.themesUpdateTrigger;
 		console.log("ALL THEMES: ", await window.electronAPI.fetchAllThemes());
 		return await window.electronAPI.fetchAllThemes();
 	}, []);
@@ -85,7 +91,12 @@ export default function ThemeSelection() {
 	const filteredThemes = createMemo<ThemeMetadata[]>(() => {
 		const themeCollection = currentCollection();
 		console.log("Filter Status: ", themeCollection, currentGroup());
-		if (currentGroup().subGroups && themeCollection) {
+		if (!currentGroup().subGroups && currentGroup().type) {
+			console.log(currentGroup().type, allThemes());
+			return applyQueryFilter(
+				allThemes().filter((theme) => theme.type === currentGroup().type),
+			);
+		} else if (currentGroup().subGroups && themeCollection) {
 			return applyQueryFilter(
 				allThemes().filter((theme) => themeCollection.items.includes(theme.id)),
 			);
@@ -260,6 +271,22 @@ export default function ThemeSelection() {
 		setAppStore("themeEditor", { open: true, type: "song", initial: null });
 	};
 
+	const handleThemeDelete = () => {
+		const fluidIndex = fluidFocusId();
+		if (!fluidIndex) return;
+		const selected = filteredThemes()[fluidIndex];
+		window.electronAPI.deleteTheme(selected.id).then(({ success, message }) => {
+			console.log("Deleted Theme: ", selected);
+			toaster.create({
+				type: getToastType(success),
+				title: message,
+			});
+
+			setAppStore("themesUpdateTrigger", (former) => former + 1);
+			setThemeControls("contextMenuOpen", false);
+		});
+	};
+
 	return (
 		<Flex h="full" pos="relative">
 			<SelectionGroups
@@ -279,7 +306,10 @@ export default function ThemeSelection() {
 			<ControlTabDisplay
 				open={themeControls.contextMenuOpen}
 				contextMenuContent={
-					<MainDisplayMenuContent onThemeEdit={handleThemeEdit} />
+					<MainDisplayMenuContent
+						onThemeEdit={handleThemeEdit}
+						onThemeDelete={handleThemeDelete}
+					/>
 				}
 				actionBarMenu={<MainActionBarMenu onCreateTheme={handleCreateTheme} />}
 				ref={virtualizerParentRef}
@@ -306,8 +336,8 @@ export default function ThemeSelection() {
 										top: 0,
 										height: `${virtualItem.size}px`,
 										transform: `translateY(${virtualItem.start}px)`,
-										left: `${virtualItem.lane * 20}%`,
-										width: "20%",
+										left: `${virtualItem.lane * laneItemSize}%`,
+										width: laneItemSize + "%",
 										...getBaseFocusStyles(THEMES_TAB_FOCUS_NAME),
 										...getFocusableStyles(
 											THEMES_TAB_FOCUS_NAME,

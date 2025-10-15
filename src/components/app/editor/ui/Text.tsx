@@ -266,7 +266,7 @@ EditorText.config = {
 		height: "50px",
 		color: token(`colors.whiteAlpha.900`),
 		"line-height": "20px",
-		"text-align": "left",
+		"text-align": "left" as TextAlign,
 		"z-index": 20,
 	},
 	settings: EditorTextSettings,

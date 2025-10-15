@@ -30,7 +30,7 @@ export interface DisplayCollection {
 
 export type PanelCollection = {
 	title: string;
-	type?: "songs" | "scriptures" | "presentations";
+	type?: ThemeType;
 	subGroups: DisplayCollection[] | null;
 };
 
@@ -77,6 +77,7 @@ export interface AppData {
 	showLogo: boolean;
 	logoBg: string;
 	songsUpdateCounter: number;
+	themesUpdateTrigger: number;
 	loading: AppLoading;
 	previewItem: DisplayProps | undefined;
 	liveItem: DisplayProps | undefined;

@@ -181,6 +181,13 @@ export default function SongSelection() {
 	});
 	const isCurrentPanel = createMemo(() => currentPanel() === name);
 
+	createEffect(() => {
+		if (!isCurrentPanel()) {
+			console.log("Closing context menu");
+			setSongControls("contextMenuOpen", false);
+		}
+	});
+
 	function handleGroupAccordionChange(
 		open: (SongPanelGroupValues | string)[],
 		e?: MouseEvent,

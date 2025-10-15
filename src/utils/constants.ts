@@ -56,17 +56,17 @@ const DEFAULT_GROUPS: GroupCollectionObj = {
 	theme: {
 		song: {
 			title: "Song Themes",
-			type: "songs",
+			type: "song",
 			subGroups: null,
 		},
 		scripture: {
 			title: "Scripture Themes",
-			type: "scriptures",
+			type: "scripture",
 			subGroups: null,
 		},
 		presentation: {
 			title: "Presentation Themes",
-			type: "presentations",
+			type: "presentation",
 			subGroups: null,
 		},
 		collection: {
@@ -88,6 +88,7 @@ export const defaultAppStore: AppData = {
 	showLogo: false,
 	logoBg: "",
 	songsUpdateCounter: 0,
+	themesUpdateTrigger: 0,
 	loading: {
 		reason: "Nothing is loading",
 		isLoading: false,
@@ -143,5 +144,6 @@ export const PRESENTATIONS_TAB_FOCUS_NAME = "PRESENTATIONS";
 export const PREVIEW_PANEL_FOCUS_NAME = "PREVIEW";
 export const LIVE_PANEL_FOCUS_NAME = "LIVE";
 export const SCHEDULE_PANEL_FOCUS_NAME = "SCHEDULES";
+export const SONG_EDITOR_FOCUS_NAME = "SONG_EDITOR";
 
 export const DEFAULT_PANEL = THEMES_TAB_FOCUS_NAME;

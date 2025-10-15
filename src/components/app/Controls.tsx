@@ -21,6 +21,7 @@ import Editor from "./editor/Editor";
 import EditorContainer from "../app/editor/ui/Container";
 import EditorText from "./editor/ui/Text";
 import SchedulePanel from "./SchedulePanel";
+import SongEditor from "../modals/SongEditor";
 
 const config = {
 	EditorContainer,
@@ -60,7 +61,7 @@ export default function AppControls() {
 					<NamingModal />
 
 					{/* Song Editor Modal */}
-					{/* <SongEditor /> */}
+					<SongEditor />
 
 					{/* <Editor resolver={{ UserContainer, UserText, UserRootContainer }}>
 						<ThemeEditor />
