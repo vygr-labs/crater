@@ -24,7 +24,7 @@ export default function LivePanel() {
         defaultFluidFocus: 0,
         handlers: {
             "ArrowDown": ({ coreFocusId, fluidFocusId, changeFocus, changeCoreFocus, changeFluidFocus }) => {
-                const newCoreFocusId = Math.min((fluidFocusId ?? 0) + 1, liveData().length);
+                const newCoreFocusId = Math.min((fluidFocusId ?? 0) + 1, liveData().length - 1);
                 changeFluidFocus(newCoreFocusId);
             },
             "ArrowUp": ({ coreFocusId, fluidFocusId, changeFocus, changeCoreFocus, changeFluidFocus }) => {

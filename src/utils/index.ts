@@ -199,6 +199,22 @@ const mappings: Record<string, {
 				}
 			}
 		}
+	},
+	SCHEDULE_ITEM_PARENT_CONTAINER: {
+		isFluid: {
+			true: {
+				isCurrentPanel: {
+					true: {
+						"background-color": token.var(`colors.${defaultPalette}.800`),
+						color: "white"
+					},
+					false: {
+						"background-color": token.var("colors.gray.800"),
+						color: token.var("colors.gray.100")
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -225,7 +241,7 @@ export const getFocusableStyles: FocusStylesGetter = (key, isFluid, isCurrentPan
 
 
 export const getNum = (styles: JSX.CSSProperties, property: keyof JSX.CSSProperties) => {
-	return parseInt(styles[property] ?? "0");
+	return parseInt(styles[property]?.toString() ?? "0");
 }
 
 export const getColor = (styles: JSX.CSSProperties, property: keyof JSX.CSSProperties): string => {

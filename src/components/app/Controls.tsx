@@ -20,6 +20,7 @@ import ThemeEditor from "../modals/ThemeEditor";
 import Editor from "./editor/Editor";
 import EditorContainer from "../app/editor/ui/Container"
 import EditorText from "./editor/ui/Text";
+import SchedulePanel from "./SchedulePanel";
 
 const config = {
     EditorContainer,
@@ -40,7 +41,7 @@ export default function AppControls() {
 						top="calc(100%/12)"
 					>
 						<Box w="1/3" h="full" border="1px solid" borderColor="gray.700">
-							{/* <ScheduleComponent /> */}
+							<SchedulePanel />
 						</Box>
 						<Box w="1/3" h="full" border="1px solid" borderColor="gray.700">
 							<PreviewPanel />

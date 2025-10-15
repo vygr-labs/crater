@@ -7,9 +7,19 @@ import ScriptureSelection from "./scripture/ScriptureSelection";
 import { useFocusContext } from "~/layouts/FocusContext";
 import { DEFAULT_PANEL, defaultPalette, MEDIA_TAB_FOCUS_NAME, PRESENTATIONS_TAB_FOCUS_NAME, SCRIPTURE_TAB_FOCUS_NAME, SONGS_TAB_FOCUS_NAME, THEMES_TAB_FOCUS_NAME } from "~/utils/constants";
 import ThemeSelection from "./theme/ThemeSelection";
+import { addToSchedule } from "~/utils/store-helpers";
+import { useAppContext } from "~/layouts/AppContext";
+import { unwrap } from "solid-js/store";
 
 export default function ControlsMain() {
 	const { changeFocusPanel } = useFocusContext();
+	const { appStore, setAppStore } = useAppContext();
+	const handleAddToSchedule = () => {
+		if (appStore.previewItem) {
+			addToSchedule(setAppStore, [{...appStore.previewItem}])
+		}
+		console.log("Schedule Updated: ", appStore.scheduleItems)
+	}
 
     return (
         <VStack h="full">
@@ -64,7 +74,8 @@ export default function ControlsMain() {
 					<IconButton
 						variant="subtle"
 						size="xs"
-						// onClick={() => handleAddToSchedule()}
+						onClick={handleAddToSchedule}
+						disabled={!appStore.previewItem}
 					>
 						<TbPlus />
 					</IconButton>

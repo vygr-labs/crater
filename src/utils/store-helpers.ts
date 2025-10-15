@@ -1,5 +1,5 @@
 import type { SetStoreFunction } from "solid-js/store";
-import type { DisplayBounds } from "~/types";
+import type { DisplayBounds, DisplayProps } from "~/types";
 import type { AppData, AppSettings, SongEditData } from "~/types/app-context";
 
 export type AppStoreUpdateFn<ExtraData = void> = (setStore: SetStoreFunction<AppData>, extra: ExtraData) => void
@@ -22,6 +22,10 @@ export const toggleLive: AppStoreUpdateFn = (setStore) => {
 
 export const updateSongEdit: AppStoreUpdateFn<SongEditData> = (setStore, newSongEdit) => {
     setStore("songEdit", newSongEdit);
+}
+
+export const addToSchedule: AppStoreUpdateFn<DisplayProps[]> = (setStore, items) => {
+    setStore("scheduleItems", former => [...former, ...items]);
 }
 
 
