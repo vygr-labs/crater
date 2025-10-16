@@ -16,6 +16,8 @@ import RenderEditorSettings from "../app/editor/ui/RenderEditorSettings";
 import { useFps } from "solidjs-use";
 import screenshotDiv from "html2canvas";
 import { getKeyByValue, getToastType, toaster } from "~/utils";
+import { useFocusContext } from "~/layouts/FocusContext";
+import { THEME_EDITOR_FOCUS_NAME } from "~/utils/constants";
 
 interface Props {
 	open: boolean;
@@ -35,6 +37,14 @@ export default function ThemeEditor() {
 		getters: { getRootRef },
 		helpers: { exportTheme, loadTheme },
 	} = useEditor();
+
+	const { subscribeEvent, changeFocusPanel, currentPanel, previousPanel } =
+		useFocusContext();
+	createEffect(() => {
+		if (open()) {
+			changeFocusPanel(THEME_EDITOR_FOCUS_NAME);
+		}
+	});
 
 	createEffect(() => {
 		const reset = initial();
@@ -68,8 +78,12 @@ export default function ThemeEditor() {
 			};
 			console.log("THEME TO ADD: ", theme);
 			if (formerTheme === null) {
-				const response = await window.electronAPI.addTheme(theme);
-				console.log("Theme Added Successfully: ", response);
+				const { success, message } = await window.electronAPI.addTheme(theme);
+				console.log("Theme Added Successfully: ", success, message);
+				toaster.create({
+					type: getToastType(success),
+					title: message,
+				});
 			} else {
 				const { success, message, updatedTheme } =
 					await window.electronAPI.updateTheme(formerTheme.id, theme);
@@ -93,12 +107,17 @@ export default function ThemeEditor() {
 
 				console.log(theme, success);
 			}
+			setAppStore("themesUpdateTrigger", (former) => former + 1);
 			onDialogOpen({ open: false });
 		});
 	};
 
-	const onDialogOpen = (e: DialogOpenChangeDetails) =>
+	const onDialogOpen = (e: DialogOpenChangeDetails) => {
 		setAppStore("themeEditor", { open: e.open });
+		if (!e.open) {
+			changeFocusPanel(previousPanel());
+		}
+	};
 
 	const fps = useFps();
 	return (

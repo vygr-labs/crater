@@ -45,6 +45,7 @@ import SearchInput from "../../custom/search-input";
 import { Kbd } from "../../ui/kbd";
 import { VsListTree, VsSearchFuzzy } from "solid-icons/vs";
 import type { ThemeMetadata, ThemeType } from "~/types";
+import { changeDefaultTheme } from "~/utils/store-helpers";
 
 type ThemePanelGroupValues = "all" | "collections" | "favorites";
 type ThemeListData = {
@@ -55,7 +56,7 @@ type ThemeSearchMode = "search" | "title";
 
 type ThemeControlsData = {
 	searchMode: ThemeSearchMode;
-	group: string;
+	group: ThemeType;
 	collection: number | null;
 	query: string;
 	contextMenuOpen: boolean;
@@ -184,6 +185,7 @@ export default function ThemeSelection() {
 		},
 		clickHandlers: {
 			onClick: ({ changeFluidFocus, focusId }) => {
+				console.log("Clicked Here in Themes	");
 				if (typeof focusId === "number") {
 					changeFluidFocus(focusId);
 					setThemeControls("contextMenuOpen", false);
@@ -212,13 +214,14 @@ export default function ThemeSelection() {
 		setThemeControls(
 			produce((store) => {
 				const subSelection = open.find((item) => item.includes("-"));
+				console.log(open, subSelection);
 
 				if (subSelection) {
 					const [group, collection] = subSelection.split("-");
-					store.group = group;
+					store.group = group as ThemeType;
 					store.collection = parseInt(collection);
 				} else {
-					store.group = open[0];
+					store.group = open[0] as ThemeType;
 					store.collection = null;
 				}
 			}),
@@ -245,6 +248,12 @@ export default function ThemeSelection() {
 		}
 	});
 
+	createEffect(() => {
+		if (!isCurrentPanel()) {
+			setThemeControls("contextMenuOpen", false);
+		}
+	});
+
 	// send current fluid item to preview-menu
 	// createEffect(() => {
 	//     pushToLive(fluidFocusId(), false)
@@ -258,7 +267,11 @@ export default function ThemeSelection() {
 		const id = filteredThemes()[toEdit].id;
 		const theme = await window.electronAPI.fetchTheme(id);
 		console.log(theme, id);
-		setAppStore("themeEditor", { open: true, type: "song", initial: theme });
+		setAppStore("themeEditor", {
+			open: true,
+			type: theme?.type,
+			initial: theme,
+		});
 	};
 
 	const handleFilter = (e: InputEvent) => {
@@ -272,12 +285,16 @@ export default function ThemeSelection() {
 	};
 
 	const handleCreateTheme = () => {
-		setAppStore("themeEditor", { open: true, type: "song", initial: null });
+		setAppStore("themeEditor", {
+			open: true,
+			type: themeControls.group,
+			initial: null,
+		});
 	};
 
 	const handleThemeDelete = () => {
 		const fluidIndex = fluidFocusId();
-		if (!fluidIndex) return;
+		if (typeof fluidIndex !== "number") return;
 		const selected = filteredThemes()[fluidIndex];
 		window.electronAPI.deleteTheme(selected.id).then(({ success, message }) => {
 			console.log("Deleted Theme: ", selected);
@@ -289,6 +306,21 @@ export default function ThemeSelection() {
 			setAppStore("themesUpdateTrigger", (former) => former + 1);
 			setThemeControls("contextMenuOpen", false);
 		});
+	};
+
+	const handleSetDefaultTheme = async () => {
+		const fluidIndex = fluidFocusId();
+		console.log("Setting default to index: ", fluidIndex);
+		if (typeof fluidIndex !== "number") return;
+
+		const currentTheme = await window.electronAPI.fetchTheme(
+			filteredThemes()[fluidIndex].id,
+		);
+
+		console.log(currentTheme);
+		if (!currentTheme) return;
+		changeDefaultTheme(setAppStore, currentTheme);
+		console.log(appStore.songTheme);
 	};
 
 	return (
@@ -313,6 +345,8 @@ export default function ThemeSelection() {
 					<MainDisplayMenuContent
 						onThemeEdit={handleThemeEdit}
 						onThemeDelete={handleThemeDelete}
+						currentType={themeControls.group}
+						onSetDefaultTheme={handleSetDefaultTheme}
 					/>
 				}
 				actionBarMenu={<MainActionBarMenu onCreateTheme={handleCreateTheme} />}

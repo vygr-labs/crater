@@ -75,7 +75,7 @@ interface FocusStore {
 type FocusEventSubscriberFn = (
 	params: EventSubscriberParams,
 ) => FocusEventSubscriberFnReturnVal;
-type ChangeContextFn = (newContext: string, params?: {}) => void;
+type ChangeContextFn = (newContext?: string, params?: {}) => void;
 
 interface FocusContextReturnVal {
 	// add an isModal setting that ensures the context is always reset to the previous value when the current context is de-focused
@@ -222,8 +222,8 @@ export default function FocusContextProvider(props: ParentProps) {
 	};
 
 	const changeFocusPanel: ChangeContextFn = (newContext) => {
-		console.log("Changing Focus Panel", newContext, store.current);
-		if (newContext !== store.current) {
+		console.log("Changing Focus Panel?: ", newContext, store.current);
+		if (newContext && newContext !== store.current) {
 			setStore(
 				produce((store) => {
 					store.previous = store.current;

@@ -9,6 +9,8 @@ import { useAppContext } from "~/layouts/AppContext";
 interface ThemePanelContextMenuCompProps {
 	onThemeEdit: () => void;
 	onThemeDelete: () => void;
+	currentType: ThemeType;
+	onSetDefaultTheme: () => void;
 }
 
 export const MainDisplayMenuContent = (
@@ -18,7 +20,13 @@ export const MainDisplayMenuContent = (
 		<Menu.Item value="edit-theme" onClick={props.onThemeEdit}>
 			Edit Theme
 		</Menu.Item>
-		<Menu.Item value="rename-theme">Rename Theme</Menu.Item>
+		<Menu.Item
+			value="set-default-theme"
+			textTransform="capitalize"
+			onClick={props.onSetDefaultTheme}
+		>
+			Set as Default {props.currentType} Theme
+		</Menu.Item>
 		<Menu.Item value="duplicate-theme">Duplicate Theme</Menu.Item>
 		<Menu.Separator />
 		<Menu.Item

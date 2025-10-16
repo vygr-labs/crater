@@ -1,5 +1,10 @@
 import type { SetStoreFunction } from "solid-js/store";
-import type { DisplayBounds, DisplayProps } from "~/types";
+import type {
+	DisplayBounds,
+	DisplayProps,
+	Theme,
+	ThemeMetadata,
+} from "~/types";
 import type { AppData, AppSettings, SongEditData } from "~/types/app-context";
 
 export type AppStoreUpdateFn<ExtraData = void> = (
@@ -37,6 +42,19 @@ export const addToSchedule: AppStoreUpdateFn<DisplayProps[]> = (
 	items,
 ) => {
 	setStore("scheduleItems", (former) => [...former, ...items]);
+};
+
+export const changeDefaultTheme: AppStoreUpdateFn<Theme> = (
+	setStore,
+	theme,
+) => {
+	const storeKey =
+		theme.type === "song"
+			? "songTheme"
+			: theme.type === "scripture"
+				? "scriptureTheme"
+				: "presentationTheme";
+	setStore(storeKey, theme);
 };
 
 // SETTINGS HELPERS
