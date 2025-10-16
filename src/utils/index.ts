@@ -311,8 +311,10 @@ export const getFocusableStyles: FocusStylesGetter = (
 export const getNum = (
 	styles: JSX.CSSProperties,
 	property: keyof JSX.CSSProperties,
+	isFloat?: boolean,
 ) => {
-	return parseInt(styles[property]?.toString() ?? "0");
+	const parseFn = isFloat ? parseFloat : parseInt;
+	return parseFn(styles[property]?.toString() ?? "0");
 };
 
 export const getColor = (

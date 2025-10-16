@@ -2,7 +2,7 @@
  *   Declaration file for the API exposed over the context bridge
  *********************************************************************/
 
-import {
+import type {
 	ChapterData,
 	ImportOptions,
 	MediaItem,
@@ -11,7 +11,8 @@ import {
 	ThemeInput,
 	ThemeMetadata,
 	ThemeType,
-} from "@/utils/types";
+	Theme,
+} from "./index";
 import { Display } from "electron/main";
 
 export interface ChapterCountObj {

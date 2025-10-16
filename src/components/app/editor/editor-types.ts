@@ -99,6 +99,8 @@ export type UseResizeNodeFn = (id: NodeId, scaleValues: ScaleValues) => void;
 export type SelectNodeFn = (id: NodeId) => void;
 export type EditorRenderMap = Record<string, EditorRenderComponent>;
 export type ThemeRenderMap = Record<string, ThemeRenderComponent>;
+export type LoadThemeFn = (theme?: ExportedTheme) => void;
+export type ExportThemeFn = () => ExportedTheme;
 
 export interface EditorContextValue {
 	editor: EditorStore;
@@ -124,7 +126,8 @@ export interface EditorContextValue {
 	};
 	helpers: {
 		selectNode: SelectNodeFn;
-		exportTheme: () => ExportedTheme;
+		exportTheme: ExportThemeFn;
+		loadTheme: LoadThemeFn;
 	};
 }
 

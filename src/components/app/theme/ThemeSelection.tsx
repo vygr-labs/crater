@@ -250,11 +250,15 @@ export default function ThemeSelection() {
 	//     pushToLive(fluidFocusId(), false)
 	// })
 
-	const handleThemeEdit = () => {
+	const handleThemeEdit = async () => {
 		const toEdit = fluidFocusId();
-		// if (toEdit) {
-		//     setAppStore("themeEditor", { open: true, type: type, theme: filteredThemes()[toEdit] });
-		// }
+		console.log("Handle Theme Edit: ", toEdit);
+		if (typeof toEdit !== "number") return;
+
+		const id = filteredThemes()[toEdit].id;
+		const theme = await window.electronAPI.fetchTheme(id);
+		console.log(theme, id);
+		setAppStore("themeEditor", { open: true, type: "song", initial: theme });
 	};
 
 	const handleFilter = (e: InputEvent) => {

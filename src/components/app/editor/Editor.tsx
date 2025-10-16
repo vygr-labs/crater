@@ -16,6 +16,9 @@ import type {
 	EditorNodeConnectors,
 	EditorRenderComponent,
 	EditorRenderMap,
+	ExportedTheme,
+	ExportThemeFn,
+	LoadThemeFn,
 	NodeDragEventHandler,
 	NodeId,
 	NodeSelectHandler,
@@ -27,7 +30,7 @@ import type {
 	UseResizeNodeFn,
 } from "./editor-types";
 import EditorContext from "./EditorContext";
-import { createStore, unwrap } from "solid-js/store";
+import { createStore, produce, unwrap } from "solid-js/store";
 import type { EditorStore } from "./editor-types";
 import { createId, transformEditorComp } from "~/utils";
 
@@ -192,7 +195,8 @@ export default function Editor(props: Props) {
 		);
 	});
 
-	const exportTheme = () => {
+	const exportTheme: ExportThemeFn = () => {
+		selectNode(null);
 		const pickProperties = ["id", "compName", "data", "style"];
 		// const nodeData = Object.getOwnPropertyNames(editor.nodes).map(node => ({   }))
 		const nodeData = Object.entries(editor.nodes)
@@ -201,6 +205,26 @@ export default function Editor(props: Props) {
 		return {
 			nodes: nodeData,
 		};
+	};
+
+	const loadTheme: LoadThemeFn = (savedTheme = { nodes: [] }) => {
+		console.log("Loading Theme: ", savedTheme);
+		setEditor(
+			produce((store) => {
+				console.log("To Map: ", savedTheme.nodes);
+				store.selectedId = null;
+				console.log(store.handlers);
+				store.nodes = Object.fromEntries(
+					savedTheme.nodes.map((node) => {
+						transformEditorComp(props.renderMap[node.compName]);
+						console.log(props.renderMap[node.compName]);
+						console.log({ ...node, comp: props.renderMap[node.compName] });
+						return [node.id, { ...node, comp: props.renderMap[node.compName] }];
+					}),
+				);
+			}),
+		);
+		console.log(unwrap(editor));
 	};
 
 	const contextValue = {
@@ -217,7 +241,7 @@ export default function Editor(props: Props) {
 		},
 		setters: { setRootRef, setNodeStyle, setNodeData },
 		hooks: { useSelect: useNodeSelect, useNodeDrag, useResizeNode },
-		helpers: { selectNode, exportTheme },
+		helpers: { selectNode, exportTheme, loadTheme },
 	};
 
 	return (

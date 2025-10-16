@@ -16,7 +16,7 @@ import type {
 import { useEditor } from "./Editor";
 import { useDrag } from "solid-gesture";
 import type { FullGestureState } from "@use-gesture/core/types";
-import { calculateParentOffset } from "~/utils";
+import { calculateParentOffset, getNum } from "~/utils";
 
 export interface NodeActions {
 	setStyle: SetStoreFunction<JSX.CSSProperties>;
@@ -76,7 +76,10 @@ export default function NodeProvider(props: NodeProviderProps) {
 	const [nodeStore, setNodeStore] = createStore<NodeProviderStore>({
 		node: props.node,
 		coords: { ...defaultCoords }, // destructure when assigning to stores so you don't set a reference that another property will make use of (which will make updates to one property to affect the other)
-		position: [0, 0],
+		position: [
+			getNum(props.node.style, "left", true),
+			getNum(props.node.style, "top", true),
+		],
 		dragDisabled: false,
 		resizeCoords: {
 			topLeft: defaultCoords,

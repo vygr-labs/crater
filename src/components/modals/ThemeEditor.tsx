@@ -15,6 +15,7 @@ import RenderEditor from "../app/editor/ui/RenderEditor";
 import RenderEditorSettings from "../app/editor/ui/RenderEditorSettings";
 import { useFps } from "solidjs-use";
 import screenshotDiv from "html2canvas";
+import { getKeyByValue, getToastType, toaster } from "~/utils";
 
 interface Props {
 	open: boolean;
@@ -29,18 +30,27 @@ export default function ThemeEditor() {
 	const { appStore, setAppStore } = useAppContext();
 	const type = createMemo(() => appStore.themeEditor.type);
 	const open = createMemo(() => appStore.themeEditor.open);
+	const initial = createMemo(() => appStore.themeEditor.initial);
 	const {
 		getters: { getRootRef },
-		helpers: { exportTheme },
+		helpers: { exportTheme, loadTheme },
 	} = useEditor();
+
+	createEffect(() => {
+		const reset = initial();
+		console.log("Loading Theme: ", initial());
+		loadTheme(reset ? JSON.parse(reset.theme_data) : undefined);
+		setName(reset?.title ?? "");
+	});
 
 	const saveTheme = async () => {
 		// e.preventDefault();
-		setName(name());
+		const themeName = name();
 		const rootRef = getRootRef();
-		if (!rootRef) return;
+		if (!rootRef || !themeName) return;
 
 		const themeData = exportTheme();
+		const formerTheme = initial();
 		const canvas = await screenshotDiv(rootRef);
 		let preview: ArrayBuffer;
 		canvas.toBlob(async (blob) => {
@@ -50,19 +60,41 @@ export default function ThemeEditor() {
 			console.log("Here is the preview blob: ", preview);
 
 			const theme: ThemeInput = {
-				title: name(),
+				title: themeName,
 				author: "Eyetu Kingsley",
 				type: type(),
 				theme_data: JSON.stringify(themeData),
 				preview,
 			};
 			console.log("THEME TO ADD: ", theme);
-			window.electronAPI.addTheme(theme).then((response) => {
+			if (formerTheme === null) {
+				const response = await window.electronAPI.addTheme(theme);
 				console.log("Theme Added Successfully: ", response);
-			});
-		});
+			} else {
+				const { success, message, updatedTheme } =
+					await window.electronAPI.updateTheme(formerTheme.id, theme);
+				// const key = getKeyByValue(defaultThemes, formerTheme.id)
+				// if (key && updatedTheme) {
+				// 	if (key.startsWith('scripture')) {
+				// 		dispatch(changeScriptureTheme(updatedTheme))
+				// 	} else if (key.startsWith('song')) {
+				// 		dispatch(changeSongTheme(updatedTheme))
+				// 	}
+				// }
+				console.log("Updated Theme: ", updatedTheme);
+				// dispatch(bustMediaCache([updatedTheme.preview_path]))
 
-		// onDialogOpen({ open: false });
+				// dispatch(updateThemeEditor({ open: false }))
+				toaster.create({
+					type: getToastType(success),
+					title: message,
+				});
+				setName("");
+
+				console.log(theme, success);
+			}
+			onDialogOpen({ open: false });
+		});
 	};
 
 	const onDialogOpen = (e: DialogOpenChangeDetails) =>

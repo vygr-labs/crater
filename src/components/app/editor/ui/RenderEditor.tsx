@@ -119,11 +119,11 @@ export default function RenderEditor() {
 		const newPos = calculateParentOffset(
 			(target as HTMLElement).getBoundingClientRect(),
 			editorRootRef.getBoundingClientRect(),
-			true,
 		);
+		console.log(offset, newPos);
 		setStore(
 			"indicatorPos",
-			offset.map((v) => v - demarcationBorderWidth),
+			newPos.map((v) => v - demarcationBorderWidth),
 		);
 	});
 
@@ -270,12 +270,12 @@ export default function RenderEditor() {
 				setRootRef(ref);
 			}}
 		>
-			<For each={Object.keys(editor.nodes)}>
-				{(id) => (
-					<NodeProvider node={editor.nodes[id]} register={register}>
+			<For each={Object.values(editor.nodes)}>
+				{(node) => (
+					<NodeProvider node={node} register={register}>
 						<Dynamic
-							component={getNodeRenderComp(editor.nodes[id])}
-							{...getNodeRenderComp(editor.nodes[id]).config.defaultData}
+							component={getNodeRenderComp(node)}
+							{...getNodeRenderComp(node).config.defaultData}
 						/>
 					</NodeProvider>
 				)}
