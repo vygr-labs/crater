@@ -150,7 +150,7 @@ function spawnProjectionWindow({ x, y }: { x: number; y: number }) {
 		webPreferences: {
 			backgroundThrottling: false,
 			preload: PRELOAD_PATH,
-			webSecurity: electronIsDev ? false : true,
+			// webSecurity: electronIsDev ? false : true,
 		},
 		x,
 		y,

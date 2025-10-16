@@ -82,6 +82,11 @@ export default function PreviewPanel() {
 
 	createEffect(() => {
 		if (previewData()) {
+			console.log(
+				"Changing Focus due to previewData & previewIndex changing: ",
+				previewData(),
+				appStore.previewItem?.index,
+			);
 			changeFocus(appStore.previewItem?.index);
 		}
 	});

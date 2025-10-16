@@ -101,6 +101,7 @@ export default function FocusContextProvider(props: ParentProps) {
 		contextName,
 		newFocusId,
 	}) => {
+		console.log("Changing Core Focus for: ", contextName, newFocusId);
 		if (!contextName) return;
 		setStore("subscribers", contextName, "coreFocusId", newFocusId);
 	};
@@ -109,11 +110,13 @@ export default function FocusContextProvider(props: ParentProps) {
 		contextName,
 		newFocusId,
 	}) => {
+		console.log("Changing Fluid Focus for: ", contextName, newFocusId);
 		if (!contextName) return;
 		setStore("subscribers", contextName, "fluidFocusId", newFocusId);
 	};
 
 	const changeFocus: InternalChangeFocusFn = ({ contextName, newFocusId }) => {
+		console.log("Changing Focus for: ", contextName, newFocusId);
 		if (!contextName) return;
 		setStore(
 			produce((store) => {

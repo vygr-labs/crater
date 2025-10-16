@@ -168,7 +168,6 @@ export default function SongSelection() {
 			onDblClick: ({ changeFocus, focusId }) => {
 				if (typeof focusId === "number") {
 					changeFocus(focusId);
-					pushToLive(focusId, true);
 				}
 			},
 			onRightClick: ({ changeFluidFocus, focusId }) => {
@@ -231,7 +230,12 @@ export default function SongSelection() {
 
 	// send current fluid item to preview-menu
 	createEffect(() => {
+		console.log("Fluid Focus Changed: ", fluidFocusId());
 		pushToLive(fluidFocusId(), false);
+	});
+
+	createEffect(() => {
+		pushToLive(coreFocusId(), true);
 	});
 
 	const handleSongEdit = () => {

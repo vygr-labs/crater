@@ -138,6 +138,8 @@ export const defaultAppSettings: AppSettings = {
 	projectionDisplayId: 0,
 };
 
+export const storageKey = "crater-store";
+export const syncUpdateKey = "crater-sync";
 export const CLOSE_SONG_EDIT: OpenEditData = { open: false, song: null };
 
 export const SONGS_TAB_FOCUS_NAME = "SONGS";
@@ -151,4 +153,4 @@ export const SCHEDULE_PANEL_FOCUS_NAME = "SCHEDULES";
 export const SONG_EDITOR_FOCUS_NAME = "SONG_EDITOR";
 export const THEME_EDITOR_FOCUS_NAME = "THEME_EDITOR";
 
-export const DEFAULT_PANEL = SCRIPTURE_TAB_FOCUS_NAME;
+export const DEFAULT_PANEL = THEMES_TAB_FOCUS_NAME;

@@ -173,6 +173,7 @@ export default function ScriptureSelection() {
 					(fluidFocusId ?? 0) + 1,
 					filteredScriptures().length,
 				);
+				console.log("ARROWDOWN Changing fluid focus: ", newCoreFocusId);
 				changeFluidFocus(newCoreFocusId);
 			},
 			ArrowUp: ({
@@ -183,6 +184,7 @@ export default function ScriptureSelection() {
 				changeFluidFocus,
 			}) => {
 				const newCoreFocusId = Math.max((fluidFocusId ?? 0) - 1, 0);
+				console.log("ARROWUP Changing fluid focus: ", newCoreFocusId);
 				changeFluidFocus(newCoreFocusId);
 			},
 			Enter: ({
@@ -192,6 +194,7 @@ export default function ScriptureSelection() {
 				changeCoreFocus,
 				changeFluidFocus,
 			}) => {
+				console.log("ARROWDOWN Changing All focus: ", fluidFocusId);
 				changeFocus(fluidFocusId);
 			},
 		},
@@ -239,7 +242,7 @@ export default function ScriptureSelection() {
 					store.collection = collection;
 					store.translation = allTranslations().find(
 						(translation) => translation.id === collection,
-					).version;
+					)?.version as AvailableTranslation;
 				} else {
 					store.group = open[0];
 					// store.collection = null;
@@ -270,7 +273,13 @@ export default function ScriptureSelection() {
 
 	// send current fluid item to preview-menu
 	createEffect(() => {
+		console.log("Sending current item preview: ", fluidFocusId());
 		pushToLive(fluidFocusId(), false);
+	});
+
+	createEffect(() => {
+		console.log("Displaying Live Item: ", coreFocusId());
+		pushToLive(coreFocusId(), true);
 	});
 
 	const handleFilter = (e: InputEvent) => {

@@ -1365,10 +1365,42 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-4.6.0.tgz#3c7c9c46e678feefe7a2e5bb609d3dbd665ffb3f"
   integrity sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw==
 
+"@solid-primitives/deep@^0.3.3":
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/@solid-primitives/deep/-/deep-0.3.3.tgz#5b5873e2cbd8d8bea3e0091bd634304d1d9e5feb"
+  integrity sha512-YnCV2OFbBlNYlww0lSD7oDpk9zN20KQWr699s6euwd6+oRE1nbI+vqrfYuqC7E0WPDfk0DIG+ylY1xvY31ZlTg==
+  dependencies:
+    "@solid-primitives/memo" "^1.4.3"
+
 "@solid-primitives/keyed@^1.5.2":
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/@solid-primitives/keyed/-/keyed-1.5.2.tgz#0b2caa83bb293374b513f33fd4ba09dc3b5f4630"
   integrity sha512-BgoEdqPw48URnI+L5sZIHdF4ua4Las1eWEBBPaoSFs42kkhnHue+rwCBPL2Z9ebOyQ75sUhUfOETdJfmv0D6Kg==
+
+"@solid-primitives/memo@^1.4.3":
+  version "1.4.3"
+  resolved "https://registry.yarnpkg.com/@solid-primitives/memo/-/memo-1.4.3.tgz#4d332c8a32a25b0678afef019a0c7156ca646159"
+  integrity sha512-CA+n9yaoqbYm+My5tY2RWb6EE16tVyehM4GzwQF4vCwvjYPAYk1JSRIVuMC0Xuj5ExD2XQJE5E2yAaKY2HTUsg==
+  dependencies:
+    "@solid-primitives/scheduled" "^1.5.2"
+    "@solid-primitives/utils" "^6.3.2"
+
+"@solid-primitives/scheduled@^1.5.2":
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/@solid-primitives/scheduled/-/scheduled-1.5.2.tgz#616def57b9250bc0e4415c604b31ab5a71465632"
+  integrity sha512-/j2igE0xyNaHhj6kMfcUQn5rAVSTLbAX+CDEBm25hSNBmNiHLu2lM7Usj2kJJ5j36D67bE8wR1hBNA8hjtvsQA==
+
+"@solid-primitives/storage@^4.3.3":
+  version "4.3.3"
+  resolved "https://registry.yarnpkg.com/@solid-primitives/storage/-/storage-4.3.3.tgz#e6a0314ca99dd7505bd74b26f7f6df362833b235"
+  integrity sha512-ACbNwMZ1s8VAvld6EUXkDkX/US3IhtlPLxg6+B2s9MwNUugwdd51I98LPEaHrdLpqPmyzqgoJe0TxEFlf3Dqrw==
+  dependencies:
+    "@solid-primitives/utils" "^6.3.2"
+
+"@solid-primitives/utils@^6.3.2":
+  version "6.3.2"
+  resolved "https://registry.yarnpkg.com/@solid-primitives/utils/-/utils-6.3.2.tgz#13d6126fc5a498965d7c45dd41c052e42dcfd7e1"
+  integrity sha512-hZ/M/qr25QOCcwDPOHtGjxTD8w2mNyVAYvcfgwzBHq2RwNqHNdDNsMZYap20+ruRwW4A3Cdkczyoz0TSxLCAPQ==
 
 "@solidjs-use/shared@2.3.0":
   version "2.3.0"

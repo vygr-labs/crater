@@ -12,8 +12,8 @@ interface Props {
 }
 export default function RenderTheme(props: Props) {
 	return (
-		<Box pos="relative" w="full" h="full" bgColor="bg.muted">
-			<For each={props.data.nodes}>
+		<Box pos="relative" w="full" h="full" bgColor="bg.muted" overflow="hidden">
+			<For each={props.data?.nodes ?? []}>
 				{(node) => (
 					<Dynamic component={props.renderMap[node.compName]} node={node} />
 				)}

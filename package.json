@@ -30,6 +30,8 @@
 	"dependencies": {
 		"@ark-ui/solid": "^5.25.1",
 		"@astrojs/solid-js": "^5.1.1",
+		"@solid-primitives/deep": "^0.3.3",
+		"@solid-primitives/storage": "^4.3.3",
 		"@tanstack/solid-virtual": "^3.13.12",
 		"astro": "^5.14.1",
 		"better-sqlite3": "^12.4.1",
