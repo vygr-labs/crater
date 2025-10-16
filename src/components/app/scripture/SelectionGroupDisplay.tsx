@@ -9,8 +9,8 @@ import { useAppContext } from "~/layouts/AppContext";
 export default function SongSelectionGroupDisplay() {
 	const { appStore, setAppStore } = useAppContext();
 	const availableScriptureGroups = () =>
-		Object.entries(appStore.displayGroups.song)
-			.filter(([id, group]) => group.subGroups !== null)
+		Object.entries(appStore.displayGroups.scripture)
+			.filter(([id, group]) => group.subGroups !== null && !group.dynamic)
 			.map(([id]) => id);
 
 	return (

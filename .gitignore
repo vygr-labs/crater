@@ -26,3 +26,6 @@ pnpm-debug.log*
 ## Panda
 styled-system
 styled-system-studio
+
+# transpiled typescript code
+src/backend/build

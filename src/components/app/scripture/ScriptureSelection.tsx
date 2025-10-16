@@ -1,6 +1,6 @@
 import { Box, Flex, HStack } from "styled-system/jsx";
 import SelectionGroups from "../SelectionGroups";
-import { createStore, produce } from "solid-js/store";
+import { createStore, produce, unwrap } from "solid-js/store";
 import { For, Portal } from "solid-js/web";
 import { IconButton } from "../../ui/icon-button";
 import { InputGroup } from "../../ui/input-group";
@@ -11,7 +11,7 @@ import { createVirtualizer } from "@tanstack/solid-virtual";
 import { useAppContext } from "~/layouts/AppContext";
 import { useFocusContext } from "~/layouts/FocusContext";
 import {
-	defaultPalette,
+	ALL_SCRIPTURE_DYNAMICSUB_KEY,
 	SCRIPTURE_TAB_FOCUS_NAME,
 	SONGS_TAB_FOCUS_NAME,
 } from "~/utils/constants";
@@ -61,33 +61,66 @@ export default function ScriptureSelection() {
 		});
 	const allScriptures = createAsyncMemo(async () => {
 		// const updated = appStore.scripturesUpdateCounter
+		console.log("Translation: ", scriptureControls.translation);
 		return await window.electronAPI.fetchAllScripture(
 			scriptureControls.translation,
 		);
 	}, []);
-	const currentGroup = createMemo(
-		() => appStore.displayGroups.scripture[scriptureControls.group],
-	);
-	const currentCollection = createMemo(() =>
-		currentGroup().subGroups?.find(
-			(group) => group.id === scriptureControls.collection,
-		),
-	);
+	const allTranslations = createAsyncMemo(async () => {
+		return await window.electronAPI.fetchTranslations();
+	}, []);
+	const dynamicSubgroups = createMemo(() => ({
+		[ALL_SCRIPTURE_DYNAMICSUB_KEY]: allTranslations().map((translation) => ({
+			name: translation.version,
+			id: translation.id,
+			items: [],
+		})),
+	}));
+	const allGroups = createMemo(() => {
+		const updatedGroups = Object.fromEntries(
+			Object.entries(unwrap(appStore.displayGroups.scripture)).map(
+				([key, obj]) => {
+					console.log("Is dynamic??", key, obj.dynamic, obj);
+					if (obj.dynamic?.id) {
+						console.log(
+							"Appending dynamic thing: ",
+							dynamicSubgroups()[obj.dynamic.id],
+						);
+						obj.subGroups = dynamicSubgroups()[obj.dynamic.id];
+					}
+					return [key, obj];
+				},
+			),
+		);
+		return updatedGroups;
+	});
+	const currentGroup = createMemo(() => allGroups()[scriptureControls.group]);
+	// const currentCollection = createMemo(() =>
+	// 	currentGroup().subGroups?.find(
+	// 		(group) => group.id === scriptureControls.collection,
+	// 	),
+	// );
 	const applyQueryFilter = (scriptures: ScriptureVerse[]) =>
 		scriptures.filter((scripture) =>
 			scripture.text.includes(scriptureControls.query),
 		);
 	const filteredScriptures = createMemo<ScriptureVerse[]>(() => {
-		const scriptureCollection = currentCollection();
-		if (currentGroup().subGroups && scriptureCollection) {
-			return applyQueryFilter(
-				allScriptures().filter((scripture) =>
-					scriptureCollection.items.includes(scripture.id),
-				),
-			);
-		} else {
-			return applyQueryFilter(allScriptures());
-		}
+		// const scriptureCollection = currentCollection();
+		console.log(
+			"All Groups: ",
+			allGroups(),
+			currentGroup(),
+			scriptureControls.translation,
+		);
+		// if (currentGroup().subGroups && scriptureControls.translation) {
+		// 	return applyQueryFilter(
+		// 		allScriptures().filter((scripture) =>
+		// 			scriptureCollection.items.includes(scripture.id),
+		// 		),
+		// 	);
+		// } else {
+		return applyQueryFilter(allScriptures());
+		// }
 	});
 
 	const pushToLive = (itemId?: number | null, isLive?: boolean) => {
@@ -189,18 +222,27 @@ export default function ScriptureSelection() {
 		open: (ScripturePanelGroupValues | string)[],
 		e?: MouseEvent,
 	) {
-		if (!open.length) return;
+		console.log(open);
 		setScriptureControls(
 			produce((store) => {
 				const subSelection = open.find((item) => item.includes("-"));
 
+				if (!open.length) {
+					store.group = "";
+					return;
+				}
+
 				if (subSelection) {
-					const [group, collection] = subSelection.split("-");
+					const [group, strCollection] = subSelection.split("-");
+					const collection = parseInt(strCollection);
 					store.group = group;
-					store.collection = parseInt(collection);
+					store.collection = collection;
+					store.translation = allTranslations().find(
+						(translation) => translation.id === collection,
+					).version;
 				} else {
 					store.group = open[0];
-					store.collection = null;
+					// store.collection = null;
 				}
 			}),
 		);
@@ -253,7 +295,8 @@ export default function ScriptureSelection() {
 					/>
 				}
 				currentGroup={[scriptureControls.group]}
-				groups={appStore.displayGroups.scripture}
+				currentSubgroup={scriptureControls.collection}
+				groups={allGroups()}
 				handleAccordionChange={handleGroupAccordionChange}
 				actionMenus={<ScriptureSelectionGroupDisplay />}
 			/>

@@ -31,6 +31,9 @@ export interface DisplayCollection {
 export type PanelCollection = {
 	title: string;
 	type?: ThemeType;
+	dynamic?: {
+		id: "versions";
+	};
 	subGroups: DisplayCollection[] | null;
 };
 

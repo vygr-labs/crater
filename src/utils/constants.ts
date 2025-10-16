@@ -9,6 +9,7 @@ export const DEFAULT_SCRIPTURE_COLLECTION_ID = 1;
 export const defaultPalette = "purple";
 export const defaultSupportingPalette = "orange";
 export const PREVIEW_INDEX_WIDTH = 7;
+export const ALL_SCRIPTURE_DYNAMICSUB_KEY = "versions";
 
 const DEFAULT_GROUPS: GroupCollectionObj = {
 	song: {
@@ -27,7 +28,10 @@ const DEFAULT_GROUPS: GroupCollectionObj = {
 	},
 	scripture: {
 		all: {
-			title: "All Songs",
+			title: "All Versions",
+			dynamic: {
+				id: ALL_SCRIPTURE_DYNAMICSUB_KEY,
+			},
 			subGroups: null,
 		},
 		favorite: {
@@ -146,4 +150,4 @@ export const LIVE_PANEL_FOCUS_NAME = "LIVE";
 export const SCHEDULE_PANEL_FOCUS_NAME = "SCHEDULES";
 export const SONG_EDITOR_FOCUS_NAME = "SONG_EDITOR";
 
-export const DEFAULT_PANEL = THEMES_TAB_FOCUS_NAME;
+export const DEFAULT_PANEL = SCRIPTURE_TAB_FOCUS_NAME;

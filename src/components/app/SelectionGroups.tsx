@@ -1,7 +1,7 @@
 import { Box, HStack } from "styled-system/jsx";
 import { Accordion } from "../ui/accordion";
 import { For, Show, type JSXElement } from "solid-js";
-import { TbChevronDown } from "solid-icons/tb";
+import { TbCheck, TbChevronDown } from "solid-icons/tb";
 import { Text } from "../ui/text";
 import type { PanelGroup } from "~/types/app-context";
 
@@ -12,6 +12,7 @@ interface GroupMeta {
 
 interface Props<T extends GroupMeta[]> {
 	currentGroup: T[number]["value"][];
+	currentSubgroup?: number | null;
 	groups: PanelGroup;
 	handleAccordionChange: (value: any) => void;
 	searchInput?: JSXElement;
@@ -50,10 +51,8 @@ export default function SelectionGroups<T extends GroupMeta[]>(
 					value={props.currentGroup}
 					onValueChange={(e) => props.handleAccordionChange(e.value)}
 				>
-					<For each={props.groups ? Object.keys(props.groups) : []}>
-						{(panel, index) => {
-							const panelGroup = props.groups[panel];
-
+					<For each={props.groups ? Object.entries(props.groups) : []}>
+						{([panel, panelGroup]) => {
 							return (
 								<Accordion.Item value={panel}>
 									<Accordion.ItemTrigger
@@ -97,6 +96,11 @@ export default function SelectionGroups<T extends GroupMeta[]>(
 															}
 														>
 															<Text>{collection.name}</Text>
+															<Show
+																when={props.currentSubgroup === collection.id}
+															>
+																<TbCheck />
+															</Show>
 														</HStack>
 													)}
 												</For>
@@ -111,14 +115,7 @@ export default function SelectionGroups<T extends GroupMeta[]>(
 			</Box>
 
 			{/* Bottom controls for left panel */}
-			<HStack
-				gap={0}
-				position="absolute"
-				bottom={0}
-				w="full"
-				h={6}
-				bg="gray.700"
-			>
+			<HStack gap={0} position="fixed" bottom={0} w="full" h={6} bg="gray.700">
 				{props.actionMenus}
 			</HStack>
 		</Box>
