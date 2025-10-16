@@ -46,6 +46,7 @@ import { Kbd } from "../../ui/kbd";
 import { VsListTree, VsSearchFuzzy } from "solid-icons/vs";
 import type { ThemeMetadata, ThemeType } from "~/types";
 import { changeDefaultTheme } from "~/utils/store-helpers";
+import Image from "../Image";
 
 type ThemePanelGroupValues = "all" | "collections" | "favorites";
 type ThemeListData = {
@@ -388,9 +389,9 @@ export default function ThemeSelection() {
 									data-focusId={virtualItem.index}
 								>
 									{/* width: "full", height: "auto", aspectRatio: 16 / 9 */}
-									<img
+									<Image
 										class={css({})}
-										src={"file://" + theme.preview_path}
+										src={theme.preview_path}
 										alt={theme.title}
 									/>
 									<Text

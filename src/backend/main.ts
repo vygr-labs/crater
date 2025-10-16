@@ -115,7 +115,7 @@ const spawnAppWindow = async () => {
 		webPreferences: {
 			backgroundThrottling: false,
 			preload: PRELOAD_PATH,
-			webSecurity: electronIsDev ? false : true,
+			// webSecurity: electronIsDev ? false : true,
 		},
 	});
 
@@ -176,15 +176,16 @@ const reactDevToolsPath =
 	"C:/Users/KINGSLEY/AppData/Local/Google/Chrome/User Data/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/6.1.1_0";
 //   os.homedir(),
 
-app.on("ready", async () => {
+app.on("ready", () => {
 	appReady = true;
 	new AppUpdater();
 	spawnAppWindow();
 
-	await session.defaultSession.loadExtension(reactDevToolsPath);
+	// await session.defaultSession.loadExtension(reactDevToolsPath);
 	protocol.handle("media", (request) => {
 		const filePath = request.url.slice("media://".length);
-		return net.fetch(pathToFileURL(path.join(__dirname, filePath)).toString());
+		console.log("Path: ", path.join(__dirname, filePath), __dirname, filePath);
+		return net.fetch(pathToFileURL(filePath).toString());
 	});
 });
 

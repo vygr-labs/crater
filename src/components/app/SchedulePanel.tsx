@@ -22,6 +22,14 @@ export default function SchedulePanel() {
 		console.log("Updating schedule items: ", appStore.scheduleItems);
 		return appStore.scheduleItems;
 	});
+	const themeMap = createMemo(() => ({
+		song: appStore.songTheme,
+		scripture: appStore.scriptureTheme,
+		presentation: appStore.presentationTheme,
+		video: null,
+		image: null,
+		message: null,
+	}));
 
 	const pushToLive = (focusId?: number | null) => {
 		// const focusId = itemIndex;
@@ -145,6 +153,7 @@ export default function SchedulePanel() {
 										isFocusItem={fluidFocusId() === virtualItem.index}
 										panelName={name}
 										isCurrentPanel={currentPanel() === name}
+										theme={themeMap()[item.type]}
 									/>
 									// <Box data-index={virtualItem.index} ref={rowVirtualizer().measureElement}>
 									//     <ItemDisplay type={itemType()} index={virtualItem.index} item={item} isFocusItem={fluidFocusId() === virtualItem.index} panelName={name} isCurrentPanel={currentPanel() === name} />
