@@ -10,10 +10,12 @@ import {
 } from "solid-js";
 import { createStore, reconcile, unwrap } from "solid-js/store";
 import type { AppContextObj, AppData, AppSettings } from "~/types/app-context";
+import { fnReplacer } from "~/utils";
 import {
 	defaultAppSettings,
 	defaultAppStore,
 	storageKey,
+	syncFnPrefix,
 	syncUpdateKey,
 } from "~/utils/constants";
 
@@ -21,26 +23,32 @@ const AppContext = createContext<AppContextObj>();
 
 export default function AppContextProvider(props: ParentProps) {
 	const [appStore, setStore] = createStore<AppData>(defaultAppStore);
+	const broadcast = new BroadcastChannel(syncUpdateKey);
 
 	const setAppStore = (...args: any[]) => {
-		// console.log("Syncing Args: ", args, JSON.stringify(unwrap(appStore)));
+		console.log("Syncing Args: ", args);
 		// sync the args that are being passed to localstorage
 		setStore(...args);
 		// pass exact argument
-		localStorage.setItem(syncUpdateKey, JSON.stringify(args));
+		// localStorage.setItem(syncUpdateKey, JSON.stringify(args, fnReplacer));
+		broadcast.postMessage(JSON.stringify(args, fnReplacer));
 		localStorage.setItem(storageKey, JSON.stringify(unwrap(appStore)));
 	};
 
-	const syncStore = (ev: StorageEvent) => {
-		if (
-			ev.key !== syncUpdateKey ||
-			!ev.newValue
-			// || ev.newValue === JSON.stringify(appStore)
-		)
-			return;
+	const syncStore = (ev: MessageEvent) => {
+		if (!ev.data) return;
 		console.log("Calling subscriber for event: ", ev);
 		// sync the local store using the arguments when retrieved
-		setStore(...JSON.parse(ev.newValue));
+		const jsonValue: any[] = JSON.parse(ev.data);
+		const parsedValue = jsonValue.map((v) => {
+			if (typeof v === "string" && v.startsWith(syncFnPrefix)) {
+				// sensitive! secure this so nobody can run code remotely.
+				return eval(v.replace(syncFnPrefix, ""));
+			}
+			return v;
+		});
+		console.log("Sync Event Parsed Data: ", parsedValue);
+		setStore(...parsedValue);
 	};
 	onMount(() => {
 		// get saved state on mount
@@ -53,10 +61,10 @@ export default function AppContextProvider(props: ParentProps) {
 		if (savedState) {
 			setStore(reconcile(JSON.parse(savedState)));
 		}
-		window.addEventListener("storage", syncStore);
 
+		broadcast.onmessage = syncStore;
 		onCleanup(() => {
-			window.removeEventListener("storage", syncStore);
+			broadcast.close();
 		});
 	});
 

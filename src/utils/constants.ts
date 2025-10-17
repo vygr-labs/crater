@@ -140,6 +140,7 @@ export const defaultAppSettings: AppSettings = {
 
 export const storageKey = "crater-store";
 export const syncUpdateKey = "crater-sync";
+export const syncFnPrefix = "DYNAMIC-ASSIGNMENT-FN()";
 export const CLOSE_SONG_EDIT: OpenEditData = { open: false, song: null };
 
 export const SONGS_TAB_FOCUS_NAME = "SONGS";

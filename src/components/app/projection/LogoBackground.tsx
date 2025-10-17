@@ -1,16 +1,14 @@
 import { css } from "styled-system/css";
+import Image from "../Image";
+import { useAppContext } from "~/layouts/AppContext";
 
 export default function LogoBackground() {
-	// const { logoBg, showLogo } = useAppSelector(state => ({
-	// 	logoBg: state.app.logoBg,
-	// 	showLogo: state.app.showLogo,
-	// }))
-	// const imagePath = useAppSelector(state => getMediaPath(state, logoBg))
+	const { appStore } = useAppContext();
 
 	return (
-		<img
-			// opacity={showLogo ? 1 : 0}
-			// visibility={showLogo ? 'visible' : 'hidden'}
+		<Image
+			src={appStore.logoBg}
+			alt="Logo Background"
 			class={css({
 				bg: "black",
 				objectFit: "contain",
@@ -19,8 +17,10 @@ export default function LogoBackground() {
 				w: "full",
 				h: "full",
 			})}
-			alt="Logo Background"
-			// src={imagePath}
+			style={{
+				opacity: appStore.showLogo ? 1 : 0,
+				visibility: appStore.showLogo ? "visible" : "hidden",
+			}}
 		/>
 	);
 }

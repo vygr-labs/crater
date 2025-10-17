@@ -10,6 +10,7 @@ import {
 	onMount,
 	Show,
 	Switch,
+	type Accessor,
 	type JSX,
 } from "solid-js";
 import { css } from "styled-system/css";
@@ -50,9 +51,18 @@ import { IconButton } from "~/components/ui/icon-button";
 import { RadioGroup } from "~/components/ui/radio-group";
 import { Field } from "~/components/ui/field";
 import { Dynamic } from "solid-js/web";
-import type { TextAlign } from "~/types";
+import type { ScriptureVerse, TextAlign } from "~/types";
+import { useAppContext } from "~/layouts/AppContext";
+import type { SongLyric } from "~/types/context";
 
 interface EditorContainer extends BoxProps {}
+
+enum LINKAGES {
+	SCRIPTURE_REFERENCE,
+	SCRIPTURE_TEXT,
+	SONG_LYRIC,
+	CUSTOM,
+}
 
 export default function EditorText(props: EditorContainer) {
 	const { node, register, styles, bindDrag } = useNode();
@@ -79,6 +89,31 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 	createEffect(() => {
 		console.log("Rendering node: ", props.node);
 	});
+	const textArr: Accessor<string[]> = createMemo(() => {
+		if (props.node.data.linkage === LINKAGES.CUSTOM) {
+			return [props.node.data.text] as string[];
+		} else {
+			const { appStore } = useAppContext();
+			const liveItem = appStore.liveItem;
+			// const displayData = appStore.liveItem
+			if (liveItem) {
+				if (
+					props.node.data.linkage === LINKAGES.SONG_LYRIC &&
+					liveItem.type === "song"
+				) {
+					return (liveItem.data as SongLyric[])[liveItem.index].text;
+				} else if (liveItem.type === "scripture") {
+					const displayData = liveItem.data as ScriptureVerse[];
+					if (props.node.data.linkage === LINKAGES.SCRIPTURE_TEXT) {
+						return [displayData[liveItem.index].text];
+					} else if (props.node.data.linkage === LINKAGES.SCRIPTURE_REFERENCE) {
+						return [liveItem.metadata?.title ?? ""];
+					}
+				}
+			}
+			return [];
+		}
+	});
 
 	return (
 		<Box
@@ -86,18 +121,14 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 			style={props.node.style}
 			transformOrigin="top left"
 		>
-			<Text userSelect="none">{props.node.data.text}</Text>
+			<For each={textArr()}>
+				{(text) => <Text userSelect="none">{text}</Text>}
+			</For>
 			{/* use:draggable */}
 		</Box>
 	);
 }
 
-enum LINKAGES {
-	SCRIPTURE_REFERENCE,
-	SCRIPTURE_TEXT,
-	SONG_LYRIC,
-	CUSTOM,
-}
 const textLinkOptions = [
 	{ value: LINKAGES.SCRIPTURE_REFERENCE, text: "Scripture Reference" },
 	{ value: LINKAGES.SCRIPTURE_TEXT, text: "Scripture Text" },

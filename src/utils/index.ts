@@ -4,6 +4,7 @@ import { token } from "styled-system/tokens";
 import {
 	defaultPalette,
 	SONGS_TAB_FOCUS_NAME,
+	syncFnPrefix,
 	THEMES_TAB_FOCUS_NAME,
 } from "./constants";
 import type { JSX } from "solid-js/jsx-runtime";
@@ -323,3 +324,10 @@ export const getColor = (
 ): string => {
 	return styles[property]?.toString() ?? "#00000000";
 };
+
+export function fnReplacer(key: string, value: any) {
+	if (typeof value === "function") {
+		return syncFnPrefix + value;
+	}
+	return value;
+}

@@ -28,9 +28,11 @@ export default function RenderProjection() {
 			transition="0.5s ease-in-out"
 			opacity="1"
 			translateY="0"
-			// class={`${hideLive ? 'clear-display' : ''}`}
+			classList={{
+				"clear-display": appStore.hideLive,
+			}}
 		>
-			{/* <LogoBackground /> */}
+			<LogoBackground />
 			{/* Live Display */}
 			<RenderTheme
 				data={JSON.parse(appStore.songTheme?.theme_data ?? "{}")}
