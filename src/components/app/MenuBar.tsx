@@ -44,7 +44,7 @@ import { ArkSwitch } from "../ui/switch";
 import { Text } from "../ui/text";
 import { TbArrowsRightDown, TbClearAll } from "solid-icons/tb";
 import { TiSortNumerically } from "solid-icons/ti";
-import { defaultPalette } from "~/utils/constants";
+import { defaultPalette, defaultAbsenteePalette } from "~/utils/constants";
 import { IoSettings } from "solid-icons/io";
 import { Portal } from "solid-js/web";
 import {
@@ -55,6 +55,7 @@ import {
 import type { SwitchCheckedChangeDetails } from "@ark-ui/solid";
 import { BsDisplayFill } from "solid-icons/bs";
 import { unwrap } from "solid-js/store";
+import { createEffect } from "solid-js";
 
 export type Props = {
 	// openAppSettings: () => void
@@ -87,16 +88,21 @@ export default function MenuBar(props: Props) {
 	}
 
 	function handleLiveToggle() {
+		console.log("Former Live: ", appStore.isLive);
 		toggleLive(setAppStore); // toggleLive(setAppStore, checked)
+		console.log("New Live: ", appStore.isLive);
+	}
+
+	createEffect(() => {
 		if (appStore.isLive) {
-			window.electronAPI.closeProjectionWindow();
-		} else {
 			console.log(settings.projectionBounds);
 			window.electronAPI.openProjectionWindow(
 				unwrap(settings.projectionBounds),
 			);
+		} else {
+			window.electronAPI.closeProjectionWindow();
 		}
-	}
+	});
 
 	return (
 		<HStack
@@ -154,8 +160,10 @@ export default function MenuBar(props: Props) {
 				<HStack gap={3}>
 					<Button
 						onClick={() => toggleLogo(setAppStore)}
-						variant={appStore.showLogo ? "solid" : "surface"}
-						colorPalette={defaultPalette}
+						variant="surface"
+						colorPalette={
+							appStore.showLogo ? defaultPalette : defaultAbsenteePalette
+						}
 					>
 						<Icon fontSize="2xl" aria-label="Show Logo">
 							<TiSortNumerically />
@@ -165,8 +173,10 @@ export default function MenuBar(props: Props) {
 
 					<Button
 						onClick={() => toggleClearDisplay(setAppStore)}
-						variant={appStore.hideLive ? "solid" : "surface"}
-						colorPalette="red"
+						variant="surface"
+						colorPalette={
+							appStore.hideLive ? defaultPalette : defaultAbsenteePalette
+						}
 					>
 						<Icon fontSize="2xl" aria-label="Clear Display">
 							<TbClearAll />
@@ -176,8 +186,10 @@ export default function MenuBar(props: Props) {
 				</HStack>
 
 				<Button
-					variant={appStore.isLive ? "solid" : "surface"}
-					colorPalette={defaultPalette}
+					variant="surface"
+					colorPalette={
+						appStore.isLive ? defaultPalette : defaultAbsenteePalette
+					}
 					onclick={handleLiveToggle}
 				>
 					<BsDisplayFill /> Go Live

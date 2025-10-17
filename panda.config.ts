@@ -15,6 +15,7 @@ import {
 import {
 	defaultPalette,
 	defaultSupportingPalette,
+	defaultAbsenteePalette,
 	PREVIEW_INDEX_WIDTH,
 } from "~/utils/constants";
 
@@ -39,7 +40,11 @@ export default defineConfig({
 		css: [
 			{
 				properties: {
-					colorPalette: [defaultPalette, defaultSupportingPalette],
+					colorPalette: [
+						defaultPalette,
+						defaultSupportingPalette,
+						defaultAbsenteePalette,
+					],
 					width: [PREVIEW_INDEX_WIDTH],
 					height: [PREVIEW_INDEX_WIDTH],
 					margin: [PREVIEW_INDEX_WIDTH],

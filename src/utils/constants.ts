@@ -8,6 +8,7 @@ import type {
 export const DEFAULT_SCRIPTURE_COLLECTION_ID = 1;
 export const defaultPalette = "purple";
 export const defaultSupportingPalette = "orange";
+export const defaultAbsenteePalette = "red";
 export const PREVIEW_INDEX_WIDTH = 7;
 export const ALL_SCRIPTURE_DYNAMICSUB_KEY = "versions";
 export const defaultThemeKeys = [
