@@ -156,6 +156,7 @@ export const syncUpdateKey = "crater-sync";
 export const syncFnPrefix = "DYNAMIC-ASSIGNMENT-FN()";
 export const CLOSE_SONG_EDIT: OpenEditData = { open: false, song: null };
 
+export const GLOBAL_FOCUS_NAME = "GLOBAL_CONTEXT";
 export const SONGS_TAB_FOCUS_NAME = "SONGS";
 export const SCRIPTURE_TAB_FOCUS_NAME = "SCRIPTURE";
 export const MEDIA_TAB_FOCUS_NAME = "MEDIA";

@@ -96,6 +96,7 @@ export default function FocusContextProvider(props: ParentProps) {
 	const currentPanel = createMemo(() => store.current);
 	const previousPanel = createMemo(() => store.previous);
 	const currentSubscriber = createMemo(() => store.subscribers[store.current]);
+	const GLOBAL_SHORTCUTS = ["T", "L", "C"];
 
 	const changeCoreFocus: InternalChangeFocusFn = ({
 		contextName,
@@ -129,9 +130,12 @@ export default function FocusContextProvider(props: ParentProps) {
 	onKeyDown(
 		(e) =>
 			Object.values(store.subscribers)
-				.flatMap((subscriber) => Object.keys(subscriber.handlers))
+				.flatMap((subscriber) => Object.keys(subscriber.handlers)) // .concat(GLOBAL_SHORTCUTS)
 				.includes(e.key),
 		(e) => {
+			// if (GLOBAL_SHORTCUTS.includes(e.key)) {
+			// 	handleShortcut(e);
+			// }
 			const currentPanel = store.subscribers[store.current];
 			if (currentPanel && Object.hasOwn(currentPanel.handlers, e.key)) {
 				currentPanel.handlers[e.key]({
