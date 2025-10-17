@@ -25,6 +25,7 @@ import ThemeSelection from "./theme/ThemeSelection";
 import { addToSchedule } from "~/utils/store-helpers";
 import { useAppContext } from "~/layouts/AppContext";
 import { unwrap } from "solid-js/store";
+import MediaSelection from "./media/MediaSelection";
 
 export default function ControlsMain() {
 	const { changeFocusPanel } = useFocusContext();
@@ -113,7 +114,7 @@ export default function ControlsMain() {
 						<ScriptureSelection />
 					</Tabs.Content>
 					<Tabs.Content value={MEDIA_TAB_FOCUS_NAME} h="full" py={0}>
-						{/* <MediaSelection /> */}
+						<MediaSelection />
 					</Tabs.Content>
 					<Tabs.Content value={PRESENTATIONS_TAB_FOCUS_NAME}>
 						Manage your tasks for freelancers

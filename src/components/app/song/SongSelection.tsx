@@ -156,6 +156,7 @@ export default function SongSelection() {
 				changeFluidFocus,
 			}) => {
 				changeFocus(fluidFocusId);
+				pushToLive(fluidFocusId, true);
 			},
 		},
 		clickHandlers: {
@@ -168,6 +169,7 @@ export default function SongSelection() {
 			onDblClick: ({ changeFocus, focusId }) => {
 				if (typeof focusId === "number") {
 					changeFocus(focusId);
+					pushToLive(focusId, true);
 				}
 			},
 			onRightClick: ({ changeFluidFocus, focusId }) => {
@@ -232,10 +234,6 @@ export default function SongSelection() {
 	createEffect(() => {
 		console.log("Fluid Focus Changed: ", fluidFocusId());
 		pushToLive(fluidFocusId(), false);
-	});
-
-	createEffect(() => {
-		pushToLive(coreFocusId(), true);
 	});
 
 	const handleSongEdit = () => {

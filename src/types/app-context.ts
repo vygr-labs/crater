@@ -4,6 +4,7 @@ import type {
 	DisplayBounds,
 	DisplayInfo,
 	DisplayProps,
+	DisplayType,
 	FocusPanel,
 	GroupCategory,
 	GroupType,
@@ -30,7 +31,7 @@ export interface DisplayCollection {
 
 export type PanelCollection = {
 	title: string;
-	type?: ThemeType;
+	type?: DisplayType;
 	dynamic?: {
 		id: "versions";
 	};
@@ -81,6 +82,7 @@ export interface AppData {
 	logoBg: string;
 	songsUpdateCounter: number;
 	themesUpdateTrigger: number;
+	mediaUpdateTrigger: number;
 	loading: AppLoading;
 	previewItem: DisplayProps | undefined;
 	liveItem: DisplayProps | undefined;

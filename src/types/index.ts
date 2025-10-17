@@ -67,6 +67,7 @@ export interface ChakraValueChangeDetails {
 }
 
 export type ThemeType = "song" | "scripture" | "presentation";
+export type MediaType = "image" | "video";
 
 export type ThemeMetadata = {
 	id: number;
@@ -119,7 +120,9 @@ export type DisplayType =
 	| "presentation";
 
 export interface MediaItem {
+	id: number;
 	title: string;
+	type: MediaType;
 	path: string;
 }
 

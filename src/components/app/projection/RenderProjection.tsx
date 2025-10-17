@@ -49,7 +49,7 @@ export default function RenderProjection() {
 						renderMap={themeRenderMap}
 					/>
 				</Match>
-				<Match when={appStore.displayData?.type === "song"}>
+				<Match when={appStore.displayData?.type === "image"}>
 					<RenderImage imageData={appStore.displayData?.image} />
 				</Match>
 			</Switch>

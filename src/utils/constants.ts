@@ -49,8 +49,14 @@ const DEFAULT_GROUPS: GroupCollectionObj = {
 		},
 	},
 	media: {
-		all: {
-			title: "All Songs",
+		image: {
+			title: "Images",
+			type: "image",
+			subGroups: null,
+		},
+		video: {
+			title: "Videos",
+			type: "video",
 			subGroups: null,
 		},
 		favorite: {
@@ -98,6 +104,7 @@ export const defaultAppStore: AppData = {
 	logoBg: "",
 	songsUpdateCounter: 0,
 	themesUpdateTrigger: 0,
+	mediaUpdateTrigger: 0,
 	loading: {
 		reason: "Nothing is loading",
 		isLoading: false,

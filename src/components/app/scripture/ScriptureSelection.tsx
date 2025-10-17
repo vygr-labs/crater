@@ -196,6 +196,7 @@ export default function ScriptureSelection() {
 			}) => {
 				console.log("ARROWDOWN Changing All focus: ", fluidFocusId);
 				changeFocus(fluidFocusId);
+				pushToLive(fluidFocusId, true);
 			},
 		},
 		clickHandlers: {
@@ -275,11 +276,6 @@ export default function ScriptureSelection() {
 	createEffect(() => {
 		console.log("Sending current item preview: ", fluidFocusId());
 		pushToLive(fluidFocusId(), false);
-	});
-
-	createEffect(() => {
-		console.log("Displaying Live Item: ", coreFocusId());
-		pushToLive(coreFocusId(), true);
 	});
 
 	const handleFilter = (e: InputEvent) => {

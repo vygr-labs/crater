@@ -37,6 +37,10 @@ export const updateSongEdit: AppStoreUpdateFn<SongEditData> = (
 	setStore("songEdit", newSongEdit);
 };
 
+export const changeLogoBg: AppStoreUpdateFn<string> = (setStore, path) => {
+	setStore("logoBg", path);
+};
+
 export const addToSchedule: AppStoreUpdateFn<DisplayProps[]> = (
 	setStore,
 	items,

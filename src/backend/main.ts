@@ -183,7 +183,7 @@ app.on("ready", () => {
 
 	// await session.defaultSession.loadExtension(reactDevToolsPath);
 	protocol.handle("media", (request) => {
-		const filePath = request.url.slice("media://".length);
+		const filePath = decodeURI(request.url).slice("media://".length);
 		console.log("Path: ", path.join(__dirname, filePath), __dirname, filePath);
 		return net.fetch(pathToFileURL(filePath).toString());
 	});
@@ -380,21 +380,33 @@ ipcMain.handle(
 		if (appWindow) {
 			const properties: FileDialogProperties[] = ["openFile"];
 			if (multiSelect) properties.push("multiSelections");
+			// const _filters = filters.map((filter) => filterObj[filter]);
+			// console.log("FILTERS: ", _filters);
 
 			const result = await dialog.showOpenDialog(appWindow, {
 				properties,
-				filters: filters.map((filter) => filterObj[filter]),
+				filters:
+					filters.length === 2
+						? [{ name: "All Files", extensions: ["*"] }]
+						: [filterObj[filters[0]]],
+				// filters: filters.map((filter) => filterObj[filter]), // electron on linux doesn't allow both filters for some reason
 			});
+			console.log("Dialog Result: ", result);
 
 			if (!result.filePaths.length) {
-				return; // No files selected, do nothing
+				// No files selected, do nothing
+				return {
+					success: false,
+					message: "No files selected",
+					paths: [],
+				};
 			}
 
 			const destinations: string[] = [];
 			for (const filePath of result.filePaths) {
 				const destination = getMediaDestination(filePath);
 				console.log(filePath, destination);
-				if (!destination) return;
+				if (!destination) continue;
 
 				destinations.push(destination);
 				try {
@@ -404,9 +416,12 @@ ipcMain.handle(
 				}
 			}
 
+			const successful = Boolean(destinations.length);
 			return {
-				type: "success",
-				message: "Completely Successful",
+				success: successful,
+				message: successful
+					? `${destinations.length} media imported successfully`
+					: `Failed to import ${result.filePaths.length - destinations.length} media`,
 				paths: destinations,
 			};
 		}
@@ -416,8 +431,10 @@ ipcMain.handle(
 ipcMain.handle("get-images", async () => {
 	try {
 		const files = await fs.promises.readdir(MEDIA_IMAGES);
-		return files.map((name) => ({
+		return files.map((name, index) => ({
+			id: index,
 			title: name,
+			type: "image",
 			path: path.join(MEDIA_IMAGES, name),
 		}));
 	} catch (err) {
@@ -429,8 +446,11 @@ ipcMain.handle("get-images", async () => {
 ipcMain.handle("get-videos", async () => {
 	try {
 		const files = await fs.promises.readdir(MEDIA_VIDEOS);
-		return files.map((name) => ({
+		console.log("GETTING VIDEOS: ", files);
+		return files.map((name, index) => ({
+			id: index,
 			title: name,
+			type: "video",
 			path: path.join(MEDIA_VIDEOS, name),
 		}));
 	} catch (err) {
