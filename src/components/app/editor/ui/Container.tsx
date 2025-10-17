@@ -151,8 +151,8 @@ EditorContainer.config = {
 		// bgColor: defaultPalette
 	},
 	defaultStyles: {
-		width: "50px",
-		height: "160px",
+		width: "15%",
+		height: "20%",
 		"background-color": token(`colors.${defaultPalette}.800`),
 		"z-index": 10,
 	},

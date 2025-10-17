@@ -131,7 +131,7 @@ export type DisplayItem =
 
 export interface DisplayInfo {
 	type: DisplayType;
-	scripture?: HighlightedVerse;
+	scripture?: ScriptureVerse;
 	song?: SongLyric;
 	image?: MediaItem;
 }

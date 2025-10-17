@@ -17,7 +17,7 @@ import { useFps } from "solidjs-use";
 import screenshotDiv from "html2canvas";
 import { getKeyByValue, getToastType, toaster } from "~/utils";
 import { useFocusContext } from "~/layouts/FocusContext";
-import { THEME_EDITOR_FOCUS_NAME } from "~/utils/constants";
+import { defaultThemeKeys, THEME_EDITOR_FOCUS_NAME } from "~/utils/constants";
 
 interface Props {
 	open: boolean;
@@ -42,6 +42,7 @@ export default function ThemeEditor() {
 		useFocusContext();
 	createEffect(() => {
 		if (open()) {
+			console.log("theme-editor Triggering change focus: ", open());
 			changeFocusPanel(THEME_EDITOR_FOCUS_NAME);
 		}
 	});
@@ -87,15 +88,13 @@ export default function ThemeEditor() {
 			} else {
 				const { success, message, updatedTheme } =
 					await window.electronAPI.updateTheme(formerTheme.id, theme);
-				// const key = getKeyByValue(defaultThemes, formerTheme.id)
-				// if (key && updatedTheme) {
-				// 	if (key.startsWith('scripture')) {
-				// 		dispatch(changeScriptureTheme(updatedTheme))
-				// 	} else if (key.startsWith('song')) {
-				// 		dispatch(changeSongTheme(updatedTheme))
-				// 	}
-				// }
-				console.log("Updated Theme: ", updatedTheme);
+
+				defaultThemeKeys.forEach((theme) => {
+					if (appStore[theme]?.id === formerTheme.id) {
+						setAppStore(theme, updatedTheme);
+					}
+				});
+				const key = console.log("Updated Theme: ", updatedTheme);
 				// dispatch(bustMediaCache([updatedTheme.preview_path]))
 
 				// dispatch(updateThemeEditor({ open: false }))

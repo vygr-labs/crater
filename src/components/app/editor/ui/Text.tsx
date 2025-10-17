@@ -34,7 +34,7 @@ import {
 import { token } from "styled-system/tokens";
 import { defaultPalette } from "~/utils/constants";
 import { defineStyles } from "@pandacss/dev";
-import { getNum } from "~/utils";
+import { getNum, getReference } from "~/utils";
 import { Text } from "~/components/ui/text";
 import type { NodeSettings, RenderEditorItemProps } from "../editor-types";
 import {
@@ -94,20 +94,20 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 			return [props.node.data.text] as string[];
 		} else {
 			const { appStore } = useAppContext();
-			const liveItem = appStore.liveItem;
+			const displayData = appStore.displayData;
 			// const displayData = appStore.liveItem
-			if (liveItem) {
+			if (displayData) {
 				if (
 					props.node.data.linkage === LINKAGES.SONG_LYRIC &&
-					liveItem.type === "song"
+					displayData.type === "song" &&
+					displayData.song
 				) {
-					return (liveItem.data as SongLyric[])[liveItem.index].text;
-				} else if (liveItem.type === "scripture") {
-					const displayData = liveItem.data as ScriptureVerse[];
+					return displayData.song.text;
+				} else if (displayData.type === "scripture" && displayData.scripture) {
 					if (props.node.data.linkage === LINKAGES.SCRIPTURE_TEXT) {
-						return [displayData[liveItem.index].text];
+						return [displayData.scripture.text];
 					} else if (props.node.data.linkage === LINKAGES.SCRIPTURE_REFERENCE) {
-						return [liveItem.metadata?.title ?? ""];
+						return [getReference(displayData.scripture)];
 					}
 				}
 			}
@@ -293,8 +293,8 @@ EditorText.config = {
 		// bgColor: defaultPalette
 	},
 	defaultStyles: {
-		width: "160px",
-		height: "50px",
+		width: "20%",
+		height: "15%",
 		color: token(`colors.whiteAlpha.900`),
 		"line-height": "20px",
 		"text-align": "left" as TextAlign,

@@ -1,5 +1,5 @@
 import type { FocusType } from "~/layouts/FocusContext";
-import type { BookInfo, ChapterCountObj, HighlightedVerse } from "../types";
+import type { BookInfo, ChapterCountObj, ScriptureVerse } from "../types";
 import { token } from "styled-system/tokens";
 import {
 	defaultPalette,
@@ -88,8 +88,8 @@ export function determineColor(color: string) {
 	return color === "transparent" ? "rgba(0,0,0,0)" : color;
 }
 
-export function getReference(data: HighlightedVerse) {
-	return `${data.book} ${data.chapter}:${data.verse} ${data.version}`;
+export function getReference(data: ScriptureVerse) {
+	return `${data.book_name} ${data.chapter}:${data.verse} ${data.version}`;
 }
 
 export function capitalizeFirstLetter(str: string) {

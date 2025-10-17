@@ -10,6 +10,11 @@ export const defaultPalette = "purple";
 export const defaultSupportingPalette = "orange";
 export const PREVIEW_INDEX_WIDTH = 7;
 export const ALL_SCRIPTURE_DYNAMICSUB_KEY = "versions";
+export const defaultThemeKeys = [
+	"songTheme",
+	"scriptureTheme",
+	"presentationTheme",
+] as const;
 
 const DEFAULT_GROUPS: GroupCollectionObj = {
 	song: {

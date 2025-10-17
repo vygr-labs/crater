@@ -17,6 +17,16 @@ export default function LivePanel() {
 	const liveData = createMemo(() => appStore.liveItem?.data ?? []);
 	const itemType = createMemo(() => appStore.liveItem?.type);
 
+	const displayLiveItem = (index?: number | null) => {
+		const type = itemType();
+		if (appStore.liveItem && type && typeof index === "number") {
+			setAppStore("displayData", {
+				type,
+				[type]: liveData()[index],
+			});
+		}
+	};
+
 	const { subscribeEvent, changeFocusPanel, currentPanel } = useFocusContext();
 	const { name, coreFocusId, fluidFocusId, changeFocus } = subscribeEvent({
 		name: LIVE_PANEL_FOCUS_NAME,
@@ -89,6 +99,7 @@ export default function LivePanel() {
 	createEffect(() => {
 		console.log("Fluid Focus is CHanged: ", fluidFocusId());
 		rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+		displayLiveItem(fluidFocusId());
 	});
 
 	return (

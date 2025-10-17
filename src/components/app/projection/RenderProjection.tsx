@@ -4,6 +4,8 @@ import RenderTheme from "../editor/RenderTheme";
 import { RenderEditorContainer } from "../editor/ui/Container";
 import { RenderEditorText } from "../editor/ui/Text";
 import { useAppContext } from "~/layouts/AppContext";
+import { Match, Switch } from "solid-js";
+import RenderImage from "./RenderImage";
 
 const themeRenderMap = {
 	EditorContainer: RenderEditorContainer,
@@ -34,20 +36,23 @@ export default function RenderProjection() {
 		>
 			<LogoBackground />
 			{/* Live Display */}
-			<RenderTheme
-				data={JSON.parse(appStore.songTheme?.theme_data ?? "{}")}
-				renderMap={themeRenderMap}
-			/>
-			{/* {displayData?.type === 'scripture' ? (
-                            <RenderScripture
-                                scriptureData={displayData?.scripture}
-                                hide={hideLive}
-                            />
-                        ) : displayData?.type === 'song' ? (
-                            <RenderLyric songData={displayData?.song} hide={hideLive} />
-                        ) : displayData?.type === 'image' ? (
-                            <RenderImage imageData={displayData?.image} hide={hideLive} />
-                        ) : null} */}
+			<Switch>
+				<Match when={appStore.displayData?.type === "scripture"}>
+					<RenderTheme
+						data={JSON.parse(appStore.scriptureTheme?.theme_data ?? "{}")}
+						renderMap={themeRenderMap}
+					/>
+				</Match>
+				<Match when={appStore.displayData?.type === "song"}>
+					<RenderTheme
+						data={JSON.parse(appStore.songTheme?.theme_data ?? "{}")}
+						renderMap={themeRenderMap}
+					/>
+				</Match>
+				<Match when={appStore.displayData?.type === "song"}>
+					<RenderImage imageData={appStore.displayData?.image} />
+				</Match>
+			</Switch>
 		</Box>
 	);
 }
