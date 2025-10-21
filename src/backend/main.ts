@@ -11,7 +11,7 @@ import {
 } from "electron";
 import log from "electron-log";
 import electronUpdater from "electron-updater";
-import electronIsDev from "electron-is-dev";
+// import electronIsDev from "electron-is-dev";
 import ElectronStore from "electron-store";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -61,6 +61,7 @@ import { pathToFileURL } from "node:url";
 // }, 1000)
 
 // processSongs()
+const electronIsDev = false;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -119,11 +120,12 @@ const spawnAppWindow = async () => {
 		},
 	});
 
-	appWindow.loadURL(
-		electronIsDev
-			? "http://localhost:7241/controls"
-			: `file://${path.join(__dirname, "../../../dist/controls/index.html")}`,
-	);
+	appWindow.loadFile("dist/controls.html");
+	// appWindow.loadURL(
+	// 	electronIsDev
+	// 		? "http://localhost:7241/controls"
+	// 		: `dist/controls/index.html`,
+	// );
 	appWindow.maximize();
 	// appWindow.setMenu(null)
 	appWindow.show();
@@ -157,9 +159,7 @@ function spawnProjectionWindow({ x, y }: { x: number; y: number }) {
 	});
 
 	projectionWindow.loadURL(
-		electronIsDev
-			? "http://localhost:7241"
-			: `file://${path.join(__dirname, "../../../dist/index.html")}`,
+		electronIsDev ? "http://localhost:7241" : `dist/index.html`,
 	);
 	projectionWindow.show();
 

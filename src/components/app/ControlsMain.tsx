@@ -28,7 +28,7 @@ import { unwrap } from "solid-js/store";
 import MediaSelection from "./media/MediaSelection";
 
 export default function ControlsMain() {
-	const { changeFocusPanel } = useFocusContext();
+	const { changeFocusPanel, subscribeEvent } = useFocusContext();
 	const { appStore, setAppStore } = useAppContext();
 	const handleAddToSchedule = () => {
 		if (appStore.previewItem) {
@@ -36,6 +36,10 @@ export default function ControlsMain() {
 		}
 		console.log("Schedule Updated: ", appStore.scheduleItems);
 	};
+	const handleShortcut = (e: KeyboardEvent) => [
+		console.log(e.ctrlKey, e.key, e),
+	];
+	const handlers;
 
 	return (
 		<VStack h="full">

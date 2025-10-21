@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const RESOURCES_PATH = electronIsDev
 	? path.join(__dirname, "../../assets")
-	: path.join(process.resourcesPath, "assets");
+	: process.resourcesPath;
 const userData = electronIsDev
 	? path.join(RESOURCES_PATH, "store")
 	: app.getPath("userData");

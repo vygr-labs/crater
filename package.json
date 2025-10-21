@@ -24,7 +24,7 @@
 		"start": "concurrently -k \"yarn frontend:dev\" \"wait-on tcp:127.0.0.1:7241 && yarn boot\"",
 		"prepare": "panda codegen",
 		"pre-build": "yarn frontend:build && yarn backend:build",
-		"build": "yarn pre-build",
+		"build": "yarn pre-build && electron-builder",
 		"postinstall": "electron-builder install-app-deps"
 	},
 	"dependencies": {
