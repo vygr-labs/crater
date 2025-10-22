@@ -5,5 +5,5 @@ interface Props extends JSX.ImgHTMLAttributes<HTMLImageElement> {}
 
 export default function Image(_props: Props) {
 	const [props, rest] = splitProps(_props, ["src"]);
-	return <img src={"media://" + props.src} {...rest} />;
+	return <img src={"image:\\\\" + props.src} {...rest} />;
 }

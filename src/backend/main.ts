@@ -53,6 +53,8 @@ import {
 	moveFiles,
 } from "./utils.js";
 import { SONG_DB_PATHS } from "./types.js";
+import { pathToFileURL } from "node:url";
+import handleCustomProtocols from "./helpers/protocols.js";
 // import processSongs from './scripts/songs-importer/index.js'
 // import grandiose from 'grandiose'
 // const { GrandioseFinder } = grandiose
@@ -104,10 +106,15 @@ const getAssetPath = (...paths: string[]): string => {
 
 protocol.registerSchemesAsPrivileged([
 	{
-		scheme: "media",
+		scheme: "image",
 		privileges: {
-			// supportFetchAPI: true,
-			// bypassCSP: true,
+			supportFetchAPI: true,
+		},
+	},
+	{
+		scheme: "video",
+		privileges: {
+			supportFetchAPI: true,
 			stream: true,
 		},
 	},
@@ -185,63 +192,22 @@ function spawnProjectionWindow({ x, y }: { x: number; y: number }) {
 	});
 }
 
-const reactDevToolsPath =
-	"C:/Users/KINGSLEY/AppData/Local/Google/Chrome/User Data/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/6.1.1_0";
-//   os.homedir(),
-
 app.on("ready", async () => {
 	appReady = true;
 	new AppUpdater();
 	spawnAppWindow();
 
-	// await session.defaultSession.loadExtension(reactDevToolsPath);
-	// protocol.handle("media", (request) => {
-	// 	const filePath = decodeURI(request.url).slice("media://".length);
-	// 	console.log("Path: ", path.join(__dirname, filePath), __dirname, filePath);
-	// 	return net.fetch(pathToFileURL(filePath).toString());
-	// });
-
-	protocol.handle("media", async (request) => {
-		try {
-			const url = request.url.replace(/^media:\/\//, "");
-			// const filePath = path.join(uploadsDir, decodeURIComponent(url));
-			const filePath = decodeURI(request.url).slice("media://".length);
-
-			log.info("Serving file from media://", filePath);
-			if (!fs.existsSync(filePath)) {
-				log.error(`File not found: ${filePath}`);
-				return new Response("File not found", { status: 404 });
-			}
-			const fileStat = fs.statSync(filePath);
-			const range = request.headers.get("range");
-			let start = 0,
-				end = fileStat.size - 1;
-			if (range) {
-				const match = range.match(/bytes=(\d*)-(\d*)/);
-				if (match) {
-					start = match[1] ? parseInt(match[1], 10) : start;
-					end = match[2] ? parseInt(match[2], 10) : end;
-				}
-			}
-			const chunkSize = end - start + 1;
-			log.info(`Serving range: ${start}-${end}/${fileStat.size}`);
-			const stream = fs.createReadStream(filePath, { start, end });
-			const mimeType = getMimeType(filePath);
-			// @ts-ignore
-			return new Response(stream, {
-				status: range ? 206 : 200,
-				headers: {
-					"Content-Type": mimeType,
-					"Content-Range": `bytes ${start}-${end}/${fileStat.size}`,
-					"Accept-Ranges": "bytes",
-					"Content-Length": chunkSize,
-				},
-			});
-		} catch (error) {
-			log.error("Error handling media protocol:", error);
-			return new Response("Internal Server Error", { status: 500 });
-		}
+	protocol.handle("image", (request) => {
+		const filePath = decodeURI(request.url).slice("image:\\\\".length);
+		console.log(
+			"IMAGE Path: ",
+			path.join(__dirname, filePath),
+			__dirname,
+			filePath,
+		);
+		return net.fetch(pathToFileURL(filePath).toString());
 	});
+	handleCustomProtocols();
 });
 
 app.on("window-all-closed", () => {

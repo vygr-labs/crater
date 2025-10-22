@@ -7,7 +7,7 @@ export default function Video(_props: Props) {
 	const [props, rest] = splitProps(_props, ["src"]);
 	return (
 		<video {...rest}>
-			<source src={"media://" + props.src} />
+			<source src={"video:\\\\" + props.src} />
 		</video>
 	);
 }

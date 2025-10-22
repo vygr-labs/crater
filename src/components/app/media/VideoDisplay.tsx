@@ -14,7 +14,7 @@ interface Props {
 export default function VideoDisplay(props: Props) {
 	return (
 		<Box
-			class="disable-child-clicks"
+			// class="disable-child-clicks" // re-enable after implementing video controls
 			userSelect="none"
 			px={4}
 			py={1}

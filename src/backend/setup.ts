@@ -46,7 +46,7 @@ const destination = electronIsDev
 console.log("STARTING SETUP: ", fs.existsSync(setupFiles));
 let completedSetup = !fs.existsSync(setupFiles);
 
-if (!completedSetup) {
+if (!electronIsDev && !completedSetup) {
 	setupApplication(setupFiles, destination);
 	console.log("SETUP APPLICATION SUCCESSFUL: ");
 	completedSetup = !fs.existsSync(setupFiles);
