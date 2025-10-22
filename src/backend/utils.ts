@@ -29,32 +29,44 @@ export function saveThemePreview(preview: ArrayBuffer, id: number | bigint) {
 	});
 }
 
-export function moveFiles(sourceDir: string, targetDir: string): Promise<void> {
+export function moveFiles(
+	sourceDir: string,
+	targetDir: string,
+): Promise<boolean> {
 	return new Promise((resolve, reject) => {
 		fs.readdir(sourceDir, (err, files) => {
+			console.log("");
 			if (err) {
 				reject(err);
 				return;
 			}
 
+			if (!files.length) {
+				fs.mkdir(targetDir, () => {
+					fs.rmdir(sourceDir, () => resolve(true));
+				});
+			}
 			files.forEach((file) => {
 				const oldPath = path.join(sourceDir, file);
 				const newPath = path.join(targetDir, file);
 				const stat = fs.lstatSync(oldPath);
-				console.log(oldPath, newPath, stat);
 
 				if (stat.isDirectory()) {
+					console.log("RECURSING DIRECTORY: ", oldPath, newPath, stat);
 					fs.mkdir(newPath, { recursive: true }, (err) => {
 						console.error("AN ERROR OCCURED", err);
+						moveFiles(oldPath, newPath)
+							.then(() => {
+								fs.rmdir(oldPath, () => {
+									if (files.indexOf(file) === files.length - 1) {
+										resolve(true);
+									}
+								});
+							})
+							.catch((err) => reject(err));
 					});
-					moveFiles(oldPath, newPath)
-						.then(() => {
-							if (files.indexOf(file) === files.length - 1) {
-								resolve();
-							}
-						})
-						.catch((err) => reject(err));
 				} else if (stat.isFile()) {
+					console.log("RENAMING FILE: ", oldPath, newPath, stat);
 					fs.rename(oldPath, newPath, (err) => {
 						if (err) {
 							reject(err);
@@ -62,7 +74,7 @@ export function moveFiles(sourceDir: string, targetDir: string): Promise<void> {
 						}
 
 						if (files.indexOf(file) === files.length - 1) {
-							resolve();
+							resolve(true);
 						}
 					});
 				}
@@ -71,7 +83,13 @@ export function moveFiles(sourceDir: string, targetDir: string): Promise<void> {
 	});
 }
 
-function getMimeType(filePath: string) {
+export const handleErr: fs.NoParamCallback = (err) => {
+	if (err) {
+		console.error("Error Occured: ", err);
+	}
+};
+
+export function getMimeType(filePath: string) {
 	const ext = path.extname(filePath).toLowerCase();
 	switch (ext) {
 		case ".wav":

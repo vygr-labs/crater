@@ -49,7 +49,12 @@ import {
 	filterThemes,
 } from "./database/theme-operations.js";
 import processSongs from "./scripts/songs-importer/index.js";
-import { getMediaDestination, moveFiles } from "./utils.js";
+import {
+	getMediaDestination,
+	getMimeType,
+	handleErr,
+	moveFiles,
+} from "./utils.js";
 import { SONG_DB_PATHS } from "./types.js";
 import { pathToFileURL } from "node:url";
 // import processSongs from './scripts/songs-importer/index.js'
@@ -110,16 +115,44 @@ const PRELOAD_PATH = path.join(__dirname, "preload.js");
 const getAssetPath = (...paths: string[]): string => {
 	return path.join(RESOURCES_PATH, ...paths);
 };
+
 const setupApplication = async () => {
 	console.log("Setting up application");
 	const resources = path.join(process.resourcesPath, "store");
-	fs.cp(resources, userData, { recursive: true }, (err) => {
-		console.log(err);
-	});
-	// await moveFiles(resources, userData)
-	// 	.then(() => console.log("Finished Migrating Files"))
-	// 	.catch((err) => console.error("An Error Occured during setup: ", err));
+
+	try {
+		const initialized = await moveFiles(resources, userData);
+		console.log("Finished Migrating Files", initialized);
+		const completeSetup: Promise<boolean> = new Promise((resolve, reject) => {
+			if (initialized) {
+				fs.readdir(resources, (err, files) => {
+					if (files.length) {
+						console.error("Failed to initialize application", files);
+						reject();
+					} else {
+						fs.rmdir(resources, () => resolve(true));
+					}
+				});
+			}
+			resolve(false);
+		});
+		return await completeSetup;
+	} catch (err) {
+		console.error("An Error Occured during setup: ", err);
+		return false;
+	}
 };
+
+protocol.registerSchemesAsPrivileged([
+	{
+		scheme: "media",
+		privileges: {
+			// supportFetchAPI: true,
+			// bypassCSP: true,
+			stream: true,
+		},
+	},
+]);
 
 const spawnAppWindow = async () => {
 	if (electronIsDev) await installExtensions();
@@ -200,17 +233,62 @@ const reactDevToolsPath =
 app.on("ready", async () => {
 	// @ts-ignore
 	if (!electronIsDev && store.get("setupCompleted") !== true) {
-		await setupApplication();
+		const completedSetup = await setupApplication();
+		console.log("SETUP APPLICATION SUCCESSFUL: ", completedSetup);
+		// @ts-ignore
+		store.set("setupCompleted", completedSetup);
 	}
 	appReady = true;
 	new AppUpdater();
 	spawnAppWindow();
 
 	// await session.defaultSession.loadExtension(reactDevToolsPath);
-	protocol.handle("media", (request) => {
-		const filePath = decodeURI(request.url).slice("media://".length);
-		console.log("Path: ", path.join(__dirname, filePath), __dirname, filePath);
-		return net.fetch(pathToFileURL(filePath).toString());
+	// protocol.handle("media", (request) => {
+	// 	const filePath = decodeURI(request.url).slice("media://".length);
+	// 	console.log("Path: ", path.join(__dirname, filePath), __dirname, filePath);
+	// 	return net.fetch(pathToFileURL(filePath).toString());
+	// });
+
+	protocol.handle("media", async (request) => {
+		try {
+			const url = request.url.replace(/^media:\/\//, "");
+			// const filePath = path.join(uploadsDir, decodeURIComponent(url));
+			const filePath = decodeURI(request.url).slice("media://".length);
+
+			log.info("Serving file from media://", filePath);
+			if (!fs.existsSync(filePath)) {
+				log.error(`File not found: ${filePath}`);
+				return new Response("File not found", { status: 404 });
+			}
+			const fileStat = fs.statSync(filePath);
+			const range = request.headers.get("range");
+			let start = 0,
+				end = fileStat.size - 1;
+			if (range) {
+				const match = range.match(/bytes=(\d*)-(\d*)/);
+				if (match) {
+					start = match[1] ? parseInt(match[1], 10) : start;
+					end = match[2] ? parseInt(match[2], 10) : end;
+				}
+			}
+			const chunkSize = end - start + 1;
+			log.info(`Serving range: ${start}-${end}/${fileStat.size}`);
+			const stream = fs.createReadStream(filePath, { start, end });
+			const mimeType = getMimeType(filePath);
+			// @ts-ignore
+			return new Response(stream, {
+				status: range ? 206 : 200,
+				headers: {
+					"Content-Type": mimeType,
+					"Content-Range": `bytes ${start}-${end}/${fileStat.size}`,
+					"Accept-Ranges": "bytes",
+					"Content-Length": chunkSize,
+				},
+			});
+		} catch (error) {
+			log.error("Error handling media protocol:", error);
+			return new Response("Internal Server Error", { status: 500 });
+		}
 	});
 });
 
