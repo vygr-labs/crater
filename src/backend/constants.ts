@@ -35,17 +35,6 @@ function createAppPaths(paths: string[]) {
 	});
 }
 
-createAppPaths([
-	DB_PATH,
-	PREVIEW_IMG_PATH,
-	RESOURCES_PATH,
-	MEDIA_PATH,
-	MEDIA_IMAGES,
-	MEDIA_VIDEOS,
-	TEMP_FOLDER,
-	DB_IMPORT_TEMP_DIR,
-]);
-
 export {
 	__dirname,
 	RESOURCES_PATH,
@@ -57,4 +46,5 @@ export {
 	TEMP_FOLDER,
 	DB_IMPORT_TEMP_DIR,
 	userData,
+	createAppPaths,
 };

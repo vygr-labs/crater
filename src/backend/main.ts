@@ -1,3 +1,4 @@
+import { completedSetup, electronIsDev, __dirname } from "./setup.js";
 import path from "node:path";
 import {
 	app,
@@ -11,10 +12,6 @@ import {
 } from "electron";
 import log from "electron-log";
 import electronUpdater from "electron-updater";
-import electronIsDev from "electron-is-dev";
-import ElectronStore from "electron-store";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
 import fs from "node:fs";
 import {
 	fetchScripture,
@@ -56,7 +53,6 @@ import {
 	moveFiles,
 } from "./utils.js";
 import { SONG_DB_PATHS } from "./types.js";
-import { pathToFileURL } from "node:url";
 // import processSongs from './scripts/songs-importer/index.js'
 // import grandiose from 'grandiose'
 // const { GrandioseFinder } = grandiose
@@ -70,20 +66,10 @@ import { pathToFileURL } from "node:url";
 // processSongs()
 // const electronIsDev = false;
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 const { autoUpdater } = electronUpdater;
 let appWindow: BrowserWindow | null = null;
 let projectionWindow: BrowserWindow | null = null;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type CraterStoreType = {
-	setupCompleted: boolean;
-};
-const store = new ElectronStore<CraterStoreType>({
-	defaults: {
-		setupCompleted: false,
-	},
-});
 let appReady = false;
 
 class AppUpdater {
@@ -114,33 +100,6 @@ const installExtensions = async () => {
 const PRELOAD_PATH = path.join(__dirname, "preload.js");
 const getAssetPath = (...paths: string[]): string => {
 	return path.join(RESOURCES_PATH, ...paths);
-};
-
-const setupApplication = async () => {
-	console.log("Setting up application");
-	const resources = path.join(process.resourcesPath, "store");
-
-	try {
-		const initialized = await moveFiles(resources, userData);
-		console.log("Finished Migrating Files", initialized);
-		const completeSetup: Promise<boolean> = new Promise((resolve, reject) => {
-			if (initialized) {
-				fs.readdir(resources, (err, files) => {
-					if (files.length) {
-						console.error("Failed to initialize application", files);
-						reject();
-					} else {
-						fs.rmdir(resources, () => resolve(true));
-					}
-				});
-			}
-			resolve(false);
-		});
-		return await completeSetup;
-	} catch (err) {
-		console.error("An Error Occured during setup: ", err);
-		return false;
-	}
 };
 
 protocol.registerSchemesAsPrivileged([
@@ -231,13 +190,6 @@ const reactDevToolsPath =
 //   os.homedir(),
 
 app.on("ready", async () => {
-	// @ts-ignore
-	if (!electronIsDev && store.get("setupCompleted") !== true) {
-		const completedSetup = await setupApplication();
-		console.log("SETUP APPLICATION SUCCESSFUL: ", completedSetup);
-		// @ts-ignore
-		store.set("setupCompleted", completedSetup);
-	}
 	appReady = true;
 	new AppUpdater();
 	spawnAppWindow();

@@ -2,6 +2,7 @@ import path from "node:path";
 import { MEDIA_IMAGES, MEDIA_VIDEOS, PREVIEW_IMG_PATH } from "./constants.js";
 import mime from "mime";
 import fs from "node:fs";
+import fsExtra from "fs-extra";
 
 export function getMediaDestination(filePath: string) {
 	let destination = "";
@@ -29,58 +30,30 @@ export function saveThemePreview(preview: ArrayBuffer, id: number | bigint) {
 	});
 }
 
-export function moveFiles(
-	sourceDir: string,
-	targetDir: string,
-): Promise<boolean> {
-	return new Promise((resolve, reject) => {
-		fs.readdir(sourceDir, (err, files) => {
-			console.log("");
-			if (err) {
-				reject(err);
-				return;
+export function moveFiles(sourceDir: string, targetDir: string): boolean {
+	try {
+		const files = fs.readdirSync(sourceDir);
+
+		files.forEach((file) => {
+			const oldPath = path.join(sourceDir, file);
+			const newPath = path.join(targetDir, file);
+			const stat = fs.lstatSync(oldPath);
+
+			if (stat.isDirectory()) {
+				console.log("RECURSING DIRECTORY: ", oldPath, newPath, stat);
+				fs.mkdirSync(newPath, { recursive: true });
+				moveFiles(oldPath, newPath);
+				fs.rmdirSync(oldPath);
+			} else if (stat.isFile()) {
+				console.log("RENAMING FILE: ", oldPath, newPath, stat);
+				fs.renameSync(oldPath, newPath);
 			}
-
-			if (!files.length) {
-				fs.mkdir(targetDir, () => {
-					fs.rmdir(sourceDir, () => resolve(true));
-				});
-			}
-			files.forEach((file) => {
-				const oldPath = path.join(sourceDir, file);
-				const newPath = path.join(targetDir, file);
-				const stat = fs.lstatSync(oldPath);
-
-				if (stat.isDirectory()) {
-					console.log("RECURSING DIRECTORY: ", oldPath, newPath, stat);
-					fs.mkdir(newPath, { recursive: true }, (err) => {
-						console.error("AN ERROR OCCURED", err);
-						moveFiles(oldPath, newPath)
-							.then(() => {
-								fs.rmdir(oldPath, () => {
-									if (files.indexOf(file) === files.length - 1) {
-										resolve(true);
-									}
-								});
-							})
-							.catch((err) => reject(err));
-					});
-				} else if (stat.isFile()) {
-					console.log("RENAMING FILE: ", oldPath, newPath, stat);
-					fs.rename(oldPath, newPath, (err) => {
-						if (err) {
-							reject(err);
-							return;
-						}
-
-						if (files.indexOf(file) === files.length - 1) {
-							resolve(true);
-						}
-					});
-				}
-			});
 		});
-	});
+		return true;
+	} catch (err) {
+		console.error("An error occured while moving files: ", err);
+		return false;
+	}
 }
 
 export const handleErr: fs.NoParamCallback = (err) => {
@@ -111,3 +84,25 @@ export function getMimeType(filePath: string) {
 			return "application/octet-stream";
 	}
 }
+
+export const setupApplication = (resources: string, userData: string) => {
+	console.log("Setting up application");
+
+	try {
+		const initialized = moveFiles(resources, userData);
+		console.log("Finished Migrating Files", initialized);
+		if (initialized) {
+			const files = fs.readdirSync(resources);
+			if (files.length) {
+				console.error("Failed to initialize application", files);
+			} else {
+				fs.rmdirSync(resources);
+				return true;
+			}
+		}
+		return false;
+	} catch (err) {
+		console.error("An Error Occured during setup: ", err);
+		return false;
+	}
+};
