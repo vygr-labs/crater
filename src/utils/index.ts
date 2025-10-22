@@ -331,3 +331,15 @@ export function fnReplacer(key: string, value: any) {
 	}
 	return value;
 }
+
+export const parseStore = (data: any) => {
+	const jsonValue: any[] = JSON.parse(data);
+	const parsedValue = jsonValue.map((v) => {
+		if (typeof v === "string" && v.startsWith(syncFnPrefix)) {
+			// sensitive! secure this so nobody can run code remotely.
+			return eval(v.replace(syncFnPrefix, ""));
+		}
+		return v;
+	});
+	return parsedValue;
+};

@@ -18,7 +18,11 @@ CREATE TABLE IF NOT EXISTS themes (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`,
 ).run();
+// CREATE TABLE IF NOT EXISTS crater (
+//   key TEXT PRIMARY KEY,
+//   value TEXT
+// )
 
-console.log("Themes database initialized successfully!");
+console.log("App & Themes database initialized successfully!");
 
 export default db;

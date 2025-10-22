@@ -56,4 +56,5 @@ export {
 	MEDIA_VIDEOS,
 	TEMP_FOLDER,
 	DB_IMPORT_TEMP_DIR,
+	userData,
 };

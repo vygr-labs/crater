@@ -11,7 +11,7 @@ import {
 } from "electron";
 import log from "electron-log";
 import electronUpdater from "electron-updater";
-// import electronIsDev from "electron-is-dev";
+import electronIsDev from "electron-is-dev";
 import ElectronStore from "electron-store";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -33,9 +33,11 @@ import {
 } from "./database/song-operations.js";
 import {
 	DB_IMPORT_TEMP_DIR,
+	DB_PATH,
 	MEDIA_IMAGES,
 	MEDIA_VIDEOS,
 	RESOURCES_PATH,
+	userData,
 } from "./constants.js";
 import { screen } from "electron/main";
 import {
@@ -47,7 +49,7 @@ import {
 	filterThemes,
 } from "./database/theme-operations.js";
 import processSongs from "./scripts/songs-importer/index.js";
-import { getMediaDestination } from "./utils.js";
+import { getMediaDestination, moveFiles } from "./utils.js";
 import { SONG_DB_PATHS } from "./types.js";
 import { pathToFileURL } from "node:url";
 // import processSongs from './scripts/songs-importer/index.js'
@@ -61,7 +63,7 @@ import { pathToFileURL } from "node:url";
 // }, 1000)
 
 // processSongs()
-const electronIsDev = false;
+// const electronIsDev = false;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -69,7 +71,14 @@ const { autoUpdater } = electronUpdater;
 let appWindow: BrowserWindow | null = null;
 let projectionWindow: BrowserWindow | null = null;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const store = new ElectronStore();
+type CraterStoreType = {
+	setupCompleted: boolean;
+};
+const store = new ElectronStore<CraterStoreType>({
+	defaults: {
+		setupCompleted: false,
+	},
+});
 let appReady = false;
 
 class AppUpdater {
@@ -101,6 +110,16 @@ const PRELOAD_PATH = path.join(__dirname, "preload.js");
 const getAssetPath = (...paths: string[]): string => {
 	return path.join(RESOURCES_PATH, ...paths);
 };
+const setupApplication = async () => {
+	console.log("Setting up application");
+	const resources = path.join(process.resourcesPath, "store");
+	fs.cp(resources, userData, { recursive: true }, (err) => {
+		console.log(err);
+	});
+	// await moveFiles(resources, userData)
+	// 	.then(() => console.log("Finished Migrating Files"))
+	// 	.catch((err) => console.error("An Error Occured during setup: ", err));
+};
 
 const spawnAppWindow = async () => {
 	if (electronIsDev) await installExtensions();
@@ -120,12 +139,12 @@ const spawnAppWindow = async () => {
 		},
 	});
 
-	appWindow.loadFile("dist/controls.html");
-	// appWindow.loadURL(
-	// 	electronIsDev
-	// 		? "http://localhost:7241/controls"
-	// 		: `dist/controls/index.html`,
-	// );
+	if (electronIsDev) {
+		appWindow.loadURL("http://localhost:7241/controls");
+	} else {
+		appWindow.loadFile("dist/controls.html");
+	}
+
 	appWindow.maximize();
 	// appWindow.setMenu(null)
 	appWindow.show();
@@ -158,9 +177,11 @@ function spawnProjectionWindow({ x, y }: { x: number; y: number }) {
 		y,
 	});
 
-	projectionWindow.loadURL(
-		electronIsDev ? "http://localhost:7241" : `dist/index.html`,
-	);
+	if (electronIsDev) {
+		projectionWindow.loadURL("http://localhost:7241");
+	} else {
+		projectionWindow.loadFile("dist/index.html");
+	}
 	projectionWindow.show();
 
 	// projectionWindow.setIgnoreMouseEvents(true)
@@ -176,7 +197,11 @@ const reactDevToolsPath =
 	"C:/Users/KINGSLEY/AppData/Local/Google/Chrome/User Data/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/6.1.1_0";
 //   os.homedir(),
 
-app.on("ready", () => {
+app.on("ready", async () => {
+	// @ts-ignore
+	if (!electronIsDev && store.get("setupCompleted") !== true) {
+		await setupApplication();
+	}
 	appReady = true;
 	new AppUpdater();
 	spawnAppWindow();

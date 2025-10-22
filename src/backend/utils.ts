@@ -28,3 +28,68 @@ export function saveThemePreview(preview: ArrayBuffer, id: number | bigint) {
 		console.log("File Saved Successfully");
 	});
 }
+
+export function moveFiles(sourceDir: string, targetDir: string): Promise<void> {
+	return new Promise((resolve, reject) => {
+		fs.readdir(sourceDir, (err, files) => {
+			if (err) {
+				reject(err);
+				return;
+			}
+
+			files.forEach((file) => {
+				const oldPath = path.join(sourceDir, file);
+				const newPath = path.join(targetDir, file);
+				const stat = fs.lstatSync(oldPath);
+				console.log(oldPath, newPath, stat);
+
+				if (stat.isDirectory()) {
+					fs.mkdir(newPath, { recursive: true }, (err) => {
+						console.error("AN ERROR OCCURED", err);
+					});
+					moveFiles(oldPath, newPath)
+						.then(() => {
+							if (files.indexOf(file) === files.length - 1) {
+								resolve();
+							}
+						})
+						.catch((err) => reject(err));
+				} else if (stat.isFile()) {
+					fs.rename(oldPath, newPath, (err) => {
+						if (err) {
+							reject(err);
+							return;
+						}
+
+						if (files.indexOf(file) === files.length - 1) {
+							resolve();
+						}
+					});
+				}
+			});
+		});
+	});
+}
+
+function getMimeType(filePath: string) {
+	const ext = path.extname(filePath).toLowerCase();
+	switch (ext) {
+		case ".wav":
+			return "audio/wav";
+		case ".ogg":
+			return "audio/ogg";
+		case ".mp3":
+			return "audio/mpeg";
+		case ".mp4":
+			return "video/mp4";
+		case ".jpg":
+		case ".jpeg":
+			return "image/jpeg";
+		case ".png":
+			return "image/png";
+		case ".gif":
+			return "image/gif";
+		default:
+			return "application/octet-stream";
+	}
+}
