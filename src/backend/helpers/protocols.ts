@@ -15,6 +15,7 @@ import {
 	PREVIEW_IMG_PATH,
 	RESOURCES_PATH,
 } from "../constants.js";
+import { Readable } from "stream";
 // import { fromFilename } from '@joplin/lib/mime-utils';
 
 const contentProtocolName = "video";
@@ -29,58 +30,58 @@ export interface CustomProtocolHandler {
 // - https://github.com/nodejs/node/blob/e578c0b1e8d3dd817e692a0c5df1b97580bc7c7f/lib/internal/webstreams/adapters.js#L454
 // - https://github.com/nodejs/node/issues/54205
 // We work around this by creating a more-error-tolerant custom adapter.
-const nodeStreamToWeb = (resultStream: fs.ReadStream) => {
-	resultStream.pause();
+// const nodeStreamToWeb = (resultStream: fs.ReadStream) => {
+// 	resultStream.pause();
 
-	let closed = false;
+// 	let closed = false;
 
-	return new ReadableStream(
-		{
-			start: (controller) => {
-				resultStream.on("data", (chunk) => {
-					if (closed) {
-						return;
-					}
+// 	return new ReadableStream(
+// 		{
+// 			start: (controller) => {
+// 				resultStream.on("data", (chunk) => {
+// 					if (closed) {
+// 						return;
+// 					}
 
-					if (Buffer.isBuffer(chunk)) {
-						controller.enqueue(new Uint8Array(chunk));
-					} else {
-						controller.enqueue(chunk);
-					}
+// 					if (Buffer.isBuffer(chunk)) {
+// 						controller.enqueue(new Uint8Array(chunk));
+// 					} else {
+// 						controller.enqueue(chunk);
+// 					}
 
-					if (controller.desiredSize <= 0) {
-						resultStream.pause();
-					}
-				});
+// 					if (controller.desiredSize <= 0) {
+// 						resultStream.pause();
+// 					}
+// 				});
 
-				resultStream.on("error", (error) => {
-					controller.error(error);
-				});
+// 				resultStream.on("error", (error) => {
+// 					controller.error(error);
+// 				});
 
-				resultStream.on("end", () => {
-					if (!closed) {
-						closed = true;
-						controller.close();
-					}
-				});
-			},
-			pull: (_controller) => {
-				if (closed) {
-					return;
-				}
+// 				resultStream.on("end", () => {
+// 					if (!closed) {
+// 						closed = true;
+// 						controller.close();
+// 					}
+// 				});
+// 			},
+// 			pull: (_controller) => {
+// 				if (closed) {
+// 					return;
+// 				}
 
-				resultStream.resume();
-			},
-			cancel: () => {
-				if (!closed) {
-					closed = true;
-					resultStream.close();
-				}
-			},
-		},
-		{ highWaterMark: resultStream.readableHighWaterMark },
-	);
-};
+// 				resultStream.resume();
+// 			},
+// 			cancel: () => {
+// 				if (!closed) {
+// 					closed = true;
+// 					resultStream.close();
+// 				}
+// 			},
+// 		},
+// 		{ highWaterMark: resultStream.readableHighWaterMark },
+// 	);
+// };
 
 // Allows seeking videos.
 // See https://github.com/electron/electron/issues/38749 for why this is necessary.
@@ -96,6 +97,7 @@ const handleRangeRequest = async (request: Request, targetPath: string) => {
 		return makeUnsupportedRangeResponse();
 	}
 
+	console.log("GETTING STAT FOR: ", targetPath);
 	const stat = await fs.stat(targetPath);
 	// Ranges are requested using one of the following formats
 	//  bytes=1234-5679
@@ -126,7 +128,7 @@ const handleRangeRequest = async (request: Request, targetPath: string) => {
 		["Content-Range", `bytes ${startByte}-${endByte}/${stat.size}`],
 	]);
 
-	return new Response(nodeStreamToWeb(resultStream), { headers, status: 206 });
+	return new Response(resultStream, { headers, status: 206 });
 };
 
 // Creating a custom protocol allows us to isolate iframes by giving them
@@ -147,42 +149,59 @@ const handleCustomProtocols = (): CustomProtocolHandler => {
 
 	// See also the protocol.handle example: https://www.electronjs.org/docs/latest/api/protocol#protocolhandlescheme-handler
 	protocol.handle(contentProtocolName, async (request) => {
+		console.log(request);
 		const url = new URL(request.url);
 		const host = url.host;
+		const fileUrl = pathToFileURL(decodeURI(url.pathname));
 
-		let pathname = normalize(
-			fileURLToPath(`file://${url.pathname.replace("\\\\", "")}`),
+		console.log("\n----", url, url.pathname, host, "\n----\n");
+		let pathname = decodeURI(fileUrl.pathname).slice(1); // .replace("\\", "");
+		console.log(
+			pathname,
+			"---\n---",
+			appBundleDirectory,
+			"---\n---",
+			decodeURI(fileUrl.pathname),
+			"---\n---",
+			fileUrl.pathname,
+			"---\n---",
 		);
-		console.log("\n----", url, pathname, host, "\n----");
 
 		// See https://security.stackexchange.com/a/123723
 		if (pathname.startsWith("..")) {
 			throw new Error(`Invalid URL (not absolute), ${request.url}`);
 		}
 
-		pathname = resolve(appBundleDirectory, pathname);
+		// pathname = resolve(appBundleDirectory, pathname);
+		console.log("FINAL: ", pathname);
 
 		let canRead = false;
-		if (allowedHosts.includes(host)) {
-			if (readableFiles.has(pathname)) {
-				canRead = true;
-			} else {
-				for (const readableDirectory of readableDirectories) {
-					// if (resolvePathWithinDir(readableDirectory, pathname)) {
-					canRead = true;
-					break;
-					// }
-				}
-			}
+		// if (allowedHosts.includes(host)) { // url host is sometimes the drive letter
+		if (readableFiles.has(pathname)) {
+			canRead = true;
 		} else {
-			throw new Error(`Invalid URL ${request.url}`);
+			for (const readableDirectory of readableDirectories) {
+				// if (resolvePathWithinDir(readableDirectory, pathname)) {
+				canRead = true;
+				break;
+				// }
+			}
 		}
+		// } else {
+		// 	throw new Error(`Invalid URL ${request.url}`);
+		// }
 
 		if (!canRead) {
 			throw new Error(`Read access not granted for URL ${request.url}`);
 		}
 
-		const asFileUrl = pathToFileURL(pathname).toString();
+		const asFileUrl = decodeURI(fileUrl.href);
+		console.log(
+			"FETCH FILE URL: ",
+			asFileUrl,
+			fileUrl.href,
+			decodeURI(fileUrl.href),
+		);
 		// logger.debug("protocol handler: Fetch file URL", asFileUrl);
 
 		const rangeHeader = request.headers.get("Range");

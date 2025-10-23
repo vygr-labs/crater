@@ -22,7 +22,12 @@ export default function VideoDisplay(props: Props) {
 			height="unset"
 			data-index={props.index}
 		>
-			<Video src={props.video.path} about={props.video.title} controls />
+			<Video
+				src={props.video.path}
+				about={props.video.title}
+				controls
+				preload="auto"
+			/>
 		</Box>
 	);
 }

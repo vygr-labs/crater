@@ -109,6 +109,7 @@ protocol.registerSchemesAsPrivileged([
 		scheme: "image",
 		privileges: {
 			supportFetchAPI: true,
+			standard: true,
 		},
 	},
 	{
@@ -116,6 +117,7 @@ protocol.registerSchemesAsPrivileged([
 		privileges: {
 			supportFetchAPI: true,
 			stream: true,
+			standard: true,
 		},
 	},
 ]);
@@ -198,16 +200,58 @@ app.on("ready", async () => {
 	spawnAppWindow();
 
 	protocol.handle("image", (request) => {
-		const filePath = decodeURI(request.url).slice("image:\\\\".length);
+		const filePath = pathToFileURL(new URL(request.url).pathname).toString();
 		console.log(
 			"IMAGE Path: ",
-			path.join(__dirname, filePath),
-			__dirname,
 			filePath,
+			new URL(request.url),
+			pathToFileURL(new URL(request.url).pathname).toString(),
 		);
-		return net.fetch(pathToFileURL(filePath).toString());
+		return net.fetch(filePath);
 	});
-	handleCustomProtocols();
+	// handleCustomProtocols();
+
+	protocol.handle("video", async (request) => {
+		try {
+			const url = new URL(request.url);
+			const fileUrl = pathToFileURL(decodeURI(url.pathname));
+			let filePath = decodeURI(fileUrl.pathname).slice(1); // .replace("\\", "");
+			console.log(filePath);
+			log.info("Serving file from video://", filePath);
+			if (!fs.existsSync(filePath)) {
+				log.error(`File not found: ${filePath}`);
+				return new Response("File not found", { status: 404 });
+			}
+			const fileStat = fs.statSync(filePath);
+			const range = request.headers.get("range");
+			let start = 0,
+				end = fileStat.size - 1;
+			if (range) {
+				const match = range.match(/bytes=(\d*)-(\d*)/);
+				if (match) {
+					start = match[1] ? parseInt(match[1], 10) : start;
+					end = match[2] ? parseInt(match[2], 10) : end;
+				}
+			}
+			const chunkSize = end - start + 1;
+			log.info(`Serving range: ${start}-${end}/${fileStat.size}`);
+			const stream = fs.createReadStream(filePath, { start, end });
+			const mimeType = getMimeType(filePath);
+			// @ts-ignore
+			return new Response(stream, {
+				status: range ? 206 : 200,
+				headers: {
+					"Content-Type": mimeType,
+					"Content-Range": `bytes ${start}-${end}/${fileStat.size}`,
+					"Accept-Ranges": "bytes",
+					"Content-Length": chunkSize,
+				},
+			});
+		} catch (error) {
+			log.error("Error handling media protocol:", error);
+			return new Response("Internal Server Error", { status: 500 });
+		}
+	});
 });
 
 app.on("window-all-closed", () => {
