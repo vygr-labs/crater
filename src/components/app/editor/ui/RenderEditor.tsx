@@ -98,19 +98,24 @@ export default function RenderEditor() {
 			console.log("Getting selected item: ", getSelectedNode());
 			return getSelectedNode()?.el;
 		});
-	const selectedIndicatorPosition = createMemo(() => ({
-		width: getSelectedNode()?.style.width,
-		height: getSelectedNode()?.style.height,
-		transform: `scale3d(${store.scale.x}, ${store.scale.y}, ${store.scale.z}) translate3d(${store.indicatorPos[0]}px, ${store.indicatorPos[1]}px, 0)`,
-		left: getSelectedNode()?.style.left,
-		top: getSelectedNode()?.style.top,
-		opacity: getSelectedNode() ? 1 : 0,
-		visibility: getSelectedNode()
-			? "visible"
-			: ("hidden" as JSX.CSSProperties["visibility"]),
-		// top: store.indicatorPos[0] + "%",
-		// left: store.indicatorPos[1] + "%",
-	}));
+	const selectedIndicatorPosition = createMemo(() => {
+		const translateX = getSelectedNode()?.style["--translate-x"];
+		const translateY = getSelectedNode()?.style["--translate-y"];
+		const translateZ = getSelectedNode()?.style["--translate-z"];
+		return {
+			width: getSelectedNode()?.style.width,
+			height: getSelectedNode()?.style.height,
+			transform: `translate3d(${translateX}, ${translateY}, ${translateZ})`,
+			left: `calc(${getSelectedNode()?.style.left} - ${demarcationBorderWidth}px)`,
+			top: `calc(${getSelectedNode()?.style.top} - ${demarcationBorderWidth}px)`,
+			opacity: getSelectedNode() ? 1 : 0,
+			visibility: getSelectedNode()
+				? "visible"
+				: ("hidden" as JSX.CSSProperties["visibility"]),
+			// top: store.indicatorPos[0] + "%",
+			// left: store.indicatorPos[1] + "%",
+		};
+	});
 	// const { x, y, pressure, pointerType } = usePointer()
 	// createEffect(() => {console.log("Pointer: ", x(), y())})
 	// const handlePos = createMemo(() => ({
@@ -237,24 +242,53 @@ export default function RenderEditor() {
 	function resize(e: MouseEvent) {
 		const element = getSelectedNode()?.el;
 		if (!element) return;
+		const elRect = element.getBoundingClientRect();
+		const xScale = e.pageX - original_mouse_x;
+		const yScale = e.pageY - original_mouse_y;
 
+		// console.log("-------BEGIN CONFIRM LOGIC-------");
+		// console.log(elRect.top, parentRect.top);
+		// console.log(elRect.left, parentRect.left);
+		// console.log(elRect.bottom, parentRect.bottom);
+		// console.log(elRect.right, parentRect.right);
+		// console.log("-------END CONFIRM LOGIC-------");
+
+		// if (
+		// 	elRect.top < parentRect.top ||
+		// 	elRect.left < parentRect.left ||
+		// 	elRect.bottom > parentRect.bottom ||
+		// 	elRect.right > parentRect.right
+		// ) {
+		// 	return;
+		// }
+
+		// extended element is element that passes/stops at it's parent's boundaries
 		if (currentResizer === "bottom-right") {
-			const width = original_width + (e.pageX - original_mouse_x);
-			const height = original_height + (e.pageY - original_mouse_y);
+			const width = original_width + xScale;
+			const height = original_height + yScale;
 			const [widthPercent, heightPercent] = getSizePercent(
 				[width, height],
 				parentRect,
 			);
 
-			if (width > minimum_size) {
+			if (
+				xScale < 0 ||
+				(width > minimum_size && elRect.right < parentRect.right)
+			) {
 				setNodeStyle(editor.selectedId, { width: widthPercent + "%" });
+				// setNodeStyle(editor.selectedId, { "--scale-x": xScale + "px" });
 			}
-			if (height > minimum_size) {
+			if (
+				// allow adjusting height if it is a reduction of extended element
+				yScale < 0 ||
+				(height > minimum_size && elRect.bottom < parentRect.bottom)
+			) {
 				setNodeStyle(editor.selectedId, { height: heightPercent + "%" });
+				// setNodeStyle(editor.selectedId, { "--scale-y": yScale + "px" });
 			}
 		} else if (currentResizer === "bottom-left") {
-			const height = original_height + (e.pageY - original_mouse_y);
-			const width = original_width - (e.pageX - original_mouse_x);
+			const height = original_height + yScale;
+			const width = original_width - xScale;
 			const [widthPercent, heightPercent] = getSizePercent(
 				[width, height],
 				parentRect,
@@ -267,18 +301,24 @@ export default function RenderEditor() {
 				parentRect,
 			);
 
-			if (height > minimum_size) {
+			if (
+				yScale < 0 ||
+				(height > minimum_size && elRect.bottom < parentRect.bottom)
+			) {
 				setNodeStyle(editor.selectedId, { height: heightPercent + "%" });
 			}
-			if (width > minimum_size) {
+			if (
+				xScale > 0 ||
+				(width > minimum_size && elRect.left > parentRect.left)
+			) {
 				setNodeStyle(editor.selectedId, {
 					width: widthPercent + "%",
 					left: leftVal + "%",
 				});
 			}
 		} else if (currentResizer === "top-right") {
-			const width = original_width + (e.pageX - original_mouse_x);
-			const height = original_height - (e.pageY - original_mouse_y);
+			const width = original_width + xScale;
+			const height = original_height - yScale;
 			const [_, topVal] = getPositionPercent(
 				{ y: original_y, y_offset: e.pageY - original_mouse_y },
 				parentRect,
@@ -288,19 +328,24 @@ export default function RenderEditor() {
 				parentRect,
 			);
 
-			// const topVal = original_y + (e.pageY - original_mouse_y);
-			if (width > minimum_size) {
+			if (
+				xScale < 0 ||
+				(width > minimum_size && elRect.right < parentRect.right)
+			) {
 				setNodeStyle(editor.selectedId, { width: widthPercent + "%" });
 			}
-			if (height > minimum_size) {
+			if (
+				yScale > 0 ||
+				(height > minimum_size && elRect.top > parentRect.top)
+			) {
 				setNodeStyle(editor.selectedId, {
 					height: heightPercent + "%",
 					top: topVal + "%",
 				});
 			}
 		} else {
-			const width = original_width - (e.pageX - original_mouse_x);
-			const height = original_height - (e.pageY - original_mouse_y);
+			const width = original_width - xScale;
+			const height = original_height - yScale;
 			const [widthPercent, heightPercent] = getSizePercent(
 				[width, height],
 				parentRect,
@@ -315,15 +360,19 @@ export default function RenderEditor() {
 				parentRect,
 			);
 
-			// console.log("CHANGE PERCENT: ", leftVal, topVal, leftPercent, topPercent);
-
-			if (width > minimum_size) {
+			if (
+				xScale > 0 ||
+				(width > minimum_size && elRect.left > parentRect.left)
+			) {
 				setNodeStyle(editor.selectedId, {
 					width: widthPercent + "%",
 					left: leftPercent + "%",
 				});
 			}
-			if (height > minimum_size) {
+			if (
+				yScale > 0 ||
+				(height > minimum_size && elRect.top > parentRect.top)
+			) {
 				setNodeStyle(editor.selectedId, {
 					height: heightPercent + "%",
 					top: topPercent + "%",

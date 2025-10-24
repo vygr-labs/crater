@@ -105,7 +105,7 @@ export default function NodeProvider(props: NodeProviderProps) {
 		console.log("Setting styles: ", props.node.style, nodeStore.node.style);
 		setNodeStyle({
 			// scale3d(${nodeStore.node.data.resize.x}, ${props.node.data.resize.y}, ${props.node.data.resize.z})
-			transform: `translate3d(${nodeStore.coords.x}px, ${nodeStore.coords.y}px, 0)`,
+			transform: `scale3d(var(--scale-x), var(--scale-y), var(--scale-z)) translate3d(var(--translate-x), var(--translate-y), var(--translate-z))`,
 			top: nodeStore.position[1] + "%",
 			left: nodeStore.position[0] + "%",
 		});
@@ -165,7 +165,11 @@ export default function NodeProvider(props: NodeProviderProps) {
 				);
 				setNodeStore("position", [relativeLeftPercent, relativeTopPercent]);
 			}
-			setNodeStore("coords", { x: down ? mx : 0, y: down ? my : 0 });
+			setNodeStyle({
+				"--translate-x": (down ? mx : 0) + "px",
+				"--translate-y": (down ? my : 0) + "px",
+			});
+			// setNodeStore("coords", { x: down ? mx : 0, y: down ? my : 0 });
 			editor.handlers.dragNode.forEach((cb) => cb(dragState));
 		},
 		{

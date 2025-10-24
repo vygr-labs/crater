@@ -299,6 +299,8 @@ EditorText.config = {
 		"line-height": "20px",
 		"text-align": "left" as TextAlign,
 		"z-index": 20,
+		"--scale-z": 1,
+		"--translate-z": "0px",
 	},
 	settings: EditorTextSettings,
 };
