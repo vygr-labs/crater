@@ -1,3 +1,5 @@
+// Resize functionality adapted from Hung Nguyen's implementation
+
 import { Box } from "styled-system/jsx";
 import { useEditor } from "../Editor";
 import { Dynamic, For } from "solid-js/web";
@@ -6,8 +8,18 @@ import { cva } from "styled-system/css";
 import { useGesture } from "solid-gesture";
 import type { FullGestureState } from "@use-gesture/core/types";
 import { createStore, unwrap } from "solid-js/store";
-import { createEffect, createMemo, onMount, type JSX } from "solid-js";
-import { calculateParentOffset } from "~/utils";
+import {
+	createEffect,
+	createMemo,
+	createSignal,
+	onMount,
+	type JSX,
+} from "solid-js";
+import {
+	calculateParentOffset,
+	getPositionPercent,
+	getSizePercent,
+} from "~/utils";
 import { useElementSize, usePointer } from "solidjs-use";
 
 const demarcationBorderWidth = 2;
@@ -87,9 +99,11 @@ export default function RenderEditor() {
 			return getSelectedNode()?.el;
 		});
 	const selectedIndicatorPosition = createMemo(() => ({
-		width: selectedNodeWidth() + "px",
-		height: selectedNodeHeight() + "px",
+		width: getSelectedNode()?.style.width,
+		height: getSelectedNode()?.style.height,
 		transform: `scale3d(${store.scale.x}, ${store.scale.y}, ${store.scale.z}) translate3d(${store.indicatorPos[0]}px, ${store.indicatorPos[1]}px, 0)`,
+		left: getSelectedNode()?.style.left,
+		top: getSelectedNode()?.style.top,
 		opacity: getSelectedNode() ? 1 : 0,
 		visibility: getSelectedNode()
 			? "visible"
@@ -196,23 +210,7 @@ export default function RenderEditor() {
 						xy,
 						distance,
 					);
-					// const newX = xy[0] - boundaryStart.x;
-					// const newY = xy[1] - boundaryStart.y;
-					// const scaleX = newX / initialX;
-					// const scaleY = newY / initialY;
-					// const newWidth = selectedNodeWidth() + movement[0];
-					// const newHeight = selectedNodeHeight() + movement[1];
-					// console.log("scaling width value: ", selectedNodeWidth(), selectedNodeHeight(), newWidth, newHeight)
-
-					// // console.log("scale value: ", newX, newY, scaleX, scaleY);
-					// // console.log(movement, offset);
 					updateSize(movement);
-					// if (!down) {
-					// }
-					// setStore("dragHandlerCoords", "topLeft", { x: down ? movement[0] : 0, y: down ? movement[1] : 0 });
-
-					// setStore("scale", {x: scaleX, y: scaleY } )
-					// useResizeNode(editor.selectedId, {x: scaleX, y: scaleY, z: 1, width: newWidth + "px", height: newHeight + "px" })
 				},
 			},
 			{
@@ -223,41 +221,153 @@ export default function RenderEditor() {
 			},
 		);
 	});
-	// const resizeBind = useGesture({
-	// 	onDragStart: () => {
-	// 		console.log("Preserved Size: ", selectedNodeWidth(), selectedNodeHeight())
-	// 		setStore("selectedNodeSize", { width: selectedNodeWidth(), height: selectedNodeHeight() })
-	// 	},
-	// 	onDrag: ({ xy, active, movement, initial, offset, delta, lastOffset, distance, target }: FullGestureState<"drag">) => {
-	// 		// const boundaryStart = editorRootRef.getBoundingClientRect();
-	// 		// const initialX = initial[0] - boundaryStart.x;
-	// 		// const initialY = initial[1] - boundaryStart.y;
-	// 		console.log("scaling debug: ", initial, movement, delta, offset, lastOffset, xy, distance);
-	// 		// const newX = xy[0] - boundaryStart.x;
-	// 		// const newY = xy[1] - boundaryStart.y;
-	// 		// const scaleX = newX / initialX;
-	// 		// const scaleY = newY / initialY;
-	// 		// const newWidth = selectedNodeWidth() + movement[0];
-	// 		// const newHeight = selectedNodeHeight() + movement[1];
-	// 		// console.log("scaling width value: ", selectedNodeWidth(), selectedNodeHeight(), newWidth, newHeight)
 
-	// 		// // console.log("scale value: ", newX, newY, scaleX, scaleY);
-	// 		// // console.log(movement, offset);
-	// 		updateSize(movement);
-	// 		// if (!down) {
-	// 		// }
-	// 		// setStore("dragHandlerCoords", "topLeft", { x: down ? movement[0] : 0, y: down ? movement[1] : 0 });
+	// const element = getSelectedNode().el;
+	// const resizers = document.querySelectorAll(div + " .resizer");
+	const minimum_size = 20;
+	let original_width = 0;
+	let original_height = 0;
+	let original_x = 0;
+	let original_y = 0;
+	let original_mouse_x = 0;
+	let original_mouse_y = 0;
+	let currentResizer = "bottom-right";
+	let parentRect: DOMRect;
 
-	// 		// setStore("scale", {x: scaleX, y: scaleY } )
-	// 		// useResizeNode(editor.selectedId, {x: scaleX, y: scaleY, z: 1, width: newWidth + "px", height: newHeight + "px" })
-	// 	},
-	// },
-	// 	{
-	// 		drag: {
-	// 			bounds: editorRootRef,
-	// 		}
-	// 	},
-	// );
+	function resize(e: MouseEvent) {
+		const element = getSelectedNode()?.el;
+		if (!element) return;
+
+		if (currentResizer === "bottom-right") {
+			const width = original_width + (e.pageX - original_mouse_x);
+			const height = original_height + (e.pageY - original_mouse_y);
+			const [widthPercent, heightPercent] = getSizePercent(
+				[width, height],
+				parentRect,
+			);
+
+			if (width > minimum_size) {
+				setNodeStyle(editor.selectedId, { width: widthPercent + "%" });
+			}
+			if (height > minimum_size) {
+				setNodeStyle(editor.selectedId, { height: heightPercent + "%" });
+			}
+		} else if (currentResizer === "bottom-left") {
+			const height = original_height + (e.pageY - original_mouse_y);
+			const width = original_width - (e.pageX - original_mouse_x);
+			const [widthPercent, heightPercent] = getSizePercent(
+				[width, height],
+				parentRect,
+			);
+			const [leftVal, _] = getPositionPercent(
+				{
+					x: original_x,
+					x_offset: e.pageX - original_mouse_x,
+				},
+				parentRect,
+			);
+
+			if (height > minimum_size) {
+				setNodeStyle(editor.selectedId, { height: heightPercent + "%" });
+			}
+			if (width > minimum_size) {
+				setNodeStyle(editor.selectedId, {
+					width: widthPercent + "%",
+					left: leftVal + "%",
+				});
+			}
+		} else if (currentResizer === "top-right") {
+			const width = original_width + (e.pageX - original_mouse_x);
+			const height = original_height - (e.pageY - original_mouse_y);
+			const [_, topVal] = getPositionPercent(
+				{ y: original_y, y_offset: e.pageY - original_mouse_y },
+				parentRect,
+			);
+			const [widthPercent, heightPercent] = getSizePercent(
+				[width, height],
+				parentRect,
+			);
+
+			// const topVal = original_y + (e.pageY - original_mouse_y);
+			if (width > minimum_size) {
+				setNodeStyle(editor.selectedId, { width: widthPercent + "%" });
+			}
+			if (height > minimum_size) {
+				setNodeStyle(editor.selectedId, {
+					height: heightPercent + "%",
+					top: topVal + "%",
+				});
+			}
+		} else {
+			const width = original_width - (e.pageX - original_mouse_x);
+			const height = original_height - (e.pageY - original_mouse_y);
+			const [widthPercent, heightPercent] = getSizePercent(
+				[width, height],
+				parentRect,
+			);
+			const [leftPercent, topPercent] = getPositionPercent(
+				{
+					x: original_x,
+					y: original_y,
+					x_offset: e.pageX - original_mouse_x,
+					y_offset: e.pageY - original_mouse_y,
+				},
+				parentRect,
+			);
+
+			// console.log("CHANGE PERCENT: ", leftVal, topVal, leftPercent, topPercent);
+
+			if (width > minimum_size) {
+				setNodeStyle(editor.selectedId, {
+					width: widthPercent + "%",
+					left: leftPercent + "%",
+				});
+			}
+			if (height > minimum_size) {
+				setNodeStyle(editor.selectedId, {
+					height: heightPercent + "%",
+					top: topPercent + "%",
+				});
+			}
+		}
+	}
+
+	const updateSizes = (e: MouseEvent) => {
+		e.preventDefault();
+
+		const element = getSelectedNode()?.el;
+		if (!element) return;
+
+		original_width = parseFloat(
+			getComputedStyle(element, null)
+				.getPropertyValue("width")
+				.replace("%", ""),
+		);
+		original_height = parseFloat(
+			getComputedStyle(element, null)
+				.getPropertyValue("height")
+				.replace("%", ""),
+		);
+		original_x = element.getBoundingClientRect().x - parentRect.x;
+		original_y = element.getBoundingClientRect().y - parentRect.y;
+		original_mouse_x = e.pageX;
+		original_mouse_y = e.pageY;
+	};
+
+	function stopResize() {
+		window.removeEventListener("mousemove", resize);
+	}
+
+	const handleResizeMap: Record<string, any> = {};
+	axes.map((axis) => {
+		handleResizeMap[axis] = (e: MouseEvent) => {
+			currentResizer = axis;
+			parentRect = editorRootRef.getBoundingClientRect();
+			updateSizes(e);
+			window.addEventListener("mousemove", resize);
+			window.addEventListener("mouseup", stopResize);
+		};
+	});
 
 	return (
 		<Box
@@ -299,7 +409,8 @@ export default function RenderEditor() {
 						<Box
 							pointerEvents="auto"
 							class={resizeHandlerRecipe({ position: axis })}
-							{...axesGestureMap[axis]()}
+							// {...axesGestureMap[axis]()}
+							onmousedown={handleResizeMap[axis]}
 						/>
 					)}
 				</For>

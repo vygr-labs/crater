@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createSignal } from "solid-js";
+import { createEffect, createMemo, createSignal, on } from "solid-js";
 import { useAppContext } from "~/layouts/AppContext";
 import type { GroupCategory, GroupType, ThemeInput } from "~/types";
 import { Dialog } from "../ui/dialog";
@@ -40,12 +40,17 @@ export default function ThemeEditor() {
 
 	const { subscribeEvent, changeFocusPanel, currentPanel, previousPanel } =
 		useFocusContext();
-	createEffect(() => {
-		if (open()) {
-			console.log("theme-editor Triggering change focus: ", open());
-			changeFocusPanel(THEME_EDITOR_FOCUS_NAME);
-		}
-	});
+	createEffect(
+		on(
+			() => appStore.themeEditor.open,
+			(isOpen) => {
+				if (isOpen) {
+					console.log("theme-editor Triggering change focus: ", isOpen);
+					changeFocusPanel(THEME_EDITOR_FOCUS_NAME);
+				}
+			},
+		),
+	);
 
 	createEffect(() => {
 		const reset = initial();
@@ -112,6 +117,7 @@ export default function ThemeEditor() {
 	};
 
 	const onDialogOpen = (e: DialogOpenChangeDetails) => {
+		console.log("Trigger Open: ", e);
 		setAppStore("themeEditor", { open: e.open });
 		if (!e.open) {
 			changeFocusPanel(previousPanel());

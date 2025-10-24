@@ -42,6 +42,32 @@ export const calculateParentOffset = (
 	return [relativeLeft, relativeTop];
 };
 
+export const getSizePercent = (
+	[width, height]: number[],
+	parentRect: DOMRect,
+) => {
+	const widthPercent = (width / parentRect.width) * 100;
+	const heightPercent = (height / parentRect.height) * 100;
+
+	return [widthPercent, heightPercent];
+};
+
+type PositionPercentGetter = (
+	values: { y?: number; y_offset?: number; x?: number; x_offset?: number },
+	parentRect: DOMRect,
+) => number[];
+export const getPositionPercent: PositionPercentGetter = (
+	{ x = 0, y = 0, x_offset = 0, y_offset = 0 },
+	parentRect,
+) => {
+	const leftVal = x + x_offset;
+	const topVal = y + y_offset;
+	const leftPercent = (leftVal / parentRect.width) * 100;
+	const topPercent = (topVal / parentRect.height) * 100;
+
+	return [leftPercent, topPercent];
+};
+
 export function getName(book?: BookInfo) {
 	return book?.name?.toLowerCase() ?? "";
 }

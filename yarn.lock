@@ -4490,6 +4490,7 @@ __metadata:
     electron-updater: "npm:^6.6.2"
     eslint: "npm:^8.52.0"
     fast-safe-stringify: "npm:^2.1.1"
+    font-list: "npm:^2.0.1"
     fs: "npm:^0.0.1-security"
     html2canvas: "npm:^1.4.1"
     lodash: "npm:^4.17.21"
@@ -5615,6 +5616,13 @@ __metadata:
     debug:
       optional: true
   checksum: 10c0/d301f430542520a54058d4aeeb453233c564aaccac835d29d15e050beb33f339ad67d9bddbce01739c5dc46a6716dbe3d9d0d5134b1ca203effa11a7ef092343
+  languageName: node
+  linkType: hard
+
+"font-list@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "font-list@npm:2.0.1"
+  checksum: 10c0/e7c9798f0e85eaed04812149b4206483ce396e73f64a6a7c5de22bde904cb5d66c7fbddadcac1771fee566a3c790550822cdf43d1bc41a98470fcdf084a68c73
   languageName: node
   linkType: hard
 
