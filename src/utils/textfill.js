@@ -528,7 +528,13 @@ var TextFill = function (selector, incomingOptions) {
 
 			continue;
 		} else if (options.success) {
-			options.success(parent);
+			options.success({
+				parent,
+				newFontSize: fontSizeFinal,
+				newLineHeight: lineHeightRatio,
+				newLetterSpacing: letterSpacingRatio,
+				oldDisplayStyle,
+			});
 		}
 
 		_debug(

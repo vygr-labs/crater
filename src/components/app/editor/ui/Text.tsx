@@ -69,7 +69,7 @@ import {
 	AiOutlineVerticalAlignMiddle,
 	AiOutlineVerticalAlignBottom,
 } from "solid-icons/ai";
-import { createAsyncMemo } from "solidjs-use";
+import { createAsyncMemo, useDebounceFn, useThrottleFn } from "solidjs-use";
 import TextFill from "~/utils/textfill";
 import GenericNumberInput from "~/components/custom/number-input";
 
@@ -83,20 +83,50 @@ enum LINKAGES {
 }
 
 export default function EditorText(props: EditorContainer) {
-	const { node, register, styles, bindDrag } = useNode();
+	const {
+		node,
+		register,
+		styles,
+		bindDrag,
+		actions: { setStyle },
+	} = useNode();
 	const domId = createMemo(() => "node-text-" + node.id?.replaceAll("-", ""));
 
-	const dynamicSizeUpdate = (parent: HTMLElement) => {
-		console.log("DYNAMIC SIZE: ", parent);
+	const dynamicSizeUpdate = ({
+		parent,
+		newFontSize,
+		newLineHeight,
+		newLetterSpacing,
+		oldDisplayStyle,
+	}: {
+		parent: HTMLElement;
+		newFontSize: number;
+		newLineHeight: number;
+		newLetterSpacing: number;
+		oldDisplayStyle: string;
+	}) => {
+		console.log("DYNAMIC SIZE: ", parent, newLineHeight, newLetterSpacing);
+		setStyle({ "font-size": newFontSize + "px", display: oldDisplayStyle });
+		if (!isNaN(newLineHeight)) setStyle("line-height", newLineHeight);
+		if (!isNaN(newLetterSpacing))
+			setStyle("letter-spacing", newLetterSpacing.toString());
+	};
+
+	const refitText = () => {
+		// use a Debounce/Throttle Fn
+		console.log("Resizing Element: ");
+		TextFill("#" + domId(), {
+			innerTag: "p",
+			correctLineHeightOffset: false, // allows modification of top css value which interferes with drag & drop
+			success: dynamicSizeUpdate,
+		});
 	};
 
 	createEffect(() => {
 		if (node.data.autoResize) {
-			console.log("Resizing Element: ");
-			TextFill("#" + domId(), {
-				innerTag: "p",
-				success: dynamicSizeUpdate,
-			});
+			if (node.style.width && node.style.height) {
+				refitText();
+			}
 		}
 	});
 
@@ -109,7 +139,9 @@ export default function EditorText(props: EditorContainer) {
 			transformOrigin="top left"
 			id={domId()}
 		>
-			<Text userSelect="none">{node.data.text}</Text>
+			<Text userSelect="none" w="full" h="full">
+				{node.data.text}
+			</Text>
 			{/* use:draggable */}
 		</Box>
 	);
