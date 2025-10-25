@@ -310,6 +310,7 @@ var TextFill = function (selector, incomingOptions) {
 
 	for (var i = 0; i < elements.length; i++) {
 		var parent = elements[i];
+		parent.style.fontSize = "unset"; // unsets the parent's fontSize to prevent the child from inheriting it and thereby affecting it's offsetHeight during the looped resize
 		_debug("[TextFill] Parent Element: ", parent);
 
 		// If autoresize, we want to store our options as a data attribute on the parent

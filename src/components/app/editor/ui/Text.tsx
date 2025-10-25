@@ -105,28 +105,29 @@ export default function EditorText(props: EditorContainer) {
 		newLetterSpacing: number;
 		oldDisplayStyle: string;
 	}) => {
-		console.log("DYNAMIC SIZE: ", parent, newLineHeight, newLetterSpacing);
+		console.log(
+			"DYNAMIC SIZE: ",
+			parent,
+			newFontSize,
+			oldDisplayStyle,
+			newLineHeight,
+			newLetterSpacing,
+		);
 		setStyle({ "font-size": newFontSize + "px", display: oldDisplayStyle });
 		if (!isNaN(newLineHeight)) setStyle("line-height", newLineHeight);
 		if (!isNaN(newLetterSpacing))
 			setStyle("letter-spacing", newLetterSpacing.toString());
 	};
 
-	const refitText = () => {
-		// use a Debounce/Throttle Fn
-		console.log("Resizing Element: ");
-		TextFill("#" + domId(), {
-			innerTag: "p",
-			correctLineHeightOffset: false, // allows modification of top css value which interferes with drag & drop
-			success: dynamicSizeUpdate,
-		});
-	};
-
 	createEffect(() => {
 		if (node.data.autoResize) {
-			if (node.style.width && node.style.height) {
-				refitText();
-			}
+			const trackChanges = node.style.width && node.style.height;
+			console.log("Resizing Element: ");
+			TextFill("#" + domId(), {
+				innerTag: "p",
+				correctLineHeightOffset: false, // allows modification of top css value which interferes with drag & drop
+				success: dynamicSizeUpdate,
+			});
 		}
 	});
 
@@ -140,7 +141,16 @@ export default function EditorText(props: EditorContainer) {
 			id={domId()}
 		>
 			<Text userSelect="none" w="full" h="full">
-				{node.data.text}
+				<For each={node.data.text.split(" ")}>
+					{(te, index) => (
+						<>
+							{te}
+							<Show when={index() !== node.data.text.split(" ").length - 1}>
+								<br />
+							</Show>
+						</>
+					)}
+				</For>
 			</Text>
 			{/* use:draggable */}
 		</Box>
@@ -151,6 +161,10 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 	createEffect(() => {
 		console.log("Rendering node: ", props.node);
 	});
+	const domId = createMemo(
+		() => "render-node-text-" + props.node.id?.replaceAll("-", ""),
+	);
+
 	const textArr: Accessor<string[]> = createMemo(() => {
 		if (props.node.data.linkage === LINKAGES.CUSTOM) {
 			return [props.node.data.text] as string[];
@@ -177,20 +191,35 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 		}
 	});
 
+	createEffect(() => {
+		if (props.node.data.autoResize && textArr()) {
+			console.log("Resizing Element: ");
+			TextFill("#" + domId(), {
+				innerTag: "p",
+				correctLineHeightOffset: false, // allows modification of top css value which interferes with drag & drop
+			});
+		}
+	});
+
 	return (
 		<Box
 			position="absolute"
 			style={props.node.style}
 			transformOrigin="top left"
+			id={domId()}
 		>
-			<For each={textArr()}>
-				{(text) => (
-					<Text userSelect="none" w="full" h="full">
-						{text}
-					</Text>
-				)}
-			</For>
-			{/* use:draggable */}
+			<Text userSelect="none" w="full" h="full">
+				<For each={textArr()}>
+					{(line, index) => (
+						<>
+							{line}
+							<Show when={index() !== textArr().length - 1}>
+								<br />
+							</Show>
+						</>
+					)}
+				</For>
+			</Text>
 		</Box>
 	);
 }
