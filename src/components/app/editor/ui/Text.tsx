@@ -201,9 +201,16 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 				return (
 					<HStack w="full" gap={4} rounded="md">
 						<GenericCombobox
-							maxWidth={36}
+							maxWidth={60}
 							groupLabel="Available Fonts"
+							input={{
+								placeholder: "Font Family",
+								value: styles()["font-family"] || "",
+							}}
 							options={comboboxFonts()}
+							handleValueChange={({ value }) =>
+								setStyle({ "font-family": value[0] })
+							}
 						/>
 
 						<ColorUpdateInput
@@ -347,6 +354,7 @@ EditorText.config = {
 		width: "20%",
 		height: "15%",
 		color: token(`colors.whiteAlpha.900`),
+		"font-family": "Inter",
 		"line-height": "20px",
 		"text-align": "left" as TextAlign,
 		"z-index": 20,

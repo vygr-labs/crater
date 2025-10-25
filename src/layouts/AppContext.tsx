@@ -10,7 +10,7 @@ import {
 } from "solid-js";
 import { createStore, reconcile, unwrap } from "solid-js/store";
 import type { AppContextObj, AppData, AppSettings } from "~/types/app-context";
-import { fnReplacer } from "~/utils";
+import { fnReplacer, preserveDefaults } from "~/utils";
 import {
 	defaultAppSettings,
 	defaultAppStore,
@@ -59,7 +59,19 @@ export default function AppContextProvider(props: ParentProps) {
 		);
 		// restore saved state
 		if (savedState) {
-			setStore(reconcile(JSON.parse(savedState)));
+			const state = preserveDefaults(
+				JSON.parse(savedState) as AppData,
+				defaultAppStore,
+				[
+					"themeEditor",
+					"scheduleItems",
+					"previewItem",
+					"liveItem",
+					"isLive",
+					"hideLive",
+				],
+			);
+			setStore(reconcile(state));
 		}
 
 		broadcast.onmessage = syncStore;

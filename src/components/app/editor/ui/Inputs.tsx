@@ -49,7 +49,7 @@ export function ColorUpdateInput(props: ColorUpdateInputProps) {
 			}}
 		>
 			<ColorPicker.Control w={5} h={5}>
-				<ColorPicker.Trigger border="none" padding="unset">
+				<ColorPicker.Trigger border="none" padding="unset" cursor="pointer">
 					<ColorPicker.ValueSwatch w={5} h={5} rounded="md" />
 				</ColorPicker.Trigger>
 			</ColorPicker.Control>

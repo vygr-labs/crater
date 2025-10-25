@@ -369,3 +369,15 @@ export const parseStore = (data: any) => {
 	});
 	return parsedValue;
 };
+
+export const preserveDefaults = <T>(
+	updated: T,
+	defaults: T,
+	preserved: (keyof T)[],
+): T => {
+	for (let i = 0; i < preserved.length; i++) {
+		let key = preserved[i];
+		updated[key] = defaults[key];
+	}
+	return updated;
+};
