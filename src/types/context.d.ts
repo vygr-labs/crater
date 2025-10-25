@@ -2,6 +2,7 @@
  *   Declaration file for the API exposed over the context bridge
  *********************************************************************/
 
+import type { IFontInfo } from "font-list";
 import type {
 	ChapterData,
 	ImportOptions,
@@ -94,6 +95,7 @@ export interface IElectronAPI {
 	darkModeSystem: () => void;
 
 	// Projection Themes
+	getSystemFonts: () => Promise<IFontInfo[]>;
 	addTheme: (theme: ThemeInput) => Promise<BridgeResponse>;
 	fetchAllThemes: () => Promise<ThemeMetadata[]>;
 	fetchTheme: (id: number) => Promise<Theme | null>;

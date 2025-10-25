@@ -29,6 +29,7 @@ import {
 	createSong,
 } from "./database/song-operations.js";
 import {
+	appBackground,
 	DB_IMPORT_TEMP_DIR,
 	DB_PATH,
 	MEDIA_IMAGES,
@@ -55,6 +56,7 @@ import {
 import { SONG_DB_PATHS } from "./types.js";
 import { pathToFileURL } from "node:url";
 import handleCustomProtocols from "./helpers/protocols.js";
+import { getFonts2 } from "font-list";
 // import processSongs from './scripts/songs-importer/index.js'
 // import grandiose from 'grandiose'
 // const { GrandioseFinder } = grandiose
@@ -133,6 +135,7 @@ const spawnAppWindow = async () => {
 			? "Controls Window - Development"
 			: "Crater Bible Project",
 		show: false,
+		backgroundColor: appBackground,
 		webPreferences: {
 			backgroundThrottling: false,
 			preload: PRELOAD_PATH,
@@ -344,6 +347,8 @@ ipcMain.on("close-projection", () => {
 		console.warn("Projection window is already closed or does not exist.");
 	}
 });
+
+ipcMain.handle("get-system-fonts", () => getFonts2({ disableQuoting: true }));
 
 ipcMain.handle("add-theme", (_, data) => addTheme(data));
 ipcMain.handle("update-theme", (_, id, data) => updateTheme(id, data));

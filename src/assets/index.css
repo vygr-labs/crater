@@ -8,3 +8,19 @@ html {
 .disable-child-clicks * {
 	pointer-events: none;
 }
+
+.vjs-crater.video-js .vjs-control-bar {
+    display: flex;
+    position: relative;
+    margin-top: 8px;
+}
+
+.vjs-crater.video-js.vjs-fullscreen .vjs-control-bar {
+    position: absolute;
+}
+
+.vjs-crater.vjs-has-started.vjs-user-inactive.vjs-playing .vjs-control-bar {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: initial;
+}

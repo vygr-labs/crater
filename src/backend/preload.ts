@@ -54,6 +54,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
 	darkModeSystem: () => ipcRenderer.send("dark-mode:system"),
 
 	// Projection Themes
+	getSystemFonts: () => ipcRenderer.invoke("get-system-fonts"),
 	addTheme: (data: ThemeInput) => ipcRenderer.invoke("add-theme", data),
 	fetchAllThemes: () => ipcRenderer.invoke("fetch-themes-meta"),
 	fetchTheme: (id: string) => ipcRenderer.invoke("fetch-theme", id),

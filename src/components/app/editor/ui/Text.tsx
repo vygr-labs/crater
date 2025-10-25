@@ -43,6 +43,7 @@ import {
 	BsTextParagraph,
 	BsTextRight,
 } from "solid-icons/bs";
+import { BiRegularVerticalCenter } from "solid-icons/bi";
 import { ImTextHeight, ImTextWidth } from "solid-icons/im";
 import { VsLink } from "solid-icons/vs";
 import { FiLink } from "solid-icons/fi";
@@ -54,6 +55,12 @@ import { Dynamic } from "solid-js/web";
 import type { ScriptureVerse, TextAlign } from "~/types";
 import { useAppContext } from "~/layouts/AppContext";
 import type { SongLyric } from "~/types/context";
+import {
+	AiOutlineVerticalAlignTop,
+	AiOutlineVerticalAlignMiddle,
+	AiOutlineVerticalAlignBottom,
+} from "solid-icons/ai";
+import { createAsyncMemo } from "solidjs-use";
 
 interface EditorContainer extends BoxProps {}
 
@@ -79,7 +86,9 @@ export default function EditorText(props: EditorContainer) {
 			style={styles}
 			transformOrigin="top left"
 		>
-			<Text userSelect="none">{node.data.text}</Text>
+			<Text userSelect="none" w="full" h="full">
+				{node.data.text}
+			</Text>
 			{/* use:draggable */}
 		</Box>
 	);
@@ -122,7 +131,11 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 			transformOrigin="top left"
 		>
 			<For each={textArr()}>
-				{(text) => <Text userSelect="none">{text}</Text>}
+				{(text) => (
+					<Text userSelect="none" w="full" h="full">
+						{text}
+					</Text>
+				)}
 			</For>
 			{/* use:draggable */}
 		</Box>
@@ -140,6 +153,12 @@ const textAlignMap = {
 	left: BsTextLeft,
 	center: BsTextCenter,
 	right: BsTextRight,
+};
+
+const marginAlignMap = {
+	top: AiOutlineVerticalAlignTop,
+	middle: AiOutlineVerticalAlignMiddle,
+	bottom: AiOutlineVerticalAlignBottom,
 };
 
 export interface EditorTextSettingsProps extends NodeSettings {}
@@ -160,6 +179,16 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 	createEffect(() => {
 		console.log("Here is the selected node: ", props.node);
 	});
+	const allFonts = createAsyncMemo(async () => {
+		console.log("WINDOW AVAILABLE: ", window);
+		return await window.electronAPI.getSystemFonts();
+	}, []);
+	const comboboxFonts = createMemo(() => {
+		return allFonts().map((font) => ({
+			title: font.name,
+			value: font.familyName,
+		}));
+	});
 
 	return (
 		<Show when={props.visible}>
@@ -171,7 +200,11 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 					setNodeData(props.node.id, data);
 				return (
 					<HStack w="full" gap={4} rounded="md">
-						<GenericCombobox maxWidth={36} />
+						<GenericCombobox
+							maxWidth={36}
+							groupLabel="Available Fonts"
+							options={comboboxFonts()}
+						/>
 
 						<ColorUpdateInput
 							styleKey="color"
@@ -202,12 +235,30 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 										</IconButton>
 									)}
 								</For>
-								{/* <IconButton variant={styles()["text-align"] === "center" ? "solid" : "surface"} size="md">
-									<BsTextCenter />
-								</IconButton>
-								<IconButton variant={styles()["text-align"] === "right" ? "solid" : "surface"} size="md">
-									<BsTextRight />
-								</IconButton> */}
+							</HStack>
+						</PopoverButton>
+
+						<PopoverButton
+							trigger={
+								<ControlIconBtn>
+									<BiRegularVerticalCenter />
+								</ControlIconBtn>
+							}
+						>
+							<HStack>
+								<For each={Object.entries(marginAlignMap)}>
+									{([value, icon]) => (
+										<IconButton
+											variant={
+												styles()["margin"] === value ? "solid" : "surface"
+											}
+											size="md"
+											onclick={() => setStyle({ margin: value as TextAlign })}
+										>
+											<Dynamic component={icon} />
+										</IconButton>
+									)}
+								</For>
 							</HStack>
 						</PopoverButton>
 

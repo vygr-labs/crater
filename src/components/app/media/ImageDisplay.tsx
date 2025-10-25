@@ -1,6 +1,7 @@
 import { Box } from "styled-system/jsx";
 import type { MediaItem } from "~/types";
 import Image from "../Image";
+import { createEffect } from "solid-js";
 
 interface Props {
 	index: number;
@@ -11,6 +12,10 @@ interface Props {
 }
 
 export default function ImageDisplay(props: Props) {
+	createEffect(() => {
+		console.log(props, props.image);
+	});
+
 	return (
 		<Box
 			class="disable-child-clicks"

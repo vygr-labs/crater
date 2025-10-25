@@ -131,7 +131,7 @@ export default function MediaSelection() {
 	);
 
 	const { subscribeEvent, changeFocusPanel, currentPanel } = useFocusContext();
-	const { name, coreFocusId, fluidFocusId } = subscribeEvent({
+	const { name, coreFocusId, fluidFocusId, changeFluidFocus } = subscribeEvent({
 		name: MEDIA_TAB_FOCUS_NAME,
 		defaultCoreFocus: 0,
 		defaultFluidFocus: 0,
@@ -239,6 +239,7 @@ export default function MediaSelection() {
 					store.group = open[0] as MediaType;
 					store.collection = null;
 				}
+				changeFluidFocus(0);
 			}),
 		);
 	}
@@ -418,7 +419,7 @@ export default function MediaSelection() {
 										</Match>
 										<Match when={media.type === "video"}>
 											<Video
-												class={css({})}
+												id={MEDIA_TAB_FOCUS_NAME + "-vid-" + virtualItem.index}
 												src={media.path}
 												about={media.title}
 												preload="metadata"

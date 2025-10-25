@@ -5,6 +5,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { app } from "electron";
 
+export const appBackground = "#18181B";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const RESOURCES_PATH = electronIsDev

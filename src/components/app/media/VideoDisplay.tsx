@@ -23,6 +23,7 @@ export default function VideoDisplay(props: Props) {
 			data-index={props.index}
 		>
 			<Video
+				id={props.panelName + "-vid-" + props.index}
 				src={props.video.path}
 				about={props.video.title}
 				controls

@@ -26,6 +26,8 @@ interface FocusEventSubscriberFnReturnVal {
 	fluidFocusId: () => FocusType;
 	isCurrentPanel: () => boolean;
 	changeFocus: ChangeFocusFn;
+	changeCoreFocus: ChangeFocusFn;
+	changeFluidFocus: ChangeFocusFn;
 }
 
 interface FocusEventHandlerParams {
@@ -225,6 +227,10 @@ export default function FocusContextProvider(props: ParentProps) {
 			fluidFocusId: createMemo(() => store.subscribers[name].fluidFocusId),
 			changeFocus: (newId: FocusType) =>
 				changeFocus({ contextName: name, newFocusId: newId }),
+			changeCoreFocus: (newId: FocusType) =>
+				changeCoreFocus({ contextName: name, newFocusId: newId }),
+			changeFluidFocus: (newId: FocusType) =>
+				changeFluidFocus({ contextName: name, newFocusId: newId }),
 		};
 	};
 
