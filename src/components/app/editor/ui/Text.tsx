@@ -1,4 +1,11 @@
-import { Box, HStack, styled, VStack, type BoxProps } from "styled-system/jsx";
+import {
+	Box,
+	Flex,
+	HStack,
+	styled,
+	VStack,
+	type BoxProps,
+} from "styled-system/jsx";
 import { useNode } from "../Node";
 import { useEditor } from "../Editor";
 import {
@@ -16,9 +23,11 @@ import {
 import { css } from "styled-system/css";
 import {
 	TbContainer,
+	TbFocusAuto,
 	TbPhoto,
 	TbRadiusTopLeft,
 	TbShadow,
+	TbTextResize,
 	TbVideo,
 } from "solid-icons/tb";
 import { ColorPicker } from "~/components/ui/color-picker";
@@ -61,6 +70,8 @@ import {
 	AiOutlineVerticalAlignBottom,
 } from "solid-icons/ai";
 import { createAsyncMemo } from "solidjs-use";
+import TextFill from "~/utils/textfill";
+import GenericNumberInput from "~/components/custom/number-input";
 
 interface EditorContainer extends BoxProps {}
 
@@ -73,9 +84,20 @@ enum LINKAGES {
 
 export default function EditorText(props: EditorContainer) {
 	const { node, register, styles, bindDrag } = useNode();
+	const domId = createMemo(() => "node-text-" + node.id?.replaceAll("-", ""));
+
+	const dynamicSizeUpdate = (parent: HTMLElement) => {
+		console.log("DYNAMIC SIZE: ", parent);
+	};
 
 	createEffect(() => {
-		console.log("Here is the node: ", node);
+		if (node.data.autoResize) {
+			console.log("Resizing Element: ");
+			TextFill("#" + domId(), {
+				innerTag: "p",
+				success: dynamicSizeUpdate,
+			});
+		}
 	});
 
 	return (
@@ -85,10 +107,9 @@ export default function EditorText(props: EditorContainer) {
 			{...bindDrag()}
 			style={styles}
 			transformOrigin="top left"
+			id={domId()}
 		>
-			<Text userSelect="none" w="full" h="full">
-				{node.data.text}
-			</Text>
+			<Text userSelect="none">{node.data.text}</Text>
 			{/* use:draggable */}
 		</Box>
 	);
@@ -212,6 +233,28 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 								setStyle({ "font-family": value[0] })
 							}
 						/>
+
+						<Flex>
+							<GenericNumberInput
+								value={getNum(styles(), "font-size").toString()}
+								onValueChange={({ valueAsNumber }) =>
+									setStyle({ "font-size": valueAsNumber + "px" })
+								}
+								inputProps={{
+									class: css({ roundedRight: "unset" }),
+								}}
+							/>
+							<IconButton
+								variant={props.node.data.autoResize ? "solid" : "outline"}
+								onClick={() =>
+									setData({ autoResize: !props.node.data.autoResize })
+								}
+								roundedLeft="unset"
+								borderLeft="unset"
+							>
+								<TbTextResize width={28} height={28} />
+							</IconButton>
+						</Flex>
 
 						<ColorUpdateInput
 							styleKey="color"
@@ -348,6 +391,7 @@ EditorText.config = {
 	defaultData: {
 		linkage: LINKAGES.CUSTOM,
 		text: "Learning New Things",
+		autoResize: false,
 		// bgColor: defaultPalette
 	},
 	defaultStyles: {
@@ -355,6 +399,7 @@ EditorText.config = {
 		height: "15%",
 		color: token(`colors.whiteAlpha.900`),
 		"font-family": "Inter",
+		"font-size": "16px",
 		"line-height": "20px",
 		"text-align": "left" as TextAlign,
 		"z-index": 20,

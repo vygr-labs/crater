@@ -25,3 +25,23 @@ import AppContextProvider from "./AppContext";
 		height: 100%;
 	}
 </style>
+
+<script>
+	import TextFill from "~/utils/textfill";
+
+	const autoSizeElements = () => {
+		var resizeElems = document.querySelectorAll(
+			"*[data-textfill-resize-options]"
+		);
+		for (var i = 0; i < resizeElems.length; i++) {
+			var parent = resizeElems[i];
+			const strOptions = parent.getAttribute("data-textfill-resize-options");
+			if (strOptions) {
+				var options = JSON.parse(strOptions);
+				TextFill(parent, options);
+			}
+		}
+	};
+
+	window.addEventListener("resize", autoSizeElements);
+</script>

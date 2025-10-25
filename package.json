@@ -52,7 +52,8 @@
 		"solid-icons": "^1.1.0",
 		"solid-js": "^1.9.9",
 		"solid-spring": "^0.0.7",
-		"solidjs-use": "^2.3.0"
+		"solidjs-use": "^2.3.0",
+		"textfilljs": "^1.0.3-a"
 	},
 	"devDependencies": {
 		"@pandacss/dev": "^1.4.1",

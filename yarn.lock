@@ -4561,6 +4561,7 @@ __metadata:
     solid-js: "npm:^1.9.9"
     solid-spring: "npm:^0.0.7"
     solidjs-use: "npm:^2.3.0"
+    textfilljs: "npm:^1.0.3-a"
     tsc-alias: "npm:^1.8.16"
     typescript: "npm:^4.4.4"
     video.js: "npm:^8.23.4"
@@ -10298,6 +10299,13 @@ __metadata:
   version: 0.2.0
   resolution: "text-table@npm:0.2.0"
   checksum: 10c0/02805740c12851ea5982686810702e2f14369a5f4c5c40a836821e3eefc65ffeec3131ba324692a37608294b0fd8c1e55a2dd571ffed4909822787668ddbee5c
+  languageName: node
+  linkType: hard
+
+"textfilljs@npm:^1.0.3-a":
+  version: 1.0.3-a
+  resolution: "textfilljs@npm:1.0.3-a"
+  checksum: 10c0/a11786ff83ecb430910cca44a64668930bd514e14951e0875d20ca47af3fbcbf47e760b690ae4417c5ac5569cca12161b68a9c2e46def5fd19cf65b92b121eb2
   languageName: node
   linkType: hard
 
