@@ -1,5 +1,7 @@
 import type { Accessor, JSX, JSXElement, Setter } from "solid-js";
 import type { FullGestureState } from "@use-gesture/core/types";
+import type { ScriptureVerse } from "~/types";
+import type { SongLyric } from "~/types/context";
 
 export type NodeId = string | undefined | null;
 
@@ -28,6 +30,10 @@ export interface EditorStore {
 	handlers: {
 		selectNode: NodeSelectHandler[];
 		dragNode: NodeDragEventHandler[];
+	};
+	demos: {
+		scripture: ScriptureVerse;
+		lyric: SongLyric;
 	};
 }
 
@@ -113,6 +119,8 @@ export interface EditorContextValue {
 		getRootRef: Accessor<HTMLElement | undefined>;
 		getSelectedNode: Accessor<EditorNode | null>;
 		getRenderMap: Accessor<EditorRenderMap>;
+		getDemoScripture: Accessor<ScriptureVerse>;
+		getDemoLyric: Accessor<SongLyric>;
 	};
 	setters: {
 		setRootRef: (ref: HTMLElement) => void;

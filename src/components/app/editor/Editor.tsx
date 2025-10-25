@@ -33,6 +33,7 @@ import EditorContext from "./EditorContext";
 import { createStore, produce, unwrap } from "solid-js/store";
 import type { EditorStore } from "./editor-types";
 import { createId, transformEditorComp } from "~/utils";
+import { defaultLyric, defaultScripture } from "~/utils/constants";
 
 interface Props extends ParentProps {
 	renderMap: EditorRenderMap;
@@ -52,6 +53,10 @@ export default function Editor(props: Props) {
 			selectNode: [],
 			dragNode: [],
 		},
+		demos: {
+			scripture: defaultScripture,
+			lyric: defaultLyric,
+		},
 	});
 	const canRender = (compName: string) =>
 		Object.keys(props.renderMap).includes(compName);
@@ -63,6 +68,9 @@ export default function Editor(props: Props) {
 		return editor.selectedId ? editor.nodes[editor.selectedId] : null;
 	});
 	const getRenderMap = () => props.renderMap;
+
+	const getDemoScripture = () => editor.demos.scripture;
+	const getDemoLyric = () => editor.demos.lyric;
 
 	const selectNode: SelectNodeFn = (id) => {
 		console.log("FORMER ID: ", editor.selectedId, id);
@@ -238,6 +246,8 @@ export default function Editor(props: Props) {
 			getRootRef,
 			getSelectedNode,
 			getRenderMap,
+			getDemoScripture,
+			getDemoLyric,
 		},
 		setters: { setRootRef, setNodeStyle, setNodeData },
 		hooks: { useSelect: useNodeSelect, useNodeDrag, useResizeNode },

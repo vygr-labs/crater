@@ -84,6 +84,9 @@ enum LINKAGES {
 
 export default function EditorText(props: EditorContainer) {
 	const {
+		getters: { getDemoLyric, getDemoScripture },
+	} = useEditor();
+	const {
 		node,
 		register,
 		styles,
@@ -91,6 +94,27 @@ export default function EditorText(props: EditorContainer) {
 		actions: { setStyle },
 	} = useNode();
 	const domId = createMemo(() => "node-text-" + node.id?.replaceAll("-", ""));
+
+	const textArr: Accessor<string[]> = createMemo(() => {
+		console.log(
+			"getting all text",
+			node.data.linkage,
+			getDemoLyric(),
+			getDemoScripture(),
+		);
+		if (node.data.linkage === LINKAGES.CUSTOM) {
+			return [node.data.text] as string[];
+		} else {
+			if (node.data.linkage === LINKAGES.SONG_LYRIC) {
+				return getDemoLyric().text;
+			} else if (node.data.linkage === LINKAGES.SCRIPTURE_TEXT) {
+				return [getDemoScripture().text];
+			} else if (node.data.linkage === LINKAGES.SCRIPTURE_REFERENCE) {
+				return [getReference(getDemoScripture())];
+			}
+			return [];
+		}
+	});
 
 	const dynamicSizeUpdate = ({
 		parent,
@@ -120,7 +144,7 @@ export default function EditorText(props: EditorContainer) {
 	};
 
 	createEffect(() => {
-		if (node.data.autoResize) {
+		if (node.data.autoResize && textArr()) {
 			const trackChanges = node.style.width && node.style.height;
 			console.log("Resizing Element: ");
 			TextFill("#" + domId(), {
@@ -141,11 +165,11 @@ export default function EditorText(props: EditorContainer) {
 			id={domId()}
 		>
 			<Text userSelect="none" w="full" h="full">
-				<For each={node.data.text.split(" ")}>
-					{(te, index) => (
+				<For each={textArr()}>
+					{(line, index) => (
 						<>
-							{te}
-							<Show when={index() !== node.data.text.split(" ").length - 1}>
+							{line}
+							<Show when={index() < textArr().length - 1}>
 								<br />
 							</Show>
 						</>
@@ -213,7 +237,7 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 					{(line, index) => (
 						<>
 							{line}
-							<Show when={index() !== textArr().length - 1}>
+							<Show when={index() < textArr().length - 1}>
 								<br />
 							</Show>
 						</>

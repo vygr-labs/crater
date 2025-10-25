@@ -1,9 +1,10 @@
-import type { OpenEditData } from "~/types";
+import type { OpenEditData, ScriptureVerse } from "~/types";
 import type {
 	AppSettings,
 	AppData,
 	GroupCollectionObj,
 } from "~/types/app-context";
+import type { SongLyric } from "~/types/context";
 
 export const DEFAULT_SCRIPTURE_COLLECTION_ID = 1;
 export const defaultPalette = "purple";
@@ -16,6 +17,20 @@ export const defaultThemeKeys = [
 	"scriptureTheme",
 	"presentationTheme",
 ] as const;
+export const defaultScripture: ScriptureVerse = {
+	scripture_id: 175170,
+	bible_id: 6,
+	book_id: 43,
+	book_name: "joshua",
+	chapter: 1,
+	verse: 8,
+	text: "This Book of the Law shall not depart from your mouth, but you shall meditate in it day and night, that you may observe to do according to all that is written in it. For then you will make your way prosperous, and then you will have good success.",
+	version: "NKJV",
+};
+export const defaultLyric: SongLyric = {
+	label: "Song of the Ages",
+	text: ["We Worship the Most High God - El-Elohe Israel"],
+};
 
 const DEFAULT_GROUPS: GroupCollectionObj = {
 	song: {
