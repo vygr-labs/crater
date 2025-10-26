@@ -24,6 +24,10 @@ import { css } from "styled-system/css";
 import {
 	TbContainer,
 	TbFocusAuto,
+	TbLetterCase,
+	TbLetterCaseLower,
+	TbLetterCaseToggle,
+	TbLetterCaseUpper,
 	TbPhoto,
 	TbRadiusTopLeft,
 	TbShadow,
@@ -68,10 +72,12 @@ import {
 	AiOutlineVerticalAlignTop,
 	AiOutlineVerticalAlignMiddle,
 	AiOutlineVerticalAlignBottom,
+	AiOutlineStop,
 } from "solid-icons/ai";
 import { createAsyncMemo, useDebounceFn, useThrottleFn } from "solidjs-use";
 import TextFill from "~/utils/textfill";
 import GenericNumberInput from "~/components/custom/number-input";
+import { FaSolidBold } from "solid-icons/fa";
 
 interface EditorContainer extends BoxProps {}
 
@@ -93,7 +99,6 @@ export default function EditorText(props: EditorContainer) {
 		bindDrag,
 		actions: { setStyle },
 	} = useNode();
-	const domId = createMemo(() => "node-text-" + node.id?.replaceAll("-", ""));
 
 	const textArr: Accessor<string[]> = createMemo(() => {
 		console.log(
@@ -144,10 +149,9 @@ export default function EditorText(props: EditorContainer) {
 	};
 
 	createEffect(() => {
-		if (node.data.autoResize && textArr()) {
+		if (node.el && node.data.autoResize && textArr()) {
 			const trackChanges = node.style.width && node.style.height;
-			console.log("Resizing Element: ");
-			TextFill("#" + domId(), {
+			TextFill(node.el, {
 				innerTag: "p",
 				correctLineHeightOffset: false, // allows modification of top css value which interferes with drag & drop
 				success: dynamicSizeUpdate,
@@ -162,7 +166,6 @@ export default function EditorText(props: EditorContainer) {
 			{...bindDrag()}
 			style={styles}
 			transformOrigin="top left"
-			id={domId()}
 		>
 			<Text userSelect="none" w="full" h="full">
 				<For each={textArr()}>
@@ -185,9 +188,7 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 	createEffect(() => {
 		console.log("Rendering node: ", props.node);
 	});
-	const domId = createMemo(
-		() => "render-node-text-" + props.node.id?.replaceAll("-", ""),
-	);
+	let textNodeRenderRef!: HTMLDivElement;
 
 	const textArr: Accessor<string[]> = createMemo(() => {
 		if (props.node.data.linkage === LINKAGES.CUSTOM) {
@@ -216,9 +217,9 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 	});
 
 	createEffect(() => {
-		if (props.node.data.autoResize && textArr()) {
+		if (textNodeRenderRef && props.node.data.autoResize && textArr()) {
 			console.log("Resizing Element: ");
-			TextFill("#" + domId(), {
+			TextFill(textNodeRenderRef, {
 				innerTag: "p",
 				correctLineHeightOffset: false, // allows modification of top css value which interferes with drag & drop
 			});
@@ -230,7 +231,7 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 			position="absolute"
 			style={props.node.style}
 			transformOrigin="top left"
-			id={domId()}
+			ref={textNodeRenderRef}
 		>
 			<Text userSelect="none" w="full" h="full">
 				<For each={textArr()}>
@@ -266,6 +267,15 @@ const marginAlignMap = {
 	middle: AiOutlineVerticalAlignMiddle,
 	bottom: AiOutlineVerticalAlignBottom,
 };
+
+const textTransformMap = {
+	uppercase: TbLetterCaseUpper,
+	lowercase: TbLetterCaseLower,
+	capitalize: TbLetterCase,
+	initial: AiOutlineStop,
+};
+
+const weightMap = [100, 200, 300, 400, 500, 600, 700, 800, 900];
 
 export interface EditorTextSettingsProps extends NodeSettings {}
 export function EditorTextSettings(props: EditorTextSettingsProps) {
@@ -389,6 +399,61 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 											}
 											size="md"
 											onclick={() => setStyle({ margin: value as TextAlign })}
+										>
+											<Dynamic component={icon} />
+										</IconButton>
+									)}
+								</For>
+							</HStack>
+						</PopoverButton>
+
+						<PopoverButton
+							trigger={
+								<ControlIconBtn>
+									<FaSolidBold />
+								</ControlIconBtn>
+							}
+						>
+							<HStack>
+								<For each={weightMap}>
+									{(value) => (
+										<IconButton
+											variant={
+												styles()["font-weight"] === value ? "solid" : "surface"
+											}
+											size="md"
+											onclick={() => setStyle({ "font-weight": value })}
+										>
+											<Text style={{ "font-weight": value }}>T</Text>
+										</IconButton>
+									)}
+								</For>
+							</HStack>
+						</PopoverButton>
+
+						<PopoverButton
+							trigger={
+								<ControlIconBtn>
+									<TbLetterCaseToggle />
+								</ControlIconBtn>
+							}
+						>
+							<HStack>
+								<For each={Object.entries(textTransformMap)}>
+									{([value, icon]) => (
+										<IconButton
+											variant={
+												styles()["text-transform"] === value
+													? "solid"
+													: "surface"
+											}
+											size="md"
+											onclick={() =>
+												setStyle({
+													"text-transform":
+														value as JSX.CSSProperties["text-transform"],
+												})
+											}
 										>
 											<Dynamic component={icon} />
 										</IconButton>
