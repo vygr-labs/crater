@@ -87,11 +87,11 @@ var TextFill = function (selector, incomingOptions) {
 		if (
 			!options.debug ||
 			typeof console == "undefined" ||
-			typeof console.debug == "undefined"
+			typeof console.log == "undefined"
 		) {
 			return;
 		}
-		console.debug.apply(console, arguments);
+		console.log.apply(console, arguments);
 	}
 
 	// Output arguments to the Warning console
@@ -487,7 +487,7 @@ var TextFill = function (selector, incomingOptions) {
 		}
 
 		if (options.changeLineHeight) {
-			parent.style.lineHeight = lineHeight * fontSizeFinal + "px";
+			parent.style.lineHeight = lineHeightRatio * fontSizeFinal + "px";
 		}
 
 		// Test if something wrong happened

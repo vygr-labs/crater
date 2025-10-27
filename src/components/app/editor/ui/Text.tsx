@@ -167,7 +167,7 @@ export default function EditorText(props: EditorContainer) {
 			style={styles}
 			transformOrigin="top left"
 		>
-			<Text userSelect="none" w="full" h="full">
+			<Text userSelect="none" w="full" h="full" alignContent="inherit">
 				<For each={textArr()}>
 					{(line, index) => (
 						<>
@@ -233,7 +233,7 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 			transformOrigin="top left"
 			ref={textNodeRenderRef}
 		>
-			<Text userSelect="none" w="full" h="full">
+			<Text userSelect="none" w="full" h="full" alignContent="inherit">
 				<For each={textArr()}>
 					{(line, index) => (
 						<>
@@ -262,10 +262,10 @@ const textAlignMap = {
 	right: BsTextRight,
 };
 
-const marginAlignMap = {
-	top: AiOutlineVerticalAlignTop,
-	middle: AiOutlineVerticalAlignMiddle,
-	bottom: AiOutlineVerticalAlignBottom,
+const alignContentMap = {
+	start: AiOutlineVerticalAlignTop,
+	center: AiOutlineVerticalAlignMiddle,
+	end: AiOutlineVerticalAlignBottom,
 };
 
 const textTransformMap = {
@@ -391,14 +391,18 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 							}
 						>
 							<HStack>
-								<For each={Object.entries(marginAlignMap)}>
+								<For each={Object.entries(alignContentMap)}>
 									{([value, icon]) => (
 										<IconButton
 											variant={
-												styles()["margin"] === value ? "solid" : "surface"
+												styles()["align-content"] === value
+													? "solid"
+													: "surface"
 											}
 											size="md"
-											onclick={() => setStyle({ margin: value as TextAlign })}
+											onclick={() =>
+												setStyle({ "align-content": value as TextAlign })
+											}
 										>
 											<Dynamic component={icon} />
 										</IconButton>
@@ -550,7 +554,7 @@ EditorText.config = {
 		color: token(`colors.whiteAlpha.900`),
 		"font-family": "Inter",
 		"font-size": "16px",
-		"line-height": "20px",
+		"line-height": 1.25,
 		"text-align": "left" as TextAlign,
 		"z-index": 20,
 		"--scale-z": 1,

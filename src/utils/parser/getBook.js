@@ -1,4 +1,3 @@
-import { find } from "lodash";
 import books from "./books.json";
 import osis from "./osis.json";
 import {
@@ -15,7 +14,7 @@ import getVerses from "./getVerses";
 
 function CV(book, reason) {
 	this.book = book;
-	const vpcBook = find(books, { id: book.id });
+	const vpcBook = books.find((bk) => bk.id === book.id);
 	this.book.versesPerChapter = vpcBook.chapters;
 
 	this.success = true;

@@ -5,7 +5,14 @@ import { For, Portal } from "solid-js/web";
 import { IconButton } from "../../ui/icon-button";
 import { InputGroup } from "../../ui/input-group";
 import ControlTabDisplay from "../ControlTabDisplay";
-import { createEffect, createMemo, Show, type JSX } from "solid-js";
+import {
+	createEffect,
+	createMemo,
+	Show,
+	type Accessor,
+	type JSX,
+	type Setter,
+} from "solid-js";
 import { Text } from "../../ui/text";
 import { createVirtualizer } from "@tanstack/solid-virtual";
 import { useAppContext } from "~/layouts/AppContext";
@@ -27,10 +34,12 @@ import { createAsyncMemo } from "solidjs-use";
 import type { PanelCollection } from "~/types/app-context";
 import ScriptureSelectionGroupDisplay from "./SelectionGroupDisplay";
 import { MainActionBarMenu, MainDisplayMenuContent } from "./MainPanelMenus";
-import SearchInput from "../../custom/search-input";
+import SearchInput, { type StageMarkData } from "../../custom/search-input";
 import { Kbd } from "../../ui/kbd";
 import { VsListTree, VsSearchFuzzy } from "solid-icons/vs";
 import type { AvailableTranslation, ScriptureVerse } from "~/types";
+import bibleData from "~/utils/parser/osis.json";
+import chapterAndVerse from "~/utils/parser/cv";
 
 type ScripturePanelGroupValues = "all" | "collections" | "favorites";
 type ScriptureListData = {
@@ -44,6 +53,7 @@ type ScriptureControlsData = {
 	group: string;
 	collection: number | null;
 	query: string;
+	filter: string;
 	contextMenuOpen: boolean;
 	translation: AvailableTranslation;
 };
@@ -56,6 +66,7 @@ export default function ScriptureSelection() {
 			collection: null,
 			searchMode: "title",
 			query: "",
+			filter: "",
 			contextMenuOpen: false,
 			translation: "NKJV",
 		});
@@ -100,6 +111,8 @@ export default function ScriptureSelection() {
 	// 		(group) => group.id === scriptureControls.collection,
 	// 	),
 	// );
+
+	let searchInputRef!: HTMLInputElement;
 	const applyQueryFilter = (scriptures: ScriptureVerse[]) =>
 		scriptures.filter((scripture) =>
 			scripture.text.includes(scriptureControls.query),
@@ -282,6 +295,86 @@ export default function ScriptureSelection() {
 		setScriptureControls("query", (e.target as HTMLInputElement).value);
 	};
 
+	const allBooks = bibleData.map((obj) => obj.name).sort();
+	let currentBook = "";
+	let currentChapter = 0;
+	let currentVerse = 0;
+	let stage = 0;
+	let fullText = "";
+	let newVal = "";
+	let portionEnd = 0;
+	let formerFilter = "";
+	let highlightInput!: HTMLParagraphElement;
+	const [stageMarkData, setStageMarkData] = createStore<StageMarkData>({});
+	const handleSearch = (e: InputEvent) => {
+		e.preventDefault();
+		console.log("SEARCHING: ", e);
+		const target = e.target as HTMLInputElement;
+		let userInput: string = target.value.toLowerCase();
+		let newVal = userInput;
+		// let formerInput: string = target.value.toLowerCase();
+		const portions = userInput.split(" ");
+		const bookHasSpace = currentBook.includes(" ");
+		if (userInput.length === 1) {
+			stage = 0;
+		}
+		if (
+			e.data === " " &&
+			portions.length > currentBook.split(" ").length &&
+			stage < 2
+		) {
+			stage += 1;
+			newVal = currentBook;
+			if (stage > 0) {
+				newVal += " ";
+			}
+			if (stage > 1) {
+				newVal += currentChapter + ":";
+			}
+			target.value = newVal;
+		}
+
+		console.log("SPACE CHECK: ", portions);
+		if (stage === 0) {
+			portionEnd = newVal.length;
+			currentBook =
+				allBooks.find((book) =>
+					book.toLowerCase().startsWith(userInput.trimEnd()),
+				) || "";
+			currentChapter = 1;
+			currentVerse = 1;
+		} else if (stage === 1) {
+			portionEnd = currentChapter.toString().length - 1;
+			currentChapter = parseInt(bookHasSpace ? portions[2] : portions[1]) || 1;
+			console.log("Expecting Chapter: ", currentChapter);
+			currentVerse = 1;
+		} else if (stage === 2) {
+			portionEnd = currentVerse.toString().length - 1;
+			currentVerse = parseInt(portions.at(-1)?.split(":").at(-1) ?? "") || 1;
+			console.log("Expecting Verse: ", currentVerse);
+		}
+
+		fullText = userInput.length
+			? `${currentBook} ${currentChapter}:${currentVerse}`
+			: "";
+		console.log("Full TEXT: ", fullText, stage, portionEnd, formerFilter);
+		setStageMarkData({
+			book: currentBook,
+			chapter: currentChapter,
+			verse: currentVerse,
+			stage,
+			searching: Boolean(fullText.length),
+			fullText: fullText,
+			portion: fullText.slice(newVal.length, portionEnd),
+			stageLength: portionEnd,
+		});
+		console.log(`${formerFilter}--${newVal}`);
+		setScriptureControls("filter", newVal);
+		formerFilter = newVal;
+	};
+
+	const handleFilterNav = (e: KeyboardEvent) => {};
+
 	const updateSearchMode = () => {
 		setScriptureControls("searchMode", (former) =>
 			former === "search" ? "title" : "search",
@@ -296,7 +389,15 @@ export default function ScriptureSelection() {
 						searchMode={scriptureControls.searchMode}
 						updateSearchMode={updateSearchMode}
 						query={scriptureControls.query}
+						filter={scriptureControls.filter}
 						onFilter={handleFilter}
+						onSearch={handleSearch}
+						searchInputRef={searchInputRef}
+						setHighlightInputRef={(el) => {
+							highlightInput = el;
+						}}
+						markData={stageMarkData}
+						handleKeyNav={handleFilterNav}
 					/>
 				}
 				currentGroup={[scriptureControls.group]}
@@ -384,9 +485,15 @@ export default function ScriptureSelection() {
 
 interface SearchInputProps {
 	query: string;
+	filter: string;
 	onFilter: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
+	onSearch: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
 	searchMode: ScriptureSearchMode;
 	updateSearchMode: () => void;
+	searchInputRef: HTMLInputElement;
+	setHighlightInputRef: (el: HTMLParagraphElement) => void;
+	markData: StageMarkData;
+	handleKeyNav: JSX.EventHandlerUnion<HTMLInputElement, KeyboardEvent>;
 }
 
 const ScriptureSearchInput = (props: SearchInputProps) => {
@@ -419,10 +526,16 @@ const ScriptureSearchInput = (props: SearchInputProps) => {
 		>
 			<SearchInput
 				firstBookMatch=""
-				value={props.query}
+				value={props.filter}
 				placeholder="Search scriptures"
-				onInput={props.onFilter}
-				// ref={searchInputRef}
+				oninput={
+					props.searchMode === "search" ? props.onFilter : props.onSearch
+				}
+				onkeydown={props.handleKeyNav}
+				ref={props.searchInputRef}
+				setHighlightRef={props.setHighlightInputRef}
+				textTransform="capitalize"
+				scripture={props.markData}
 				// onFocus={handleSearchInputFocus}
 				data-testid="scripture-search-input"
 				aria-label="Search scriptures"
