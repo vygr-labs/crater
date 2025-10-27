@@ -182,6 +182,7 @@ export default function ScriptureSelection() {
 				changeFocus,
 				changeCoreFocus,
 				changeFluidFocus,
+				event,
 			}) => {
 				const newCoreFocusId = Math.min(
 					(fluidFocusId ?? 0) + 1,
@@ -189,6 +190,7 @@ export default function ScriptureSelection() {
 				);
 				console.log("ARROWDOWN Changing fluid focus: ", newCoreFocusId);
 				changeFluidFocus(newCoreFocusId);
+				updateFilterStage(event);
 			},
 			ArrowUp: ({
 				coreFocusId,
@@ -196,10 +198,12 @@ export default function ScriptureSelection() {
 				changeFocus,
 				changeCoreFocus,
 				changeFluidFocus,
+				event,
 			}) => {
 				const newCoreFocusId = Math.max((fluidFocusId ?? 0) - 1, 0);
 				console.log("ARROWUP Changing fluid focus: ", newCoreFocusId);
 				changeFluidFocus(newCoreFocusId);
+				updateFilterStage(event);
 			},
 			Enter: ({
 				coreFocusId,
@@ -289,10 +293,15 @@ export default function ScriptureSelection() {
 	// send current fluid item to preview-menu
 	createEffect(() => {
 		const fluidId = fluidFocusId();
-		console.log("Sending current item preview: ");
 		if (typeof fluidId === "number") {
 			pushToLive(fluidId, false);
 			const scripture = filteredScriptures()[fluidId];
+			console.log(
+				"Sending current item preview: ",
+				fluidId,
+				scripture,
+				scriptureControls.filter,
+			);
 			if (scripture) {
 				setStageMarkData({
 					book: scripture.book_name,
@@ -312,15 +321,16 @@ export default function ScriptureSelection() {
 	// let currentChapter = 0;
 	// let currentVerse = 0;
 	let stage = 0;
+	let userInput: string;
 	let foundBook: string | undefined;
 	let fullText = "";
 	let newVal = "";
 	let portionEnd = 0;
 	let formerFilter = "";
+	let currentValue = "";
 	let highlightInput!: HTMLParagraphElement;
 	const [stageMarkData, setStageMarkData] = createStore<StageMarkData>({
 		stage: 0,
-		stageLength: 0,
 	});
 
 	const handlerUpdateFluidFocus = () => {
@@ -343,7 +353,7 @@ export default function ScriptureSelection() {
 		currentVerse: number,
 	) => {
 		const target = e.target as HTMLInputElement;
-		let userInput: string = (target.value + e.data).toLowerCase();
+		userInput = (currentValue + e.data).toLowerCase();
 		// let formerInput: string = target.value.toLowerCase();
 		const portions = userInput.split(" ");
 		const bookHasSpace = currentBook.includes(" ");
@@ -375,25 +385,32 @@ export default function ScriptureSelection() {
 				book.toLowerCase().startsWith(userInput),
 			);
 			if (foundBook) {
-				portionEnd = userInput.length;
+				// portionEnd = userInput.length;
 				currentBook = foundBook;
+				portionEnd = currentBook.length;
 				currentChapter = 1;
 				currentVerse = 1;
 			}
 		} else if (stage === 1) {
-			portionEnd = currentChapter.toString().length - 1;
 			currentChapter = parseInt(bookHasSpace ? portions[2] : portions[1]) || 1;
+			portionEnd = currentBook.length + 1 + currentChapter.toString().length;
 			console.log("Expecting Chapter: ", currentChapter);
 			currentVerse = 1;
 		} else if (stage === 2) {
-			portionEnd = currentVerse.toString().length - 1;
 			currentVerse = parseInt(portions.at(-1)?.split(":").at(-1) ?? "") || 1;
+			portionEnd =
+				currentBook.length +
+				1 +
+				currentChapter.toString().length +
+				1 +
+				currentVerse.toString().length;
 			console.log("Expecting Verse: ", currentVerse);
 		}
 		console.log("FOUND: ", foundBook, stage, userInput, isJump, newVal);
 		if (foundBook && !isJump) {
 			newVal = userInput;
 		}
+		currentValue = newVal;
 
 		return {
 			newBook: currentBook,
@@ -456,56 +473,105 @@ export default function ScriptureSelection() {
 			chapter: currentChapter,
 			verse: currentVerse,
 			stage,
-			searching: Boolean(fullText.length),
-			fullText: fullText,
-			portion: fullText.slice(newVal.length, portionEnd),
-			stageLength: portionEnd,
 		});
 		handlerUpdateFluidFocus();
 		console.log(`${formerFilter}--${newVal}--`);
-		setScriptureControls("filter", newVal);
+		setScriptureControls("filter", fullText);
+		console.log(
+			"debug select: ",
+			currentBook.length,
+			currentChapter.toString().length,
+			currentVerse.toString().length,
+			currentValue.length,
+			portionEnd,
+		);
+		const target = e.target as HTMLInputElement;
+		target.selectionStart = currentValue.length;
+		target.selectionEnd = portionEnd;
 		formerFilter = newVal;
 	};
 
-	const handleFilterNav = (e: KeyboardEvent) => {
-		if (["ArrowLeft", "ArrowRight"].includes(e.key)) {
-			const target = e.target as HTMLInputElement;
-			const { currentBook, currentChapter, currentVerse } = getCurrentData();
+	let selected = "";
+	let selectedEnd = "";
+	const updateFilterStage = (e?: KeyboardEvent) => {
+		const target = searchInputRef as HTMLInputElement;
+		const { currentBook, currentChapter, currentVerse } = getCurrentData();
+		console.log(
+			"Input Nav: ",
+			currentBook,
+			currentChapter,
+			currentVerse,
+			stage,
+			fluidFocusId(),
+		);
 
+		if (e) {
+			console.log("IS EVENT: ", e);
 			e.preventDefault();
+			if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+				stage = 2;
+				selected = currentBook + " " + currentChapter + ":";
+				selectedEnd = selected + currentVerse;
+			}
 			if (e.key === "ArrowRight" && stage < 2) {
 				stage += 1;
 				portionEnd = 0;
-				newVal = currentBook;
+				selected = currentBook;
 				if (stage > 0) {
-					newVal += " ";
+					selected += " ";
+					selectedEnd = selected + currentChapter;
 				}
 				if (stage > 1) {
-					newVal += currentChapter + ":";
+					selected += currentChapter + ":";
+					selectedEnd = selected + currentVerse;
 				}
 			} else if (e.key === "ArrowLeft" && stage >= 0) {
 				if (stage > 0) stage -= 1;
 				portionEnd = 0;
-				newVal = "";
+				selected = "";
+				selectedEnd = currentBook;
 				if (stage > 0) {
-					newVal += currentBook + " ";
+					selected += currentBook + " ";
+					selectedEnd = selected + currentChapter;
 				}
 				if (stage > 1) {
-					newVal += currentChapter + ":";
+					selected += currentChapter + ":";
+					selectedEnd = selected + currentVerse;
 				}
 			}
-			setScriptureControls("filter", newVal);
-			setStageMarkData({
-				book: currentBook,
-				chapter: currentChapter,
-				verse: currentVerse,
-				stage,
-				searching: Boolean(fullText.length),
-				fullText: fullText,
-				portion: fullText.slice(newVal.length, portionEnd),
-				stageLength: portionEnd,
-			});
-			handlerUpdateFluidFocus();
+		} else {
+			selected = "";
+			selectedEnd = currentBook;
+		}
+		console.log(
+			"reverse: ",
+			selected.length,
+			selectedEnd.length,
+			scriptureControls.filter.length,
+			selected,
+			selectedEnd,
+		);
+
+		setScriptureControls(
+			"filter",
+			formatReference(currentBook, currentChapter, currentVerse),
+		);
+		currentValue = selected;
+		target.focus();
+		target.selectionStart = selected.length;
+		target.selectionEnd = selectedEnd.length;
+		setStageMarkData({
+			book: currentBook,
+			chapter: currentChapter,
+			verse: currentVerse,
+			stage,
+		});
+	};
+
+	const handleFilterNav = (e: KeyboardEvent) => {
+		if (["ArrowDown", "ArrowUp", "Enter"].includes(e.key)) e.preventDefault();
+		if (["ArrowLeft", "ArrowRight"].includes(e.key)) {
+			updateFilterStage(e);
 		}
 	};
 
@@ -526,9 +592,8 @@ export default function ScriptureSelection() {
 						filter={scriptureControls.filter}
 						onFilter={handleFilter}
 						onSearch={handleSearch}
-						searchInputRef={searchInputRef}
-						setHighlightInputRef={(el) => {
-							highlightInput = el;
+						setSearchInputRef={(el) => {
+							searchInputRef = el;
 						}}
 						markData={stageMarkData}
 						handleKeyNav={handleFilterNav}
@@ -624,8 +689,7 @@ interface SearchInputProps {
 	onSearch: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
 	searchMode: ScriptureSearchMode;
 	updateSearchMode: () => void;
-	searchInputRef: HTMLInputElement;
-	setHighlightInputRef: (el: HTMLParagraphElement) => void;
+	setSearchInputRef: (el: HTMLInputElement) => void;
 	markData: StageMarkData;
 	handleKeyNav: JSX.EventHandlerUnion<HTMLInputElement, KeyboardEvent>;
 }
@@ -665,8 +729,7 @@ const ScriptureSearchInput = (props: SearchInputProps) => {
 					props.searchMode === "search" ? props.onFilter : props.onSearch
 				}
 				onkeydown={props.handleKeyNav}
-				ref={props.searchInputRef}
-				setHighlightRef={props.setHighlightInputRef}
+				setSearchRef={props.setSearchInputRef}
 				textTransform="capitalize"
 				scripture={props.markData}
 				// onFocus={handleSearchInputFocus}

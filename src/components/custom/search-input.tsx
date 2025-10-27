@@ -6,6 +6,7 @@ import {
 	For,
 	Match,
 	Show,
+	splitProps,
 	Switch,
 	type Setter,
 } from "solid-js";
@@ -18,24 +19,20 @@ export interface StageMarkData {
 	chapter?: number;
 	verse?: number;
 	stage: number;
-	searching?: boolean;
-	fullText?: string;
-	portion?: string;
-	stageLength: number;
 }
 
 interface Props extends InputProps {
 	firstBookMatch: string;
-	setHighlightRef: (el: HTMLParagraphElement) => void;
+	setSearchRef: (el: HTMLInputElement) => void;
 	scripture: StageMarkData;
 }
 
-export default function SearchInput(props: Props) {
-	// const inputRef = useRef<HTMLInputElement>(null)
-
-	// useEffect(() => {
-	// 	inputRef.current.select() // Select all text in the input when it mounts
-	// }, [value])
+export default function SearchInput(_props: Props) {
+	const [props, inputProps] = splitProps(_props, [
+		"firstBookMatch",
+		"setSearchRef",
+		"scripture",
+	]);
 
 	return (
 		<Box w="full" pos="relative" fontSize={14}>
@@ -43,7 +40,6 @@ export default function SearchInput(props: Props) {
 				pos="relative"
 				zIndex={10}
 				variant="outline"
-				ref={props.ref}
 				// borderWidth={2}
 				// borderColor="border.emphasized"
 				rounded="none"
@@ -53,61 +49,11 @@ export default function SearchInput(props: Props) {
 				outline="none"
 				w="full"
 				_selection={{
-					bgColor: "#3A3A3A",
+					bgColor: "blue.600",
 				}}
-				value={props.value}
-				{...props}
+				ref={props.setSearchRef}
+				{...inputProps}
 			/>
-
-			<Text
-				pos="absolute"
-				top={0}
-				left={0}
-				border="unset"
-				alignContent="center"
-				rounded="none"
-				px="2"
-				h="9"
-				outline="none"
-				w="full"
-				color="white"
-			>
-				<ScriptureHighlight {...props.scripture} />
-			</Text>
 		</Box>
 	);
 }
-
-const ScriptureHighlight = (props: StageMarkData) => {
-	const breakers = [" ", ":", ""];
-	const chunks = createMemo(() => [
-		capitalizeFirstLetter(props.book, true),
-		props.chapter?.toString(),
-		props.verse?.toString(),
-	]);
-	return (
-		<For each={chunks()}>
-			{(text, index) => (
-				<>
-					<Switch>
-						<Match when={index() === props.stage}>
-							<Box as="span" color="transparent">
-								{text?.slice(0, props.stageLength)}
-							</Box>
-							<Box as="mark" bgColor="blue.600" color="white">
-								{text?.slice(props.stageLength)}
-							</Box>
-						</Match>
-						<Match when={index() > props.stage}>{text}</Match>
-						<Match when={true}>
-							<Box as="span" color="transparent">
-								{text}
-							</Box>
-						</Match>
-					</Switch>
-					{breakers[index()]}
-				</>
-			)}
-		</For>
-	);
-};
