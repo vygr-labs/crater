@@ -24,6 +24,7 @@ import {
 } from "~/utils/constants";
 import { focusStyles } from "~/utils/atomic-recipes";
 import {
+	formatReference,
 	getBaseFocusStyles,
 	getFocusableStyles,
 	getFocusVariant,
@@ -298,6 +299,15 @@ export default function ScriptureSelection() {
 					chapter: scripture.chapter,
 					verse: scripture.verse,
 				});
+				console.log("MANUALLY SETTING INPUT VALUE: ");
+				setScriptureControls(
+					"filter",
+					formatReference(
+						scripture.book_name,
+						scripture.chapter,
+						scripture.verse,
+					),
+				);
 			}
 		}
 	});
@@ -311,6 +321,7 @@ export default function ScriptureSelection() {
 	// let currentChapter = 0;
 	// let currentVerse = 0;
 	let stage = 0;
+	let foundBook: string | undefined;
 	let fullText = "";
 	let newVal = "";
 	let portionEnd = 0;
@@ -339,18 +350,18 @@ export default function ScriptureSelection() {
 	) => {
 		const target = e.target as HTMLInputElement;
 		let userInput: string = (target.value + e.data).toLowerCase();
-		newVal = userInput;
 		// let formerInput: string = target.value.toLowerCase();
 		const portions = userInput.split(" ");
 		const bookHasSpace = currentBook.includes(" ");
 		if (userInput.length === 1) {
 			stage = 0;
 		}
-		if (
+		console.log(e.data, stage, portions.length > currentBook.split(" ").length);
+		const isJump =
 			e.data === " " &&
 			portions.length > currentBook.split(" ").length &&
-			stage < 2
-		) {
+			stage < 2;
+		if (isJump) {
 			stage += 1;
 			newVal = currentBook;
 			if (stage > 0) {
@@ -359,16 +370,22 @@ export default function ScriptureSelection() {
 			if (stage > 1) {
 				newVal += currentChapter + ":";
 			}
-			target.value = newVal;
+			console.log("Setting target: ", newVal);
+			// target.value = newVal;
 		}
 
 		console.log("SPACE CHECK: ", portions);
+		foundBook = currentBook;
 		if (stage === 0) {
-			portionEnd = newVal.length;
-			currentBook =
-				allBooks.find((book) => book.toLowerCase().startsWith(userInput)) || "";
-			currentChapter = 1;
-			currentVerse = 1;
+			foundBook = allBooks.find((book) =>
+				book.toLowerCase().startsWith(userInput),
+			);
+			if (foundBook) {
+				portionEnd = userInput.length;
+				currentBook = foundBook;
+				currentChapter = 1;
+				currentVerse = 1;
+			}
 		} else if (stage === 1) {
 			portionEnd = currentChapter.toString().length - 1;
 			currentChapter = parseInt(bookHasSpace ? portions[2] : portions[1]) || 1;
@@ -378,6 +395,10 @@ export default function ScriptureSelection() {
 			portionEnd = currentVerse.toString().length - 1;
 			currentVerse = parseInt(portions.at(-1)?.split(":").at(-1) ?? "") || 1;
 			console.log("Expecting Verse: ", currentVerse);
+		}
+		console.log("FOUND: ", foundBook, stage, userInput, isJump, newVal);
+		if (foundBook && !isJump) {
+			newVal = userInput;
 		}
 
 		return {
@@ -433,7 +454,7 @@ export default function ScriptureSelection() {
 		);
 
 		fullText = newVal.length
-			? `${currentBook} ${currentChapter}:${currentVerse}`
+			? formatReference(currentBook, currentChapter, currentVerse)
 			: "";
 		console.log("Full TEXT: ", fullText, stage, portionEnd, formerFilter);
 		setStageMarkData({
@@ -447,7 +468,7 @@ export default function ScriptureSelection() {
 			stageLength: portionEnd,
 		});
 		handlerUpdateFluidFocus();
-		console.log(`${formerFilter}--${newVal}`);
+		console.log(`${formerFilter}--${newVal}--`);
 		setScriptureControls("filter", newVal);
 		formerFilter = newVal;
 	};
@@ -468,9 +489,8 @@ export default function ScriptureSelection() {
 				if (stage > 1) {
 					newVal += currentChapter + ":";
 				}
-				target.value = newVal;
-			} else if (e.key === "ArrowLeft" && stage > 0) {
-				stage -= 1;
+			} else if (e.key === "ArrowLeft" && stage >= 0) {
+				if (stage > 0) stage -= 1;
 				portionEnd = 0;
 				newVal = "";
 				if (stage > 0) {
@@ -479,8 +499,8 @@ export default function ScriptureSelection() {
 				if (stage > 1) {
 					newVal += currentChapter + ":";
 				}
-				target.value = newVal;
 			}
+			setScriptureControls("filter", newVal);
 			setStageMarkData({
 				book: currentBook,
 				chapter: currentChapter,

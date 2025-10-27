@@ -118,6 +118,14 @@ export function getReference(data: ScriptureVerse) {
 	return `${data.book_name} ${data.chapter}:${data.verse} ${data.version}`;
 }
 
+export function formatReference(
+	book: string,
+	chapter: string | number,
+	verse: string | number,
+) {
+	return `${book} ${chapter}:${verse}`;
+}
+
 const capitalize = (str?: string) =>
 	str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
 export function capitalizeFirstLetter(str?: string, all?: boolean) {
