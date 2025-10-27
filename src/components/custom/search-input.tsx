@@ -3,6 +3,7 @@ import { Input, type InputProps } from "../ui/input";
 import { createEffect, createMemo, For, Show, type Setter } from "solid-js";
 import { Text } from "../ui/text";
 import { Highlight, useHighlight, type HighlightProps } from "@ark-ui/solid";
+import { capitalizeFirstLetter } from "~/utils";
 
 export interface StageMarkData {
 	book?: string;
@@ -50,23 +51,21 @@ export default function SearchInput(props: Props) {
 				{...props}
 			/>
 
-			<Show when={props.scripture && props.scripture.searching}>
-				<Text
-					pos="absolute"
-					top={0}
-					left={0}
-					border="unset"
-					alignContent="center"
-					rounded="none"
-					px="2"
-					h="9"
-					outline="none"
-					w="full"
-					color="white"
-				>
-					<ScriptureHighlight {...props.scripture}></ScriptureHighlight>
-				</Text>
-			</Show>
+			<Text
+				pos="absolute"
+				top={0}
+				left={0}
+				border="unset"
+				alignContent="center"
+				rounded="none"
+				px="2"
+				h="9"
+				outline="none"
+				w="full"
+				color="white"
+			>
+				<ScriptureHighlight {...props.scripture} />
+			</Text>
 		</Box>
 	);
 }
@@ -74,7 +73,7 @@ export default function SearchInput(props: Props) {
 const ScriptureHighlight = (props: StageMarkData) => {
 	const breakers = [" ", ":", ""];
 	const chunks = createMemo(() => [
-		props.book?.toString(),
+		capitalizeFirstLetter(props.book, true),
 		props.chapter?.toString(),
 		props.verse?.toString(),
 	]);
