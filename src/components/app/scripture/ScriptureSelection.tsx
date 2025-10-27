@@ -299,15 +299,6 @@ export default function ScriptureSelection() {
 					chapter: scripture.chapter,
 					verse: scripture.verse,
 				});
-				console.log("MANUALLY SETTING INPUT VALUE: ");
-				setScriptureControls(
-					"filter",
-					formatReference(
-						scripture.book_name,
-						scripture.chapter,
-						scripture.verse,
-					),
-				);
 			}
 		}
 	});
@@ -327,7 +318,10 @@ export default function ScriptureSelection() {
 	let portionEnd = 0;
 	let formerFilter = "";
 	let highlightInput!: HTMLParagraphElement;
-	const [stageMarkData, setStageMarkData] = createStore<StageMarkData>({});
+	const [stageMarkData, setStageMarkData] = createStore<StageMarkData>({
+		stage: 0,
+		stageLength: 0,
+	});
 
 	const handlerUpdateFluidFocus = () => {
 		if (!stageMarkData) return;

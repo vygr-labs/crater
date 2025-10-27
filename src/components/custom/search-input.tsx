@@ -1,6 +1,14 @@
-import { Box } from "styled-system/jsx";
+import { Box, type BoxProps } from "styled-system/jsx";
 import { Input, type InputProps } from "../ui/input";
-import { createEffect, createMemo, For, Show, type Setter } from "solid-js";
+import {
+	createEffect,
+	createMemo,
+	For,
+	Match,
+	Show,
+	Switch,
+	type Setter,
+} from "solid-js";
 import { Text } from "../ui/text";
 import { Highlight, useHighlight, type HighlightProps } from "@ark-ui/solid";
 import { capitalizeFirstLetter } from "~/utils";
@@ -9,11 +17,11 @@ export interface StageMarkData {
 	book?: string;
 	chapter?: number;
 	verse?: number;
-	stage?: number;
+	stage: number;
 	searching?: boolean;
 	fullText?: string;
 	portion?: string;
-	stageLength?: number;
+	stageLength: number;
 }
 
 interface Props extends InputProps {
@@ -81,12 +89,22 @@ const ScriptureHighlight = (props: StageMarkData) => {
 		<For each={chunks()}>
 			{(text, index) => (
 				<>
-					<Show when={index() === props.stage} fallback={text}>
-						{text?.slice(0, props.stageLength)}
-						<Box as="mark" bgColor="blue.600" color="white">
-							{text?.slice(props.stageLength)}
-						</Box>
-					</Show>
+					<Switch>
+						<Match when={index() === props.stage}>
+							<Box as="span" color="transparent">
+								{text?.slice(0, props.stageLength)}
+							</Box>
+							<Box as="mark" bgColor="blue.600" color="white">
+								{text?.slice(props.stageLength)}
+							</Box>
+						</Match>
+						<Match when={index() > props.stage}>{text}</Match>
+						<Match when={true}>
+							<Box as="span" color="transparent">
+								{text}
+							</Box>
+						</Match>
+					</Switch>
 					{breakers[index()]}
 				</>
 			)}
