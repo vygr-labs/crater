@@ -70,6 +70,7 @@ export default function AppContextProvider(props: ParentProps) {
 					"isLive",
 					"hideLive",
 					"loading",
+					"openSettings",
 				],
 			);
 			setStore(reconcile(state));

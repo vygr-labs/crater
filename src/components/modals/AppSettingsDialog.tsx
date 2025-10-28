@@ -1,43 +1,6 @@
-// import { Button } from '@/components/ui/button'
-// import {
-// 	DialogActionTrigger,
-// 	DialogBody,
-// 	DialogCloseTrigger,
-// 	DialogContent,
-// 	DialogFooter,
-// 	DialogHeader,
-// 	DialogRoot,
-// 	DialogTitle,
-// } from '@/components/ui/dialog'
-// import {
-// 	SelectContent,
-// 	SelectItem,
-// 	SelectLabel,
-// 	SelectRoot,
-// 	SelectTrigger,
-// 	SelectValueText,
-// } from '@/components/ui/select'
-// import {
-// 	createListCollection,
-// 	HStack,
-// 	Input,
-// 	SelectValueChangeDetails,
-// 	Tabs,
-// 	Text,
-// 	VStack,
-// } from '@chakra-ui/react'
-// import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
-// import { Field } from '../ui/field'
-// import { ColorModeButton } from '../ui/color-mode'
-// import { DisplayBounds } from '@/utils/types'
-// import { useAppDispatch, useAppSelector } from '@/hooks/useRedux'
-// import {
-// 	updateDisplayBounds,
-// 	updateProjectionDisplayId,
-// } from '@/utils/redux/settingsSlice'
-
 import {
 	createListCollection,
+	useListCollection,
 	type SelectValueChangeDetails,
 } from "@ark-ui/solid";
 import { createEffect, createMemo, createSignal, For, Switch } from "solid-js";
@@ -54,23 +17,25 @@ import {
 	updateProjectionDisplayId,
 } from "~/utils/store-helpers";
 import { Button } from "../ui/button";
-import type { DisplayBounds } from "~/types";
+import type { BasicSelectOption, DisplayBounds } from "~/types";
 import type { Display } from "electron";
 import { Text } from "../ui/text";
 import { Portal } from "solid-js/web";
 import { Icon } from "../ui/icon";
 import { FaSolidMoon, FaSolidSun } from "solid-icons/fa";
 import { ArkSwitch, GenericSwitch } from "../ui/switch";
+import { TbCheck, TbChevronDown } from "solid-icons/tb";
 
 export function AppSettingsDialog() {
-	const [displays, setDisplays] = createSignal<Display[]>([]);
 	const [displayBounds, setDisplayBounds] = createSignal<
 		DisplayBounds | undefined
 	>();
-	// const dispatch = useAppDispatch()
-	// const bounds = useAppSelector(state => state.settings.projectionBounds)
-	// const displayId = useAppSelector(state => state.settings.projectionDisplayId)
 	const { appStore, setAppStore, settings, updateSettings } = useAppContext();
+
+	const { collection: displayCollection, set: setDisplayCollection } =
+		useListCollection<BasicSelectOption>({
+			initialItems: [],
+		});
 
 	createEffect(() => {
 		if (settings.projectionBounds) {
@@ -81,20 +46,17 @@ export function AppSettingsDialog() {
 	createEffect(() => {
 		if (appStore.openSettings) {
 			window.electronAPI.getConnectedDisplays().then((result) => {
-				setDisplays(result);
+				console.log("Connected Displays: ", result);
+				setDisplayCollection(
+					result.map((val, index) => ({
+						...val,
+						label: val.label || `Display ${index + 1}`,
+						value: val.id,
+					})),
+				);
 			});
 		}
 	});
-
-	const displaySelectCollection = createMemo(() =>
-		createListCollection({
-			items: displays().map((val, index) => ({
-				...val,
-				label: `Display ${index + 1}`,
-				value: val.id,
-			})),
-		}),
-	);
 
 	function handleDisplayChange(details: SelectValueChangeDetails) {
 		console.log(details);
@@ -131,7 +93,7 @@ export function AppSettingsDialog() {
 							<Tabs.Content value="display" pt={8} pb={4}>
 								<Stack gap={6}>
 									<Select.Root
-										collection={displaySelectCollection()}
+										collection={displayCollection()}
 										// size="sm"
 										width="full"
 										defaultValue={[settings.projectionDisplayId.toString()]}
@@ -142,20 +104,24 @@ export function AppSettingsDialog() {
 
 										<Select.Control>
 											<Select.Trigger>
-												<Select.ValueText placeholder="Change Displays" />
+												<Select.ValueText />
 											</Select.Trigger>
 											<Select.IndicatorGroup>
-												<Select.Indicator />
+												<Select.Indicator>
+													<TbChevronDown />
+												</Select.Indicator>
 											</Select.IndicatorGroup>
 										</Select.Control>
 
 										<Select.Positioner>
 											<Select.Content>
-												<For each={displaySelectCollection().items}>
+												<For each={displayCollection().items}>
 													{(display) => (
 														<Select.Item item={display}>
 															{display.label}
-															<Select.ItemIndicator />
+															<Select.ItemIndicator>
+																<TbCheck />
+															</Select.ItemIndicator>
 														</Select.Item>
 													)}
 												</For>
@@ -170,6 +136,7 @@ export function AppSettingsDialog() {
 												value={settings.projectionBounds?.x}
 												// onChange={e => handleBoundChange('x', e)}
 												variant="outline"
+												disabled
 											/>
 										</GenericField>
 										<GenericField label="Top">
@@ -178,6 +145,7 @@ export function AppSettingsDialog() {
 												value={settings.projectionBounds?.y}
 												// onChange={e => handleBoundChange('x', e)}
 												variant="outline"
+												disabled
 											/>
 										</GenericField>
 										<GenericField label="Width">
@@ -186,6 +154,7 @@ export function AppSettingsDialog() {
 												value={settings.projectionBounds?.width}
 												// onChange={e => handleBoundChange('x', e)}
 												variant="outline"
+												disabled
 											/>
 										</GenericField>
 										<GenericField label="Height">
@@ -194,11 +163,12 @@ export function AppSettingsDialog() {
 												value={settings.projectionBounds?.height}
 												// onInput={e => handleBoundChange('x', e)}
 												variant="outline"
+												disabled
 											/>
 										</GenericField>
 									</HStack>
 
-									<HStack w="full">
+									<HStack w="full" display="none">
 										<Text>Change Theme</Text>
 										<Box onClick={() => toggleTheme(updateSettings)}>
 											<ArkSwitch.Root
@@ -210,9 +180,6 @@ export function AppSettingsDialog() {
 												<ArkSwitch.Control>
 													<ArkSwitch.Thumb />
 												</ArkSwitch.Control>
-												{/* <Show when={getChildren()}>
-													<ArkSwitch.Label>{getChildren()}</ArkSwitch.Label>
-												  </Show> */}
 												<ArkSwitch.HiddenInput />
 											</ArkSwitch.Root>
 											{/* // trackLabel={{
@@ -241,14 +208,15 @@ export function AppSettingsDialog() {
 						</Tabs.Root>
 					</Dialog.Body>
 					<Dialog.Footer>
-						{/* <Dialog.ActionTrigger asChild> */}
-						<Button variant="outline">Cancel</Button>
-						{/* </Dialog.ActionTrigger> */}
-						{/* <Dialog.ActionTrigger asChild> */}
+						<Button
+							variant="outline"
+							onClick={() => setAppStore("openSettings", false)}
+						>
+							Cancel
+						</Button>
 						<Button onClick={() => setAppStore("openSettings", false)}>
 							Save
 						</Button>
-						{/* </Dialog.ActionTrigger> */}
 					</Dialog.Footer>
 					<Dialog.CloseTrigger />
 				</Dialog.Content>

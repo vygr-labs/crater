@@ -205,3 +205,8 @@ export interface OpenEditData {
 	open: boolean;
 	song: SongData | null;
 }
+
+export interface BasicSelectOption {
+	label: string;
+	value: any;
+}
