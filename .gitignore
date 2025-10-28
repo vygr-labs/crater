@@ -24,7 +24,6 @@ pnpm-debug.log*
 .idea/
 
 ## Panda
-styled-system
 styled-system-studio
 
 # transpiled typescript code

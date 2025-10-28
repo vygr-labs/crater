@@ -141,6 +141,7 @@ const spawnAppWindow = async () => {
 		movable: false,
 		resizable: false,
 		transparent: true,
+		alwaysOnTop: true,
 	});
 
 	loadingWindow.once("show", () => {
@@ -160,7 +161,7 @@ const spawnAppWindow = async () => {
 			webPreferences: {
 				backgroundThrottling: false,
 				preload: PRELOAD_PATH,
-				// webSecurity: electronIsDev ? false : true,
+				devTools: electronIsDev,
 			},
 		});
 

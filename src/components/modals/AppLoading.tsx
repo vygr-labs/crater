@@ -45,7 +45,7 @@ export default function AppLoading() {
 					<ProgressBar />
 				</ProgressRoot> */}
 			</Box>
-			<IconButton
+			{/* <IconButton
 				pos="absolute"
 				top="4"
 				right="4"
@@ -56,7 +56,7 @@ export default function AppLoading() {
 				}}
 			>
 				<TbX />
-			</IconButton>
+			</IconButton> */}
 		</Box>
 	);
 }

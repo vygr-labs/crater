@@ -10,6 +10,6 @@ mac:
   target: dmg
   category: public.app-category.social-networking
 files: ["src/backend/build/**/*", "dist/**/*"]
-extraResources: [{from: "src/assets/store", to: "store"}]
+extraResources: [{from: "src/assets/default", to: "store"}]
 directories:
   output: "build"
