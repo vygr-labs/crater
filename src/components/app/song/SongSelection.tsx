@@ -238,7 +238,7 @@ export default function SongSelection() {
 
 	const handleSongEdit = () => {
 		const toEdit = fluidFocusId();
-		if (toEdit) {
+		if (typeof toEdit === "number") {
 			setAppStore("songEdit", { open: true, song: filteredSongs()[toEdit] });
 		}
 	};

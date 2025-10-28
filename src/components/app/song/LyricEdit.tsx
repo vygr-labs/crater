@@ -1,5 +1,7 @@
+import { ref } from "process";
 import type { JSX } from "solid-js/jsx-runtime";
 import { Box, Flex, VStack } from "styled-system/jsx";
+import { Field } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
 import { Textarea } from "~/components/ui/textarea";
@@ -9,7 +11,7 @@ import { defaultPalette, PREVIEW_INDEX_WIDTH } from "~/utils/constants";
 interface Props extends SongLyric {
 	index: number;
 	isCurrentNavig?: boolean;
-	onLabelEdit: (e: InputEvent) => void;
+	onLabelEdit: JSX.ChangeEventHandlerUnion<HTMLInputElement, Event>;
 	onTextEdit: JSX.ChangeEventHandlerUnion<HTMLTextAreaElement, Event>;
 }
 
@@ -36,27 +38,35 @@ export default function LyricEdit(props: Props) {
 			>
 				<Text>{props.index + 1}</Text>
 			</Box>
-			<VStack
+			<Field.Root
 				w="full"
 				gap={0}
 				border="1px solid"
 				borderColor="gray.800"
 				borderBottom="unset"
 			>
-				<Input
+				<Field.Input
+					id={"song-edit-label-" + props.index}
 					px={2}
 					placeholder="Label"
 					value={props.label}
 					h={8}
 					variant="flushed"
-					onInput={props.onLabelEdit}
+					onchange={props.onLabelEdit}
 					colorPalette="yellow"
 					color="white"
 					data-key={`label-${props.index}`}
 					data-type="label"
 					data-index={props.index}
+					ref={(el) => {
+						if (props.index === 0) {
+							console.log(el);
+							el.focus();
+						}
+					}}
 				/>
-				<Textarea
+				<Field.Textarea
+					id={"song-edit-text-" + props.index}
 					px={2}
 					minH={9}
 					lineHeight={1.5}
@@ -67,14 +77,14 @@ export default function LyricEdit(props: Props) {
 					overflow="hidden"
 					placeholder="Lyrics"
 					value={props.text.join("\n")}
-					onChange={props.onTextEdit}
+					onchange={props.onTextEdit}
 					colorPalette="yellow"
 					data-key={`text-${props.index}`}
 					data-type="text"
 					data-index={props.index}
 					// border="unset"
 				/>
-			</VStack>
+			</Field.Root>
 		</Flex>
 	);
 }
