@@ -1,4 +1,4 @@
-import { Index } from "solid-js";
+import { Index, onMount } from "solid-js";
 import { Accordion } from "../ui/accordion";
 import { Box, Flex, Grid } from "styled-system/jsx";
 import { TbChevronDown, TbX } from "solid-icons/tb";
@@ -29,6 +29,10 @@ const config = {
 };
 
 export default function AppControls() {
+	onMount(() => {
+		setTimeout(window.electronAPI.controlsWindowLoaded, 2000);
+	});
+
 	return (
 		<AppContextProvider>
 			<FocusContextProvider>

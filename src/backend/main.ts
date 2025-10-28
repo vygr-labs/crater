@@ -128,36 +128,71 @@ protocol.registerSchemesAsPrivileged([
 const spawnAppWindow = async () => {
 	if (electronIsDev) await installExtensions();
 
-	appWindow = new BrowserWindow({
-		width: 800,
-		height: 600,
+	const loadingWindow = new BrowserWindow({
+		width: 500,
+		height: 300,
+		center: true,
 		icon: getAssetPath("icon.png"),
-		title: electronIsDev
-			? "Controls Window - Development"
-			: "Crater Bible Project",
+		title: "Crater Bible Project",
+		frame: false,
 		show: false,
 		backgroundColor: appBackground,
-		webPreferences: {
-			backgroundThrottling: false,
-			preload: PRELOAD_PATH,
-			// webSecurity: electronIsDev ? false : true,
-		},
+		closable: false,
+		movable: false,
+		resizable: false,
+		transparent: true,
+	});
+
+	loadingWindow.once("show", () => {
+		const { width: awWidth, height: awHeight } =
+			screen.getPrimaryDisplay().workAreaSize;
+
+		appWindow = new BrowserWindow({
+			width: awWidth,
+			height: awHeight,
+			icon: getAssetPath("icon.png"),
+			title: electronIsDev
+				? "Controls Window - Development"
+				: "Crater Bible Project",
+			show: false,
+			autoHideMenuBar: true,
+			backgroundColor: appBackground,
+			webPreferences: {
+				backgroundThrottling: false,
+				preload: PRELOAD_PATH,
+				// webSecurity: electronIsDev ? false : true,
+			},
+		});
+
+		if (electronIsDev) {
+			appWindow.loadURL("http://localhost:7241/controls");
+		} else {
+			appWindow.loadFile("dist/controls.html");
+		}
+
+		appWindow.setMenu(null);
+		ipcMain.on("controls-window-loaded", () => {
+			console.log("DOM IS NOW READY");
+			appWindow?.maximize();
+			appWindow?.show();
+			loadingWindow.hide();
+			loadingWindow.close();
+		});
+		if (electronIsDev) appWindow.webContents.openDevTools({ mode: "right" });
+
+		appWindow.on("closed", () => {
+			appWindow = null;
+		});
 	});
 
 	if (electronIsDev) {
-		appWindow.loadURL("http://localhost:7241/controls");
+		loadingWindow.loadURL("http://localhost:7241/loader");
 	} else {
-		appWindow.loadFile("dist/controls.html");
+		loadingWindow.loadFile("dist/loader.html");
 	}
 
-	appWindow.maximize();
-	// appWindow.setMenu(null)
-	appWindow.show();
-
-	if (electronIsDev) appWindow.webContents.openDevTools({ mode: "right" });
-
-	appWindow.on("closed", () => {
-		appWindow = null;
+	loadingWindow.webContents.once("dom-ready", () => {
+		loadingWindow.show();
 	});
 };
 

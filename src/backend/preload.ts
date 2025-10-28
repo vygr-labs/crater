@@ -18,6 +18,9 @@ interface ImportOptions {
 }
 
 contextBridge.exposeInMainWorld("electronAPI", {
+	// Miscellaneous
+	controlsWindowLoaded: () => ipcRenderer.send("controls-window-loaded"),
+
 	// Scripture functions
 	fetchChapterCounts: () => ipcRenderer.invoke("fetch-chapter-counts"),
 	fetchTranslations: () => ipcRenderer.invoke("fetch-scripture-translations"),

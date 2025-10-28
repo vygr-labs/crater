@@ -45,6 +45,9 @@ export interface MediaImportResponse extends BridgeResponse {
 }
 
 export interface IElectronAPI {
+	// Miscellaneous
+	controlsWindowLoaded: () => void;
+
 	// Bible operations
 	fetchTranslations: () => Promise<ScriptureTranslation[]>;
 	fetchChapterCounts: () => Promise<ChapterCountObj>;
