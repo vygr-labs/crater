@@ -77,6 +77,13 @@ let projectionWindow: BrowserWindow | null = null;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let appReady = false;
 
+const checkAndQuit = () => {
+	console.log("Quitting?: ", process.platform, appWindow, projectionWindow);
+	if (process.platform !== "darwin" && !appWindow && !projectionWindow) {
+		app.quit();
+	}
+};
+
 class AppUpdater {
 	constructor() {
 		log.transports.file.level = "info";
@@ -183,6 +190,9 @@ const spawnAppWindow = async () => {
 
 		appWindow.on("closed", () => {
 			appWindow = null;
+			checkAndQuit();
+			projectionWindow?.hide();
+			projectionWindow?.close();
 		});
 	});
 
@@ -231,6 +241,7 @@ function spawnProjectionWindow({ x, y }: { x: number; y: number }) {
 
 	projectionWindow.on("closed", () => {
 		projectionWindow = null;
+		checkAndQuit();
 	});
 }
 
@@ -292,13 +303,6 @@ app.on("ready", async () => {
 			return new Response("Internal Server Error", { status: 500 });
 		}
 	});
-});
-
-app.on("window-all-closed", () => {
-	appReady = false;
-	if (process.platform !== "darwin") {
-		app.quit();
-	}
 });
 
 /*

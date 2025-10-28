@@ -67,53 +67,53 @@ export default function ThemeEditor() {
 
 		const themeData = exportTheme();
 		const formerTheme = initial();
-		const canvas = await screenshotDiv(rootRef);
-		let preview: ArrayBuffer;
-		canvas.toBlob(async (blob) => {
-			if (blob) {
-				preview = await blob.arrayBuffer();
-			}
-			console.log("Here is the preview blob: ", preview);
+		// const canvas = await screenshotDiv(rootRef);
+		let preview: ArrayBuffer = new ArrayBuffer();
+		// canvas.toBlob(async (blob) => {
+		// if (blob) {
+		// 	preview = await blob.arrayBuffer();
+		// }
+		console.log("Here is the preview blob: ", preview);
 
-			const theme: ThemeInput = {
-				title: themeName,
-				author: "Eyetu Kingsley",
-				type: type(),
-				theme_data: JSON.stringify(themeData),
-				preview,
-			};
-			console.log("THEME TO ADD: ", theme);
-			if (formerTheme === null) {
-				const { success, message } = await window.electronAPI.addTheme(theme);
-				console.log("Theme Added Successfully: ", success, message);
-				toaster.create({
-					type: getToastType(success),
-					title: message,
-				});
-			} else {
-				const { success, message, updatedTheme } =
-					await window.electronAPI.updateTheme(formerTheme.id, theme);
+		const theme: ThemeInput = {
+			title: themeName,
+			author: "Eyetu Kingsley",
+			type: type(),
+			theme_data: JSON.stringify(themeData),
+			preview,
+		};
+		console.log("THEME TO ADD: ", theme);
+		if (formerTheme === null) {
+			const { success, message } = await window.electronAPI.addTheme(theme);
+			console.log("Theme Added Successfully: ", success, message);
+			toaster.create({
+				type: getToastType(success),
+				title: message,
+			});
+		} else {
+			const { success, message, updatedTheme } =
+				await window.electronAPI.updateTheme(formerTheme.id, theme);
 
-				defaultThemeKeys.forEach((theme) => {
-					if (appStore[theme]?.id === formerTheme.id) {
-						setAppStore(theme, updatedTheme);
-					}
-				});
-				const key = console.log("Updated Theme: ", updatedTheme);
-				// dispatch(bustMediaCache([updatedTheme.preview_path]))
+			defaultThemeKeys.forEach((theme) => {
+				if (appStore[theme]?.id === formerTheme.id) {
+					setAppStore(theme, updatedTheme);
+				}
+			});
+			console.log("Updated Theme: ", updatedTheme);
+			// dispatch(bustMediaCache([updatedTheme.preview_path]))
 
-				// dispatch(updateThemeEditor({ open: false }))
-				toaster.create({
-					type: getToastType(success),
-					title: message,
-				});
-				setName("");
+			// dispatch(updateThemeEditor({ open: false }))
+			toaster.create({
+				type: getToastType(success),
+				title: message,
+			});
+			setName("");
 
-				console.log(theme, success);
-			}
-			setAppStore("themesUpdateTrigger", (former) => former + 1);
-			onDialogOpen({ open: false });
-		});
+			console.log(theme, success);
+		}
+		setAppStore("themesUpdateTrigger", (former) => former + 1);
+		onDialogOpen({ open: false });
+		// });
 	};
 
 	const onDialogOpen = (e: DialogOpenChangeDetails) => {
