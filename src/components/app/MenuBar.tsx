@@ -1,38 +1,3 @@
-// import {
-// 	Box,
-// 	HStack,
-// 	Icon,
-// 	IconButton,
-// 	Switch,
-// 	SwitchCheckedChangeDetails,
-// 	Text,
-// } from '@chakra-ui/react'
-// import { SegmentedControl } from '@/components/ui/segmented-control'
-// import { GrClear } from 'react-icons/gr'
-// import { TfiLayoutMediaLeftAlt } from 'react-icons/tfi'
-// import { FaChevronDown } from 'react-icons/fa'
-// import { IoMdSettings } from 'react-icons/io'
-// import { Button } from '@/components/ui/button'
-// import {
-// 	MenuContent,
-// 	MenuItem,
-// 	MenuRoot,
-// 	MenuTrigger,
-// } from '@/components/ui/menu'
-// import { ChakraValueChangeDetails } from '@/utils/types'
-// import { useAppDispatch, useAppSelector } from '@/hooks/useRedux'
-// import {
-// 	updateAppLoading,
-// 	toggleClearDisplay,
-// 	toggleLogo,
-// 	triggerSongsUpdate,
-// 	toggleLive,
-// } from '@/utils/redux/appSlice'
-// import { TbArrowsRightDown } from 'react-icons/tb'
-// import { toaster } from '../ui/toaster'
-// import { getToastType } from '@/utils'
-// import { useTransition } from 'react'
-// import { defaultPalette } from '@/utils/constants'
 import { HStack } from "styled-system/jsx";
 import { useAppContext } from "~/layouts/AppContext";
 import { Menu } from "../ui/menu";
@@ -56,18 +21,13 @@ import type { SwitchCheckedChangeDetails } from "@ark-ui/solid";
 import { BsDisplayFill } from "solid-icons/bs";
 import { unwrap } from "solid-js/store";
 import { createEffect } from "solid-js";
+import { getToastType, toaster } from "~/utils";
 
 export type Props = {
 	// openAppSettings: () => void
 };
 
 export default function MenuBar(props: Props) {
-	// const isHidden = useAppSelector(state => state.app.hideLive)
-	// const showLogo = useAppSelector(state => state.app.showLogo)
-	// const isLive = useAppSelector(state => state.app.isLive)
-	// const bounds = useAppSelector(state => state.settings.projectionBounds)
-	// const dispatch = useAppDispatch()
-	// const [isPending, startTransition] = useTransition()
 	const { appStore, setAppStore, settings, updateSettings } = useAppContext();
 
 	function openImportDialog() {
@@ -77,12 +37,12 @@ export default function MenuBar(props: Props) {
 		});
 		window.electronAPI.importEswSongs().then(({ success, message }) => {
 			console.log("Result from Dialog: ", message);
-			// toaster.create({
-			//     type: getToastType(success),
-			//     title: message,
-			// })
+			toaster.create({
+				type: getToastType(success),
+				title: message,
+			});
 
-			setAppStore("songsUpdateCounter", (former) => former++);
+			setAppStore("songsUpdateCounter", (former) => ++former);
 			setAppStore("loading", { reason: "Finished task", isLoading: false });
 		});
 	}

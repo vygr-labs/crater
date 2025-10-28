@@ -17,6 +17,7 @@ const userData = electronIsDev
 
 const APP = "crater-bible-project";
 const DB_PATH = path.join(userData, "databases");
+const SONGS_DB_PATH = path.join(DB_PATH, "songs.sqlite");
 const PREVIEW_IMG_PATH = path.join(userData, "themes", "preview");
 
 const MEDIA_PATH = path.join(userData, "media");
@@ -40,6 +41,7 @@ export {
 	__dirname,
 	RESOURCES_PATH,
 	DB_PATH,
+	SONGS_DB_PATH,
 	PREVIEW_IMG_PATH,
 	MEDIA_PATH,
 	MEDIA_IMAGES,

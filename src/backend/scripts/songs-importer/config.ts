@@ -1,5 +1,9 @@
 // config.ts
-import { __dirname } from "../../constants.js";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export const TEST_MODE = false;
 export const TEST_SINGLE_SONG_ID: number | false = false;

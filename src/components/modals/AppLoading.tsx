@@ -19,17 +19,23 @@ export default function AppLoading() {
 			visibility={appStore.loading?.isLoading ? "visible" : "hidden"}
 		>
 			<Box w="full" h="full" bg="blackAlpha.600"></Box>
-			<Center
-				bg="bg.subtle"
+			<Box
+				bg="bg.muted"
 				py={3}
 				px={6}
-				w="md"
-				h="56"
+				w="sm"
+				h="48"
+				display="flex"
 				flexDir="column"
 				gap={5}
 				justifyContent="center"
 				alignItems="center"
+				rounded="xl"
 				zIndex={4000}
+				pos="absolute"
+				top="50%"
+				left="50%"
+				transform="translate(-50%,-50%)"
 			>
 				<Spinner size="lg" />
 				<Text textStyle="lg" fontWeight="700">
@@ -38,7 +44,7 @@ export default function AppLoading() {
 				{/* <ProgressRoot maxW="240px" striped animated>
 					<ProgressBar />
 				</ProgressRoot> */}
-			</Center>
+			</Box>
 			<IconButton
 				pos="absolute"
 				top="4"

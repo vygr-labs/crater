@@ -1,21 +1,14 @@
-// Songs Database Initialization for SQLite
 import Database from "better-sqlite3";
-// import { app } from 'electron'
-import { join as pathJoin } from "path";
-// import electronIsDev from 'electron-is-dev'
-import { DB_PATH } from "../constants.js";
+import { SONGS_DB_PATH } from "../constants.js";
 
-// Define the path for the songs database file
-// const interMediaries = electronIsDev ? 'backend/database' : ''
-const dbPath = pathJoin(DB_PATH, "songs.sqlite");
-const db = new Database(dbPath);
+const db = new Database(SONGS_DB_PATH);
 
 // Create Tables
 db.prepare(
 	`
 CREATE TABLE IF NOT EXISTS songs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
     author TEXT,
     copyright TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

@@ -79,10 +79,10 @@ export default function ControlsMain() {
 							<TbVideo />
 							Media
 						</Tabs.Trigger>
-						<Tabs.Trigger value={PRESENTATIONS_TAB_FOCUS_NAME} px={4}>
+						{/* <Tabs.Trigger value={PRESENTATIONS_TAB_FOCUS_NAME} px={4}>
 							<TbPresentation />
 							Presentations
-						</Tabs.Trigger>
+						</Tabs.Trigger> */}
 						<Tabs.Trigger value={THEMES_TAB_FOCUS_NAME} px={4}>
 							<TbPalette />
 							Themes
@@ -106,7 +106,6 @@ export default function ControlsMain() {
 					pos="relative"
 					gap={0}
 				>
-					{/* {isPending ? <ControlsLoading /> : null} */}
 					<Tabs.Content h="full" value={SONGS_TAB_FOCUS_NAME} py={0}>
 						<SongSelection />
 					</Tabs.Content>
@@ -116,9 +115,9 @@ export default function ControlsMain() {
 					<Tabs.Content value={MEDIA_TAB_FOCUS_NAME} h="full" py={0}>
 						<MediaSelection />
 					</Tabs.Content>
-					<Tabs.Content value={PRESENTATIONS_TAB_FOCUS_NAME}>
+					{/* <Tabs.Content value={PRESENTATIONS_TAB_FOCUS_NAME}>
 						Manage your tasks for freelancers
-					</Tabs.Content>
+					</Tabs.Content> */}
 					<Tabs.Content value={THEMES_TAB_FOCUS_NAME} h="full" py={0}>
 						<ThemeSelection />
 					</Tabs.Content>

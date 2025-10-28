@@ -32,6 +32,7 @@ import {
 	appBackground,
 	DB_IMPORT_TEMP_DIR,
 	DB_PATH,
+	SONGS_DB_PATH,
 	MEDIA_IMAGES,
 	MEDIA_VIDEOS,
 	RESOURCES_PATH,
@@ -46,7 +47,6 @@ import {
 	updateTheme,
 	filterThemes,
 } from "./database/theme-operations.js";
-import processSongs from "./scripts/songs-importer/index.js";
 import {
 	getMediaDestination,
 	getMimeType,
@@ -57,6 +57,7 @@ import { SONG_DB_PATHS } from "./types.js";
 import { pathToFileURL } from "node:url";
 import handleCustomProtocols from "./helpers/protocols.js";
 import { getFonts2 } from "font-list";
+import { Worker } from "node:worker_threads";
 // import processSongs from './scripts/songs-importer/index.js'
 // import grandiose from 'grandiose'
 // const { GrandioseFinder } = grandiose
@@ -358,6 +359,37 @@ ipcMain.handle("fetch-theme", (_, id) => fetchThemeById(id));
 ipcMain.handle("filter-themes", (_, type) => filterThemes(type));
 
 console.log("TEMPORARY DIRECTORY: ", app.getPath("temp"));
+
+const processSongs = (songsPaths: SONG_DB_PATHS) => {
+	const songImportWorkerPath = path.join(
+		__dirname,
+		"scripts/handle-imports.js",
+	);
+	console.log(songImportWorkerPath);
+	return new Promise((resolve, reject) => {
+		const worker = new Worker(songImportWorkerPath, {
+			workerData: { paths: songsPaths, songsDbPath: SONGS_DB_PATH },
+		});
+
+		worker.on("message", (m) => {
+			console.log("DONE: ", m);
+			if (m.isComplete) {
+				resolve({
+					success: true,
+					message: `${m.count} Songs Imported Successfully`,
+				});
+			}
+		});
+		worker.on("error", (err) => {
+			console.log("Worker Error: ", err);
+			resolve({
+				success: false,
+				message: "Failed to import songs",
+			});
+		});
+	});
+};
+
 ipcMain.handle("import-easyworship-songs", async () => {
 	console.log(app.getPath("temp"));
 	if (appWindow) {
@@ -407,19 +439,8 @@ ipcMain.handle("import-easyworship-songs", async () => {
 			songsPaths[fileBasename === "Songs.db" ? "SONG_DB" : "SONG_WORDS_DB"] =
 				destination;
 		}
-		const isComplete = await processSongs(songsPaths);
 
-		if (isComplete) {
-			return {
-				success: true,
-				message: "Songs Imported Successfully",
-			};
-		} else {
-			return {
-				success: false,
-				message: "Failed to import songs",
-			};
-		}
+		return await processSongs(songsPaths);
 	}
 });
 

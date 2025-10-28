@@ -1,4 +1,5 @@
 // functions.ts
+// importing from backend/config.ts breaks this code in worker threads as the config.ts file uses some imports that can only be used in the electron main process
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
@@ -15,7 +16,7 @@ import {
 	SONG_SECTION_NAMES,
 	WORDS_TO_CAPITALIZE,
 } from "./config.js";
-import songDB from "../../database/songs-db.js";
+import { type Database } from "better-sqlite3";
 
 const EW6_EXPORT_EOL = "\r\n";
 type RTFNode = typeof Command | typeof RTFText | typeof Group;
@@ -70,7 +71,7 @@ export async function processEwLyrics(text: string): Promise<string> {
 	}
 
 	// Convert paragraph separators to double newlines
-	console.log("After rtfToText & paragraph replacements: ", processed);
+	// console.log("After rtfToText & paragraph replacements: ", processed);
 
 	// Processing pipeline
 	let lines = phpExplode("\n", processed)
@@ -331,7 +332,11 @@ export function generateProPresenterGuid(): string {
 		.replace(/(\w{8})(\w{4})(\w{4})(\w{4})(\w{12})/, "$1-$2-$3-$4-$5");
 }
 
-export function saveSongToDatabase(song: Song, lyrics: string): void {
+export function saveSongToDatabase(
+	song: Song,
+	lyrics: string,
+	songDB: Database,
+): void {
 	// Start a transaction
 	const insertTransaction = songDB.transaction(() => {
 		// First, insert the main song record

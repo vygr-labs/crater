@@ -1,5 +1,5 @@
 // process.ts
-import Database from "better-sqlite3";
+import Database, { type Database as DatabaseType } from "better-sqlite3";
 import { PATHS, Song, TEST_MODE, TEST_SINGLE_SONG_ID } from "./config.js";
 import {
 	processEwLyrics,
@@ -11,9 +11,10 @@ import { SONG_DB_PATHS } from "../../types.js";
 // Initialize databases
 console.log(PATHS);
 
-async function processSongs(PATHS: SONG_DB_PATHS) {
+async function processSongs(PATHS: SONG_DB_PATHS, db: DatabaseType) {
 	const songsDB = new Database(PATHS.SONG_DB, { readonly: true });
 	const songWordsDB = new Database(PATHS.SONG_WORDS_DB, { readonly: true });
+	let counter = 0;
 
 	try {
 		// Build base query
@@ -33,7 +34,7 @@ async function processSongs(PATHS: SONG_DB_PATHS) {
 		const songs = songsStmt.all(...params) as Song[];
 
 		// Process each song
-		let counter = 0;
+		let errors = 0;
 		for (const song of songs) {
 			try {
 				// Get lyrics
@@ -51,12 +52,12 @@ async function processSongs(PATHS: SONG_DB_PATHS) {
 				const processedLyrics = await processEwLyrics(lyricsRow.words);
 				song.title = processEwTitle(song.title);
 				song.text = processedLyrics;
-				console.log(song.title, song.text);
+				console.log(song.title); // song.text
 				// FILE_EXPORT_TYPE === 'propresenter6'
 				// 	? generateProp6FileContents(song, processedLyrics)
 
 				// Save file
-				saveSongToDatabase(song, song.text);
+				saveSongToDatabase(song, song.text, db);
 
 				// Test mode early exit
 				if (TEST_MODE && counter >= 9) break;
@@ -66,10 +67,11 @@ async function processSongs(PATHS: SONG_DB_PATHS) {
 			}
 		}
 
-		return true;
+		if (errors) return { success: false, count: counter };
+		return { success: true, count: counter };
 	} catch (error) {
 		console.error("Database error:", error);
-		return false;
+		return { success: false, count: counter };
 	} finally {
 		songsDB.close();
 		songWordsDB.close();
