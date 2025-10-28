@@ -232,19 +232,19 @@ function SongEditor() {
 
 	createEffect(() => {
 		if (appStore.songEdit.open) {
+			setLyrics(fetchedSongLyrics());
 			console.log("changing focus to song editor");
 			changeFocusPanel(SONG_EDITOR_FOCUS_NAME);
 			titleInputEl.value = appStore.songEdit.song?.title || "";
 		}
 	});
-	createEffect(() => {
-		setLyrics(fetchedSongLyrics());
-	});
+
 	let containerRef!: HTMLDivElement;
 
 	const closeModal = () => {
 		const revert = previousPanel();
 		setAppStore("songEdit", { open: false });
+		setLyrics([]);
 		if (revert) {
 			changeFocusPanel(revert);
 		}

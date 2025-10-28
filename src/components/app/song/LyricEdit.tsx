@@ -41,9 +41,7 @@ export default function LyricEdit(props: Props) {
 			<Field.Root
 				w="full"
 				gap={0}
-				border="1px solid"
-				borderColor="gray.800"
-				borderBottom="unset"
+				// borderBottom="unset"
 			>
 				<Field.Input
 					id={"song-edit-label-" + props.index}
@@ -51,9 +49,16 @@ export default function LyricEdit(props: Props) {
 					placeholder="Label"
 					value={props.label}
 					h={8}
-					variant="flushed"
+					variant="subtle"
 					onchange={props.onLabelEdit}
-					colorPalette="yellow"
+					border="2px solid"
+					borderColor="gray.800"
+					borderBottomColor="transparent"
+					rounded="unset"
+					_focusVisible={{
+						outline: "unset",
+						borderColor: "purple.800",
+					}}
 					color="white"
 					data-key={`label-${props.index}`}
 					data-type="label"
@@ -73,12 +78,17 @@ export default function LyricEdit(props: Props) {
 					autoresize
 					variant="flushed"
 					rows={1}
+					border="2px solid"
+					borderColor="gray.800"
+					borderTopColor="transparent"
+					_focusVisible={{
+						borderColor: "purple.800",
+					}}
 					scrollbar="hidden"
 					overflow="hidden"
 					placeholder="Lyrics"
 					value={props.text.join("\n")}
 					onchange={props.onTextEdit}
-					colorPalette="yellow"
 					data-key={`text-${props.index}`}
 					data-type="text"
 					data-index={props.index}
