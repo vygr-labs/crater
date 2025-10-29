@@ -22,6 +22,7 @@ import EditorContainer from "../app/editor/ui/Container";
 import EditorText from "./editor/ui/Text";
 import SchedulePanel from "./SchedulePanel";
 import SongEditor from "../modals/SongEditor";
+import { DisplayContextProvider } from "~/layouts/DisplayContext";
 
 const config = {
 	EditorContainer,
@@ -65,7 +66,9 @@ export default function AppControls() {
 					<NamingModal />
 
 					{/* Song Editor Modal */}
-					<SongEditor />
+					<DisplayContextProvider>
+						<SongEditor />
+					</DisplayContextProvider>
 
 					{/* <Editor resolver={{ UserContainer, UserText, UserRootContainer }}>
 						<ThemeEditor />

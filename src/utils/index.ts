@@ -383,15 +383,24 @@ export const parseStore = (data: any) => {
 	return parsedValue;
 };
 
+type NestedObj<T> = Partial<Record<keyof T, string[]>>;
 export const preserveDefaults = <T>(
 	updated: T,
 	defaults: T,
-	preserved: (keyof T)[],
+	preserved: (keyof T | NestedObj<T>)[],
 ): T => {
 	for (let i = 0; i < preserved.length; i++) {
 		let key = preserved[i];
-		updated[key] = defaults[key];
+		if (typeof key === "string") {
+			updated[key] = defaults[key];
+		} else if (typeof key === "object") {
+			const [k, sk] = Object.entries<string[]>(key)[0];
+			sk.forEach((s) => {
+				updated[k][s] = defaults[k][s];
+			});
+		}
 	}
+	console.log("PRESERVED DEFAULTS: ", updated);
 	return updated;
 };
 

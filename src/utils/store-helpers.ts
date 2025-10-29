@@ -5,10 +5,19 @@ import type {
 	Theme,
 	ThemeMetadata,
 } from "~/types";
-import type { AppData, AppSettings, SongEditData } from "~/types/app-context";
+import type {
+	AppData,
+	AppDisplayData,
+	AppSettings,
+	SongEditData,
+} from "~/types/app-context";
 
 export type AppStoreUpdateFn<ExtraData = void> = (
 	setStore: SetStoreFunction<AppData>,
+	extra: ExtraData,
+) => void;
+export type DisplayStoreUpdateFn<ExtraData = void> = (
+	setStore: SetStoreFunction<AppDisplayData>,
 	extra: ExtraData,
 ) => void;
 export type AppSettingsUpdateFn<ExtraData = void> = (
@@ -58,7 +67,7 @@ export const changeDefaultTheme: AppStoreUpdateFn<Theme> = (
 			: theme.type === "scripture"
 				? "scriptureTheme"
 				: "presentationTheme";
-	setStore(storeKey, theme);
+	setStore("displayData", storeKey, theme);
 };
 
 // SETTINGS HELPERS

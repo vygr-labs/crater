@@ -3,6 +3,7 @@ import type {
 	AppSettings,
 	AppData,
 	GroupCollectionObj,
+	AppDisplayData,
 } from "~/types/app-context";
 import type { SongLyric } from "~/types/context";
 
@@ -107,14 +108,18 @@ const DEFAULT_GROUPS: GroupCollectionObj = {
 	},
 };
 
-// adding arrays to app state takes a few reloads to show in redux/persist and are undefined till then
-export const defaultAppStore: AppData = {
-	user: undefined,
-	panelFocus: "scripture",
+export const defaultDisplayData: AppDisplayData = {
 	scriptureTheme: undefined,
 	songTheme: undefined,
 	presentationTheme: undefined,
-	displayData: undefined,
+	displayContent: { type: "song" },
+};
+
+// adding arrays to app state takes a few reloads to show in redux/persist and are undefined till then
+export const defaultAppStore: AppData = {
+	displayData: { ...defaultDisplayData },
+	user: undefined,
+	panelFocus: "scripture",
 	hideLive: false,
 	showLogo: false,
 	logoBg: "",

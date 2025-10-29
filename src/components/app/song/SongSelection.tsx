@@ -368,7 +368,7 @@ export default function SongSelection() {
 						</Box>
 					</Match>
 					<Match when={!filteredSongs().length}>
-						<VStack w="full" h="full" justifyContent="center">
+						<VStack gap={1} w="full" h="full" justifyContent="center">
 							<Text textStyle="xl" color="gray.100">
 								No Songs in your Database
 							</Text>

@@ -70,13 +70,17 @@ export interface NamingModalData {
 	open: boolean;
 }
 
-export interface AppData {
-	user: UserData | undefined;
-	panelFocus: FocusPanel;
+export interface AppDisplayData {
 	scriptureTheme: Theme | undefined;
 	songTheme: Theme | undefined;
 	presentationTheme: Theme | undefined;
-	displayData: DisplayInfo | undefined;
+	displayContent: DisplayInfo | undefined;
+}
+
+export interface AppData {
+	user: UserData | undefined;
+	panelFocus: FocusPanel;
+	displayData: AppDisplayData;
 	hideLive: boolean;
 	showLogo: boolean;
 	logoBg: string;
@@ -109,6 +113,11 @@ export interface AppSettings {
 	language: string;
 	projectionBounds: DisplayBounds;
 	projectionDisplayId: number;
+}
+
+export interface DisplayContextObj {
+	displayStore: AppDisplayData;
+	setDisplayStore: SetStoreFunction<AppDisplayData>;
 }
 
 export interface AppContextObj {

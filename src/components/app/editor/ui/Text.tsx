@@ -78,6 +78,7 @@ import { createAsyncMemo, useDebounceFn, useThrottleFn } from "solidjs-use";
 import TextFill from "~/utils/textfill";
 import GenericNumberInput from "~/components/custom/number-input";
 import { FaSolidBold } from "solid-icons/fa";
+import { useDisplayStore } from "~/layouts/DisplayContext";
 
 interface EditorContainer extends BoxProps {}
 
@@ -209,21 +210,24 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 		if (props.node.data.linkage === LINKAGES.CUSTOM) {
 			return [props.node.data.text] as string[];
 		} else {
-			const { appStore } = useAppContext();
-			const displayData = appStore.displayData;
+			const { displayStore } = useDisplayStore();
+			const displayContent = displayStore.displayContent;
 			// const displayData = appStore.liveItem
-			if (displayData) {
+			if (displayContent) {
 				if (
 					props.node.data.linkage === LINKAGES.SONG_LYRIC &&
-					displayData.type === "song" &&
-					displayData.song
+					displayContent.type === "song" &&
+					displayContent.song
 				) {
-					return displayData.song.text;
-				} else if (displayData.type === "scripture" && displayData.scripture) {
+					return displayContent.song.text;
+				} else if (
+					displayContent.type === "scripture" &&
+					displayContent.scripture
+				) {
 					if (props.node.data.linkage === LINKAGES.SCRIPTURE_TEXT) {
-						return [displayData.scripture.text];
+						return [displayContent.scripture.text];
 					} else if (props.node.data.linkage === LINKAGES.SCRIPTURE_REFERENCE) {
-						return [getReference(displayData.scripture)];
+						return [getReference(displayContent.scripture)];
 					}
 				}
 			}

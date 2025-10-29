@@ -9,20 +9,30 @@ import {
 	type ParentProps,
 } from "solid-js";
 import { createStore, reconcile, unwrap } from "solid-js/store";
-import type { AppContextObj, AppData, AppSettings } from "~/types/app-context";
+import type {
+	AppContextObj,
+	AppData,
+	AppDisplayData,
+	AppSettings,
+} from "~/types/app-context";
 import { fnReplacer, preserveDefaults } from "~/utils";
 import {
 	defaultAppSettings,
 	defaultAppStore,
+	defaultDisplayData,
 	storageKey,
 	syncFnPrefix,
 	syncUpdateKey,
 } from "~/utils/constants";
+import { DisplayContext } from "./DisplayContext";
 
 const AppContext = createContext<AppContextObj>();
 
 export default function AppContextProvider(props: ParentProps) {
-	const [appStore, setStore] = createStore<AppData>(defaultAppStore);
+	const [displayStore, setDisplayStore] = createStore<AppDisplayData>({
+		...defaultDisplayData,
+	});
+	const [appStore, setStore] = createStore<AppData>({ ...defaultAppStore });
 	const broadcast = new BroadcastChannel(syncUpdateKey);
 
 	const setAppStore = (...args: any[]) => {
@@ -72,7 +82,7 @@ export default function AppContextProvider(props: ParentProps) {
 					"loading",
 					"openSettings",
 					"songEdit",
-					"displayData",
+					{ displayData: ["displayContent"] },
 				],
 			);
 			setStore(reconcile(state));
@@ -91,7 +101,9 @@ export default function AppContextProvider(props: ParentProps) {
 		<AppContext.Provider
 			value={{ appStore, setAppStore, settings, updateSettings }}
 		>
-			{props.children}
+			<DisplayContext.Provider value={{ displayStore, setDisplayStore }}>
+				{props.children}
+			</DisplayContext.Provider>
 		</AppContext.Provider>
 	);
 }

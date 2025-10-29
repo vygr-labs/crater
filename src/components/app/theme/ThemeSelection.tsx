@@ -334,7 +334,7 @@ export default function ThemeSelection() {
 		console.log(currentTheme);
 		if (!currentTheme) return;
 		changeDefaultTheme(setAppStore, currentTheme);
-		console.log(appStore.songTheme);
+		console.log(appStore.displayData.songTheme);
 	};
 
 	return (
@@ -432,7 +432,7 @@ export default function ThemeSelection() {
 						</Flex>
 					</Match>
 					<Match when={!filteredThemes().length}>
-						<VStack w="full" h="full" justifyContent="center">
+						<VStack gap={1} w="full" h="full" justifyContent="center">
 							<Text textStyle="xl" color="gray.100">
 								No Themes in your Database
 							</Text>

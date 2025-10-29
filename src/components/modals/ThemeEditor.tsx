@@ -15,7 +15,7 @@ import RenderEditor from "../app/editor/ui/RenderEditor";
 import RenderEditorSettings from "../app/editor/ui/RenderEditorSettings";
 import { useFps } from "solidjs-use";
 import screenshotDiv from "html2canvas";
-import { getKeyByValue, getToastType, toaster } from "~/utils";
+import { getToastType, parseThemeData, toaster } from "~/utils";
 import { useFocusContext } from "~/layouts/FocusContext";
 import { defaultThemeKeys, THEME_EDITOR_FOCUS_NAME } from "~/utils/constants";
 
@@ -32,7 +32,7 @@ export default function ThemeEditor() {
 	const { appStore, setAppStore } = useAppContext();
 	const type = createMemo(() => appStore.themeEditor.type);
 	const open = createMemo(() => appStore.themeEditor.open);
-	const initial = createMemo(() => appStore.themeEditor.initial);
+
 	const {
 		getters: { getRootRef },
 		helpers: { exportTheme, loadTheme },
@@ -47,17 +47,14 @@ export default function ThemeEditor() {
 				if (isOpen) {
 					console.log("theme-editor Triggering change focus: ", isOpen);
 					changeFocusPanel(THEME_EDITOR_FOCUS_NAME);
+					const initial = appStore.themeEditor.initial;
+					console.log("Loading Theme: ", initial);
+					loadTheme(initial ? parseThemeData(initial?.theme_data) : undefined);
+					setName(initial?.title ?? "");
 				}
 			},
 		),
 	);
-
-	createEffect(() => {
-		const reset = initial();
-		console.log("Loading Theme: ", initial());
-		loadTheme(reset ? JSON.parse(reset.theme_data) : undefined);
-		setName(reset?.title ?? "");
-	});
 
 	const saveTheme = async () => {
 		// e.preventDefault();
@@ -66,7 +63,7 @@ export default function ThemeEditor() {
 		if (!rootRef || !themeName) return;
 
 		const themeData = exportTheme();
-		const formerTheme = initial();
+		const formerTheme = appStore.themeEditor.initial;
 		const theme: ThemeInput = {
 			title: themeName,
 			author: "Eyetu Kingsley",
@@ -86,8 +83,8 @@ export default function ThemeEditor() {
 				await window.electronAPI.updateTheme(formerTheme.id, theme);
 
 			defaultThemeKeys.forEach((theme) => {
-				if (appStore[theme]?.id === formerTheme.id) {
-					setAppStore(theme, updatedTheme);
+				if (appStore["displayData"][theme]?.id === formerTheme.id) {
+					setAppStore("displayData", theme, updatedTheme);
 				}
 			});
 			console.log("Updated Theme: ", updatedTheme);

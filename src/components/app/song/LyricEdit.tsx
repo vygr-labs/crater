@@ -13,6 +13,7 @@ interface Props extends SongLyric {
 	isCurrentNavig?: boolean;
 	onLabelEdit: JSX.ChangeEventHandlerUnion<HTMLInputElement, Event>;
 	onTextEdit: JSX.ChangeEventHandlerUnion<HTMLTextAreaElement, Event>;
+	onActiveEl: () => void;
 }
 
 export default function LyricEdit(props: Props) {
@@ -41,6 +42,7 @@ export default function LyricEdit(props: Props) {
 			<Field.Root
 				w="full"
 				gap={0}
+				on:focusin={props.onActiveEl}
 				// borderBottom="unset"
 			>
 				<Field.Input
@@ -89,7 +91,7 @@ export default function LyricEdit(props: Props) {
 					overflow="hidden"
 					placeholder="Lyrics"
 					value={props.text.join("\n")}
-					onchange={props.onTextEdit}
+					oninput={props.onTextEdit}
 					data-key={`text-${props.index}`}
 					data-type="text"
 					data-index={props.index}

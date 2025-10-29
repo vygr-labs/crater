@@ -20,7 +20,7 @@ export default function LivePanel() {
 	const displayLiveItem = (index?: number | null) => {
 		const type = itemType();
 		if (appStore.liveItem && type && typeof index === "number") {
-			setAppStore("displayData", {
+			setAppStore("displayData", "displayContent", {
 				type,
 				[type]: liveData()[index],
 			});
@@ -128,7 +128,7 @@ export default function LivePanel() {
 				top={0}
 				zIndex={0}
 			/>
-			<ContextMenu open={false} ref={virtualizerParentRef}>
+			<ContextMenu open={false} setOpen={() => null} ref={virtualizerParentRef}>
 				<Box
 					style={{
 						height: `${rowVirtualizer().getTotalSize()}px`,

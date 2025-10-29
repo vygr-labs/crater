@@ -6,6 +6,7 @@ import { RenderEditorText } from "../editor/ui/Text";
 import { useAppContext } from "~/layouts/AppContext";
 import { Match, Switch } from "solid-js";
 import RenderImage from "./RenderImage";
+import { parseThemeData } from "~/utils";
 
 export const defaultThemeRenderMap = {
 	EditorContainer: RenderEditorContainer,
@@ -37,20 +38,22 @@ export default function RenderProjection() {
 			<LogoBackground />
 			{/* Live Display */}
 			<Switch>
-				<Match when={appStore.displayData?.type === "scripture"}>
+				<Match when={appStore.displayData.displayContent?.type === "scripture"}>
 					<RenderTheme
-						data={JSON.parse(appStore.scriptureTheme?.theme_data ?? "{}")}
+						data={parseThemeData(
+							appStore.displayData.scriptureTheme?.theme_data,
+						)}
 						renderMap={defaultThemeRenderMap}
 					/>
 				</Match>
-				<Match when={appStore.displayData?.type === "song"}>
+				<Match when={appStore.displayData.displayContent?.type === "song"}>
 					<RenderTheme
-						data={JSON.parse(appStore.songTheme?.theme_data ?? "{}")}
+						data={parseThemeData(appStore.displayData.songTheme?.theme_data)}
 						renderMap={defaultThemeRenderMap}
 					/>
 				</Match>
-				<Match when={appStore.displayData?.type === "image"}>
-					<RenderImage imageData={appStore.displayData?.image} />
+				<Match when={appStore.displayData.displayContent?.type === "image"}>
+					<RenderImage imageData={appStore.displayData.displayContent?.image} />
 				</Match>
 			</Switch>
 		</Box>

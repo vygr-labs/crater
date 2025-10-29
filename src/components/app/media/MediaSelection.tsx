@@ -481,7 +481,7 @@ export default function MediaSelection() {
 						</Box>
 					</Match>
 					<Match when={!filteredMedia().length}>
-						<VStack w="full" h="full" justifyContent="center">
+						<VStack gap={1} w="full" h="full" justifyContent="center">
 							<Text textStyle="xl" color="gray.100">
 								No Media in your Database
 							</Text>

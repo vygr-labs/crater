@@ -16,6 +16,7 @@ import { lineHeights } from "~/theme/tokens/line-heights";
 import { getToastType, parseThemeData, toaster } from "~/utils";
 import RenderTheme from "../app/editor/RenderTheme";
 import { defaultThemeRenderMap } from "../app/projection/RenderProjection";
+import { useDisplayStore } from "~/layouts/DisplayContext";
 
 type Props = {
 	open: boolean;
@@ -57,6 +58,7 @@ function SongEditor() {
 	const { appStore, setAppStore } = useAppContext();
 	const [songMeta, setSongMeta] = createStore({
 		// title: "",
+		current: 0,
 	});
 	// const open = createMemo(() => appStore.songEdit.open);
 	const song = createMemo(() => appStore.songEdit.song);
@@ -67,6 +69,7 @@ function SongEditor() {
 		const lyrics = await window.electronAPI.fetchSongLyrics(toFetch.id);
 		return lyrics;
 	}, null);
+	const { setDisplayStore } = useDisplayStore();
 
 	let titleInputEl!: HTMLInputElement;
 
@@ -255,8 +258,12 @@ function SongEditor() {
 	const handleLabelEdit = (index: number, value: string) => {
 		setLyrics(index, "label", value);
 	};
-	const handleTextEdit = (index: number, value: string) => {
-		setLyrics(index, "text", value.split("\n"));
+	const handleTextEdit = (index: number, val: string) => {
+		const value = val.split("\n");
+		setLyrics(index, "text", value);
+		setDisplayStore("displayContent", {
+			song: { label: lyrics[index].label, text: value },
+		});
 	};
 
 	const saveSong = () => {
@@ -341,6 +348,7 @@ function SongEditor() {
 																(e.target as HTMLTextAreaElement).value,
 															)
 														}
+														onActiveEl={() => setSongMeta("current", index())}
 													/>
 												)}
 											</For>
@@ -359,7 +367,9 @@ function SongEditor() {
 										>
 											<Box w="full" h="full" bgColor="transparent">
 												<RenderTheme
-													data={parseThemeData(appStore.songTheme?.theme_data)}
+													data={parseThemeData(
+														appStore.displayData.songTheme?.theme_data,
+													)}
 													renderMap={defaultThemeRenderMap}
 													// scope={'song-edit'}
 												/>
