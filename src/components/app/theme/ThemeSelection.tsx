@@ -19,8 +19,10 @@ import {
 	createEffect,
 	createMemo,
 	createRenderEffect,
+	Match,
 	on,
 	Show,
+	Switch,
 	type JSX,
 } from "solid-js";
 import { Text } from "../../ui/text";
@@ -365,67 +367,81 @@ export default function ThemeSelection() {
 				actionBarMenu={<MainActionBarMenu onCreateTheme={handleCreateTheme} />}
 				ref={virtualizerParentRef}
 			>
-				<Flex h="full">
-					<Box
-						style={{
-							height: `${rowVirtualizer().getTotalSize()}px`,
-							width: "50%",
-							position: "relative",
-						}}
-					>
-						<For each={rowVirtualizer().getVirtualItems()}>
-							{(virtualItem) => {
-								const theme = filteredThemes()[virtualItem.index];
-								return (
-									<Box
-										px={1}
-										pos="absolute"
-										top={0}
-										left={0}
-										pl={2}
-										py={2}
-										w="full"
-										h="full"
-										class="disable-child-clicks"
-										style={{
-											height: `${virtualItem.size}px`,
-											transform: `translateY(${virtualItem.start}px)`,
-											...getBaseFocusStyles(THEMES_TAB_FOCUS_NAME),
-											...getFocusableStyles(
-												THEMES_TAB_FOCUS_NAME,
-												virtualItem.index === fluidFocusId(),
-												isCurrentPanel(),
-												virtualItem.index === coreFocusId(),
-											),
-										}}
-										data-panel={THEMES_TAB_FOCUS_NAME}
-										data-focusId={virtualItem.index}
-									>
-										<Text maxW="full" textStyle="sm" truncate>
-											{theme.title}
-										</Text>
-									</Box>
-								);
-							}}
-						</For>
-					</Box>
-					<Box w="1/2" h="full" pointerEvents="none" p={5}>
-						<Box
-							aspectRatio={16 / 9}
-							border="4px solid"
-							borderColor="purple.700"
-							maxH="full"
-							mx="auto"
-						>
-							<Box w="fulll" h="full">
-								<RenderTheme
-									data={currentSelectedTheme()}
-									renderMap={defaultThemeRenderMap}
-								/>
+				<Switch>
+					<Match when={filteredThemes().length}>
+						<Flex h="full">
+							<Box
+								style={{
+									height: `${rowVirtualizer().getTotalSize()}px`,
+									width: "50%",
+									position: "relative",
+								}}
+							>
+								<For each={rowVirtualizer().getVirtualItems()}>
+									{(virtualItem) => {
+										const theme = filteredThemes()[virtualItem.index];
+										return (
+											<Box
+												px={1}
+												pos="absolute"
+												top={0}
+												left={0}
+												pl={2}
+												py={2}
+												w="full"
+												h="full"
+												class="disable-child-clicks"
+												style={{
+													height: `${virtualItem.size}px`,
+													transform: `translateY(${virtualItem.start}px)`,
+													...getBaseFocusStyles(THEMES_TAB_FOCUS_NAME),
+													...getFocusableStyles(
+														THEMES_TAB_FOCUS_NAME,
+														virtualItem.index === fluidFocusId(),
+														isCurrentPanel(),
+														virtualItem.index === coreFocusId(),
+													),
+												}}
+												data-panel={THEMES_TAB_FOCUS_NAME}
+												data-focusId={virtualItem.index}
+											>
+												<Text maxW="full" textStyle="sm" truncate>
+													{theme.title}
+												</Text>
+											</Box>
+										);
+									}}
+								</For>
 							</Box>
-						</Box>
-					</Box>
-				</Flex>
+							<Box w="1/2" h="full" pointerEvents="none" p={5}>
+								<Box
+									aspectRatio={16 / 9}
+									border="4px solid"
+									borderColor="purple.700"
+									maxH="full"
+									mx="auto"
+								>
+									<Box w="fulll" h="full">
+										<RenderTheme
+											data={currentSelectedTheme()}
+											renderMap={defaultThemeRenderMap}
+										/>
+									</Box>
+								</Box>
+							</Box>
+						</Flex>
+					</Match>
+					<Match when={!filteredThemes().length}>
+						<VStack w="full" h="full" justifyContent="center">
+							<Text textStyle="2xl" color="gray.100">
+								No Themes in your Database
+							</Text>
+							<Text color="gray.400">
+								Express your creativity by creating one yourself
+							</Text>
+						</VStack>
+					</Match>
+				</Switch>
 			</ControlTabDisplay>
 		</Flex>
 	);
