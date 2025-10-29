@@ -7,7 +7,7 @@ import { useAppContext } from "~/layouts/AppContext";
 import { Match, Switch } from "solid-js";
 import RenderImage from "./RenderImage";
 
-const themeRenderMap = {
+export const defaultThemeRenderMap = {
 	EditorContainer: RenderEditorContainer,
 	EditorText: RenderEditorText,
 };
@@ -40,13 +40,13 @@ export default function RenderProjection() {
 				<Match when={appStore.displayData?.type === "scripture"}>
 					<RenderTheme
 						data={JSON.parse(appStore.scriptureTheme?.theme_data ?? "{}")}
-						renderMap={themeRenderMap}
+						renderMap={defaultThemeRenderMap}
 					/>
 				</Match>
 				<Match when={appStore.displayData?.type === "song"}>
 					<RenderTheme
 						data={JSON.parse(appStore.songTheme?.theme_data ?? "{}")}
-						renderMap={themeRenderMap}
+						renderMap={defaultThemeRenderMap}
 					/>
 				</Match>
 				<Match when={appStore.displayData?.type === "image"}>

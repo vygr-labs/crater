@@ -47,6 +47,8 @@ import { VsListTree, VsSearchFuzzy } from "solid-icons/vs";
 import type { ThemeMetadata, ThemeType } from "~/types";
 import { changeDefaultTheme } from "~/utils/store-helpers";
 import Image from "../Image";
+import RenderTheme from "../editor/RenderTheme";
+import { defaultThemeRenderMap } from "../projection/RenderProjection";
 
 type ThemePanelGroupValues = "all" | "collections" | "favorites";
 type ThemeListData = {
@@ -113,9 +115,8 @@ export default function ThemeSelection() {
 		createVirtualizer({
 			count: filteredThemes().length,
 			getScrollElement: () => virtualizerParentRef,
-			estimateSize: () => 100,
+			estimateSize: () => 40,
 			overscan: 5,
-			lanes: NUM_OF_DISPLAY_LANES,
 		}),
 	);
 
@@ -206,6 +207,15 @@ export default function ThemeSelection() {
 		},
 	});
 	const isCurrentPanel = createMemo(() => currentPanel() === name);
+	const currentSelectedTheme = createAsyncMemo(async () => {
+		const fluidId = fluidFocusId();
+		if (typeof fluidId === "number") {
+			const id = filteredThemes()[fluidId].id;
+			const theme = await window.electronAPI.fetchTheme(id);
+			return JSON.parse(theme?.theme_data || "{}");
+		}
+		return {};
+	});
 
 	function handleGroupAccordionChange(
 		open: (ThemePanelGroupValues | string)[],
@@ -353,95 +363,66 @@ export default function ThemeSelection() {
 				actionBarMenu={<MainActionBarMenu onCreateTheme={handleCreateTheme} />}
 				ref={virtualizerParentRef}
 			>
-				<Box
-					style={{
-						height: `${rowVirtualizer().getTotalSize()}px`,
-						width: "100%",
-						position: "relative",
-					}}
-				>
-					<For each={rowVirtualizer().getVirtualItems()}>
-						{(virtualItem) => {
-							const theme = filteredThemes()[virtualItem.index];
-							return (
-								<Box
-									px={1}
-									py={2}
-									w="full"
-									h="full"
-									class="disable-child-clicks"
-									style={{
-										position: "absolute",
-										top: 0,
-										height: `${virtualItem.size}px`,
-										transform: `translateY(${virtualItem.start}px)`,
-										left: `${virtualItem.lane * laneItemSize}%`,
-										width: laneItemSize + "%",
-										...getBaseFocusStyles(THEMES_TAB_FOCUS_NAME),
-										...getFocusableStyles(
-											THEMES_TAB_FOCUS_NAME,
-											virtualItem.index === fluidFocusId(),
-											isCurrentPanel(),
-											virtualItem.index === coreFocusId(),
-										),
-									}}
-									data-panel={THEMES_TAB_FOCUS_NAME}
-									data-focusId={virtualItem.index}
-								>
-									{/* width: "full", height: "auto", aspectRatio: 16 / 9 */}
-									<Image
-										class={css({})}
-										src={theme.preview_path}
-										alt={theme.title}
-									/>
-									<Text
-										mt={1.5}
-										textAlign="center"
-										maxW="full"
-										textStyle="sm"
-										truncate
-									>
-										{theme.title}
-									</Text>
-								</Box>
-								// <HStack
-								//     pos="absolute"
-								//     top={0}
-								//     left={0}
-								//     w="full"
-								//     textAlign="left"
-								//     userSelect="none"
-								//     fontSize="14px"
-								//     pl={2}
-								//     cursor="pointer"
-								//     py={1.5}
-								//     css={{
-								//         "& *": {
-								//             pointerEvents: "none",
-								//         },
-								//         _hover: {
-								//             bgColor: "purple.800/40"
-								//         }
-								//     }
-								//     }
-								//     style={{
-								//         height: `${virtualItem.size}px`,
-								//         transform: `translateY(${virtualItem.start}px)`,
-								//         // "background-color": virtualItem.index === fluidFocusId() ? isCurrentPanel() ? token.var(`colors.${defaultPalette}.900`) : token.var(`colors.gray.800`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
-								//         // color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
-								//         ...getBaseFocusStyles(THEMES_TAB_FOCUS_NAME),
-								//         ...getFocusableStyles(THEMES_TAB_FOCUS_NAME, virtualItem.index === fluidFocusId(), isCurrentPanel(), virtualItem.index === coreFocusId())
-								//     }}
-								//     data-panel={THEMES_TAB_FOCUS_NAME}
-								//     data-focusId={virtualItem.index}
-								// >
-								//     <Text>{theme.title}</Text>
-								//     <Text>{theme.author}</Text>
-								// </HStack>
-							);
+				<Flex h="full">
+					<Box
+						style={{
+							height: `${rowVirtualizer().getTotalSize()}px`,
+							width: "50%",
+							position: "relative",
 						}}
-					</For>
-				</Box>
+					>
+						<For each={rowVirtualizer().getVirtualItems()}>
+							{(virtualItem) => {
+								const theme = filteredThemes()[virtualItem.index];
+								return (
+									<Box
+										px={1}
+										pos="absolute"
+										top={0}
+										left={0}
+										pl={2}
+										py={2}
+										w="full"
+										h="full"
+										class="disable-child-clicks"
+										style={{
+											height: `${virtualItem.size}px`,
+											transform: `translateY(${virtualItem.start}px)`,
+											...getBaseFocusStyles(THEMES_TAB_FOCUS_NAME),
+											...getFocusableStyles(
+												THEMES_TAB_FOCUS_NAME,
+												virtualItem.index === fluidFocusId(),
+												isCurrentPanel(),
+												virtualItem.index === coreFocusId(),
+											),
+										}}
+										data-panel={THEMES_TAB_FOCUS_NAME}
+										data-focusId={virtualItem.index}
+									>
+										<Text maxW="full" textStyle="sm" truncate>
+											{theme.title}
+										</Text>
+									</Box>
+								);
+							}}
+						</For>
+					</Box>
+					<Box w="1/2" h="full" pointerEvents="none" p={5}>
+						<Box
+							aspectRatio={16 / 9}
+							border="4px solid purple"
+							maxH="full"
+							mx="auto"
+						>
+							<Box w="fulll" h="full">
+								<RenderTheme
+									data={currentSelectedTheme()}
+									renderMap={defaultThemeRenderMap}
+								/>
+							</Box>
+						</Box>
+					</Box>
+				</Flex>
 			</ControlTabDisplay>
 		</Flex>
 	);

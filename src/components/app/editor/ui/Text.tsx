@@ -149,14 +149,29 @@ export default function EditorText(props: EditorContainer) {
 	};
 
 	createEffect(() => {
-		if (node.el && node.data.autoResize && textArr()) {
-			const trackChanges = node.style.width && node.style.height;
-			TextFill(node.el, {
-				innerTag: "p",
-				correctLineHeightOffset: false, // allows modification of top css value which interferes with drag & drop
-				success: dynamicSizeUpdate,
-			});
-		}
+		// tracking is not possible after an async function is awaited
+		const trackChanges = node.style.width && node.style.height;
+		const element = node.el;
+		const isResize = node.data.autoResize;
+		const textChanges = textArr();
+
+		// use a promise to ensure that it is run after the element is rendered (needed for the first run);
+		Promise.resolve().then(() => {
+			if (element && isResize && textChanges) {
+				console.log(
+					"Element Set?: ",
+					element,
+					element.offsetHeight,
+					element.style.width,
+					element.style.height,
+				);
+				TextFill(element, {
+					innerTag: "p",
+					correctLineHeightOffset: false, // allows modification of top css value which interferes with drag & drop
+					success: dynamicSizeUpdate,
+				});
+			}
+		});
 	});
 
 	return (
