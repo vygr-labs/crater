@@ -48,7 +48,7 @@ export default function LyricEdit(props: Props) {
 					px={2}
 					placeholder="Label"
 					value={props.label}
-					h={8}
+					h={9}
 					variant="subtle"
 					onchange={props.onLabelEdit}
 					border="2px solid"
@@ -73,15 +73,16 @@ export default function LyricEdit(props: Props) {
 				<Field.Textarea
 					id={"song-edit-text-" + props.index}
 					px={2}
+					py={2}
+					w="full"
 					minH={9}
 					lineHeight={1.5}
 					autoresize
 					variant="flushed"
-					rows={1}
 					border="2px solid"
 					borderColor="gray.800"
-					borderTopColor="transparent"
 					_focusVisible={{
+						outline: "unset",
 						borderColor: "purple.800",
 					}}
 					scrollbar="hidden"

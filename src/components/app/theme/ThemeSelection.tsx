@@ -33,6 +33,7 @@ import {
 	getBaseFocusStyles,
 	getFocusableStyles,
 	getToastType,
+	parseThemeData,
 	toaster,
 } from "~/utils";
 import { css } from "styled-system/css";
@@ -41,7 +42,6 @@ import { createAsyncMemo } from "solidjs-use";
 import type { PanelCollection } from "~/types/app-context";
 import ThemeSelectionGroupDisplay from "./SelectionGroupDisplay";
 import { MainActionBarMenu, MainDisplayMenuContent } from "./MainPanelMenus";
-import SearchInput from "../../custom/search-input";
 import { Kbd } from "../../ui/kbd";
 import { VsListTree, VsSearchFuzzy } from "solid-icons/vs";
 import type { ThemeMetadata, ThemeType } from "~/types";
@@ -49,6 +49,7 @@ import { changeDefaultTheme } from "~/utils/store-helpers";
 import Image from "../Image";
 import RenderTheme from "../editor/RenderTheme";
 import { defaultThemeRenderMap } from "../projection/RenderProjection";
+import { Input } from "~/components/ui/input";
 
 type ThemePanelGroupValues = "all" | "collections" | "favorites";
 type ThemeListData = {
@@ -212,7 +213,7 @@ export default function ThemeSelection() {
 		if (typeof fluidId === "number") {
 			const id = filteredThemes()[fluidId].id;
 			const theme = await window.electronAPI.fetchTheme(id);
-			return JSON.parse(theme?.theme_data || "{}");
+			return parseThemeData(theme?.theme_data);
 		}
 		return {};
 	});
@@ -352,6 +353,7 @@ export default function ThemeSelection() {
 			/>
 			<ControlTabDisplay
 				open={themeControls.contextMenuOpen}
+				setOpen={(v) => setThemeControls("contextMenuOpen", v)}
 				contextMenuContent={
 					<MainDisplayMenuContent
 						onThemeEdit={handleThemeEdit}
@@ -410,7 +412,8 @@ export default function ThemeSelection() {
 					<Box w="1/2" h="full" pointerEvents="none" p={5}>
 						<Box
 							aspectRatio={16 / 9}
-							border="4px solid purple"
+							border="4px solid"
+							borderColor="purple.700"
 							maxH="full"
 							mx="auto"
 						>
@@ -463,12 +466,25 @@ const ThemeSearchInput = (props: SearchInputProps) => {
 			startElementProps={{ padding: 0, pointerEvents: "auto" }}
 			endElement={() => <Kbd variant="plain">⌘A</Kbd>}
 		>
-			<SearchInput
-				firstBookMatch=""
+			<Input
+				pos="relative"
+				zIndex={10}
+				variant="outline"
+				// borderWidth={2}
+				// borderColor="border.emphasized"
+				rounded="none"
+				border="unset"
+				px="2"
+				h="9"
+				outline="none"
+				w="full"
+				_selection={{
+					bgColor: "blue.600",
+				}}
+				// ref={props.setSearchRef}
 				value={props.query}
 				placeholder="Search themes"
 				onInput={props.onFilter}
-				// ref={searchInputRef}
 				// onFocus={handleSearchInputFocus}
 				data-testid="theme-search-input"
 				aria-label="Search themes"

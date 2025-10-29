@@ -8,6 +8,7 @@ import { useAppContext } from "~/layouts/AppContext";
 
 interface SongPanelContextMenuCompProps {
 	onSongEdit: () => void;
+	onDeleteSong: () => void;
 }
 
 export const MainDisplayMenuContent = (
@@ -54,14 +55,19 @@ export const MainDisplayMenuContent = (
 			value="delete"
 			color="fg.error"
 			_hover={{ bg: "bg.error", color: "fg.error" }}
-			// onClick={() => onSongDelete(songListContextIndex)}
+			onClick={props.onDeleteSong}
 		>
 			Delete Song
 		</Menu.Item>
 	</Menu.Content>
 );
 
-export const MainActionBarMenu = () => (
+interface MainActionBarMenuProps {
+	onAddSong: () => void;
+	onDeleteSong: () => void;
+}
+
+export const MainActionBarMenu = (props: MainActionBarMenuProps) => (
 	<>
 		<HStack
 			width={10}
@@ -75,7 +81,7 @@ export const MainActionBarMenu = () => (
 			borderInline="2px solid"
 			borderInlineColor="gray"
 			aria-label="Add new song"
-			// onClick={() => updateSongEdit(appStore, { open: true, song: null })}
+			onClick={props.onAddSong}
 		>
 			<FiPlus size={14} />
 		</HStack>
@@ -111,6 +117,7 @@ export const MainActionBarMenu = () => (
 							value="delete"
 							color="fg.error"
 							_hover={{ bg: "bg.error", color: "fg.error" }}
+							onclick={props.onDeleteSong}
 						>
 							Delete Song
 						</Menu.Item>

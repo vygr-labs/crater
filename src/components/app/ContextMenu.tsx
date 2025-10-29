@@ -6,12 +6,18 @@ interface Props extends ParentProps {
 	ref: Ref<Element>;
 	content?: JSXElement;
 	open: boolean;
+	setOpen: (o: boolean) => void;
 }
 
 export default function ContextMenu(props: Props) {
 	return (
 		<Box w="full" h="full" tabIndex={0} outline="none">
-			<Menu.Root open={props.open}>
+			<Menu.Root
+				open={props.open}
+				onPointerDownOutside={() => {
+					props.setOpen(false);
+				}}
+			>
 				<Menu.ContextTrigger
 					asChild={(triggerProps) => (
 						<Box

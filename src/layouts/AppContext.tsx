@@ -71,6 +71,8 @@ export default function AppContextProvider(props: ParentProps) {
 					"hideLive",
 					"loading",
 					"openSettings",
+					"songEdit",
+					"displayData",
 				],
 			);
 			setStore(reconcile(state));

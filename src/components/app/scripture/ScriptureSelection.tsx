@@ -35,12 +35,12 @@ import { createAsyncMemo } from "solidjs-use";
 import type { PanelCollection } from "~/types/app-context";
 import ScriptureSelectionGroupDisplay from "./SelectionGroupDisplay";
 import { MainActionBarMenu, MainDisplayMenuContent } from "./MainPanelMenus";
-import SearchInput, { type StageMarkData } from "../../custom/search-input";
 import { Kbd } from "../../ui/kbd";
 import { VsListTree, VsSearchFuzzy } from "solid-icons/vs";
 import type { AvailableTranslation, ScriptureVerse } from "~/types";
 import bibleData from "~/utils/parser/osis.json";
 import chapterAndVerse from "~/utils/parser/cv";
+import { Input } from "~/components/ui/input";
 
 type ScripturePanelGroupValues = "all" | "collections" | "favorites";
 type ScriptureListData = {
@@ -58,6 +58,13 @@ type ScriptureControlsData = {
 	contextMenuOpen: boolean;
 	translation: AvailableTranslation;
 };
+
+interface StageMarkData {
+	book?: string;
+	chapter?: number;
+	verse?: number;
+	stage: number;
+}
 
 export default function ScriptureSelection() {
 	const { appStore, setAppStore } = useAppContext();
@@ -607,6 +614,7 @@ export default function ScriptureSelection() {
 			/>
 			<ControlTabDisplay
 				open={scriptureControls.contextMenuOpen}
+				setOpen={(v) => setScriptureControls("contextMenuOpen", v)}
 				contextMenuContent={<MainDisplayMenuContent />}
 				actionBarMenu={<MainActionBarMenu />}
 				ref={virtualizerParentRef}
@@ -722,16 +730,29 @@ const ScriptureSearchInput = (props: SearchInputProps) => {
 			startElementProps={{ padding: 0, pointerEvents: "auto" }}
 			endElement={() => <Kbd variant="plain">⌘A</Kbd>}
 		>
-			<SearchInput
-				firstBookMatch=""
+			<Input
+				pos="relative"
+				fontSize={14}
+				zIndex={10}
+				variant="outline"
+				// borderWidth={2}
+				// borderColor="border.emphasized"
+				rounded="none"
+				border="unset"
+				px="2"
+				h="9"
+				outline="none"
+				w="full"
+				_selection={{
+					bgColor: "blue.600",
+				}}
+				ref={props.setSearchInputRef}
 				value={props.filter}
 				onbeforeinput={
 					props.searchMode === "search" ? props.onFilter : props.onSearch
 				}
 				onkeydown={props.handleKeyNav}
-				setSearchRef={props.setSearchInputRef}
 				textTransform="capitalize"
-				scripture={props.markData}
 				// onFocus={handleSearchInputFocus}
 				data-testid="scripture-search-input"
 				aria-label="Search scriptures"

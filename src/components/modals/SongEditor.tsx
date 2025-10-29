@@ -13,7 +13,9 @@ import { createAsyncMemo } from "solidjs-use";
 import LyricEdit from "../app/song/LyricEdit";
 import { useFocusContext } from "~/layouts/FocusContext";
 import { lineHeights } from "~/theme/tokens/line-heights";
-import { getToastType, toaster } from "~/utils";
+import { getToastType, parseThemeData, toaster } from "~/utils";
+import RenderTheme from "../app/editor/RenderTheme";
+import { defaultThemeRenderMap } from "../app/projection/RenderProjection";
 
 type Props = {
 	open: boolean;
@@ -61,10 +63,10 @@ function SongEditor() {
 	const [lyrics, setLyrics] = createStore<SongLyric[]>([]);
 	const fetchedSongLyrics = createAsyncMemo(async () => {
 		const toFetch = song();
-		if (!toFetch) return [];
+		if (!toFetch) return null;
 		const lyrics = await window.electronAPI.fetchSongLyrics(toFetch.id);
 		return lyrics;
-	}, []);
+	}, null);
 
 	let titleInputEl!: HTMLInputElement;
 
@@ -125,7 +127,7 @@ function SongEditor() {
 							next.focus();
 						} else {
 							console.log("Addingg New Lyric");
-							setLyrics(lyrics.length, NEW_LYRIC);
+							setLyrics(lyrics.length, { ...NEW_LYRIC });
 							const next = document.getElementById(
 								"song-edit-label-" + (parseInt(index) + 1),
 							) as HTMLInputElement;
@@ -232,7 +234,7 @@ function SongEditor() {
 
 	createEffect(() => {
 		if (appStore.songEdit.open) {
-			setLyrics(fetchedSongLyrics());
+			setLyrics(fetchedSongLyrics() ?? [{ ...NEW_LYRIC }]);
 			console.log("changing focus to song editor");
 			changeFocusPanel(SONG_EDITOR_FOCUS_NAME);
 			titleInputEl.value = appStore.songEdit.song?.title || "";
@@ -313,8 +315,8 @@ function SongEditor() {
 								<Flex justifyContent="center" h="full" pos="relative">
 									<Box
 										// left={0}
-										// width={(4 / 12) * 100 + '%'}
-										pos="absolute"
+										width={(4 / 12) * 100 + "%"}
+										// pos="absolute"
 										w="full"
 										height="100%"
 										overflow="auto"
@@ -344,23 +346,26 @@ function SongEditor() {
 											</For>
 										</VStack>
 									</Box>
-									{/* <Box
-									left={(4.2 / 12) * 100 + '%'}
-									width={(7.8 / 12) * 100 + '%'}
-									height="100%"
-									pos="absolute"
-								>
-									<AspectRatio bgColor="bg.emphasized" ratio={16 / 9} p={6}>
-										<Box w="full" h="full" bgColor="transparent">
-											{/* Preview content would go here *}
-											<RenderLyric
-												songData={currentLyric}
-												hide={false}
-												scope={'song-edit'}
-											/>
+									<Box
+										// left={(4.2 / 12) * 100 + "%"}
+										width={(7.8 / 12) * 100 + "%"}
+										height="100%"
+										// pos="absolute"
+									>
+										<Box
+											border="4px solid"
+											borderColor="purple.800"
+											aspectRatio={16 / 9}
+										>
+											<Box w="full" h="full" bgColor="transparent">
+												<RenderTheme
+													data={parseThemeData(appStore.songTheme?.theme_data)}
+													renderMap={defaultThemeRenderMap}
+													// scope={'song-edit'}
+												/>
+											</Box>
 										</Box>
-									</AspectRatio>
-								</Box> */}
+									</Box>
 								</Flex>
 							</Box>
 						</div>

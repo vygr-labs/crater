@@ -394,3 +394,7 @@ export const preserveDefaults = <T>(
 	}
 	return updated;
 };
+
+export const parseThemeData = (theme_data?: string) => {
+	return JSON.parse(theme_data || "{}");
+};

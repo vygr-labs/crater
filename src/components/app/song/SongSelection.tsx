@@ -1,4 +1,4 @@
-import { Box, Flex, HStack } from "styled-system/jsx";
+import { Box, Flex, HStack, VStack } from "styled-system/jsx";
 import SelectionGroups from "../SelectionGroups";
 import { createStore, produce } from "solid-js/store";
 import { Menu } from "../../ui/menu";
@@ -20,8 +20,10 @@ import {
 	createEffect,
 	createMemo,
 	createRenderEffect,
+	Match,
 	on,
 	Show,
+	Switch,
 	type JSX,
 } from "solid-js";
 import { Text } from "../../ui/text";
@@ -37,9 +39,10 @@ import { createAsyncMemo } from "solidjs-use";
 import type { PanelCollection } from "~/types/app-context";
 import SongSelectionGroupDisplay from "./SelectionGroupDisplay";
 import { MainActionBarMenu, MainDisplayMenuContent } from "./MainPanelMenus";
-import SearchInput from "../../custom/search-input";
 import { Kbd } from "../../ui/kbd";
 import { VsListTree, VsSearchFuzzy } from "solid-icons/vs";
+import { updateSongEdit } from "~/utils/store-helpers";
+import { Input } from "~/components/ui/input";
 
 type SongPanelGroupValues = "all" | "collections" | "favorites";
 type SongListData = {
@@ -120,7 +123,7 @@ export default function SongSelection() {
 	);
 
 	const { subscribeEvent, changeFocusPanel, currentPanel } = useFocusContext();
-	const { name, coreFocusId, fluidFocusId } = subscribeEvent({
+	const { name, coreFocusId, fluidFocusId, changeFluidFocus } = subscribeEvent({
 		name: SONGS_TAB_FOCUS_NAME,
 		defaultCoreFocus: 0,
 		defaultFluidFocus: 0,
@@ -243,6 +246,23 @@ export default function SongSelection() {
 		}
 	};
 
+	const handleSongDelete = () => {
+		const toDelete = fluidFocusId();
+		if (typeof toDelete !== "number") return;
+		console.log("Deleting Song: ", toDelete, filteredSongs()[toDelete]);
+
+		const songToDelete = filteredSongs()[toDelete];
+		if (!songToDelete) return;
+
+		window.electronAPI.deleteSong(songToDelete.id).then(() => {
+			setAppStore("songsUpdateCounter", (former) => ++former);
+			setSongControls("contextMenuOpen", false);
+			if (toDelete === filteredSongs().length - 1) {
+				changeFluidFocus(toDelete - 1);
+			}
+		});
+	};
+
 	const handleFilter = (e: InputEvent) => {
 		setSongControls("query", (e.target as HTMLInputElement).value);
 	};
@@ -254,7 +274,7 @@ export default function SongSelection() {
 	};
 
 	return (
-		<Flex h="full" pos="relative">
+		<Flex h="full" pos="relative" data-panel={SONGS_TAB_FOCUS_NAME}>
 			<SelectionGroups
 				searchInput={
 					<SongSearchInput
@@ -271,66 +291,91 @@ export default function SongSelection() {
 			/>
 			<ControlTabDisplay
 				open={songControls.contextMenuOpen}
+				setOpen={(v) => setSongControls("contextMenuOpen", v)}
 				contextMenuContent={
-					<MainDisplayMenuContent onSongEdit={handleSongEdit} />
+					<MainDisplayMenuContent
+						onSongEdit={handleSongEdit}
+						onDeleteSong={handleSongDelete}
+					/>
 				}
-				actionBarMenu={<MainActionBarMenu />}
+				actionBarMenu={
+					<MainActionBarMenu
+						onAddSong={() =>
+							updateSongEdit(setAppStore, { open: true, song: null })
+						}
+						onDeleteSong={handleSongDelete}
+					/>
+				}
 				ref={virtualizerParentRef}
 			>
-				<Box
-					style={{
-						height: `${rowVirtualizer().getTotalSize()}px`,
-						width: "100%",
-						position: "relative",
-					}}
-				>
-					<For each={rowVirtualizer().getVirtualItems()}>
-						{(virtualItem) => {
-							const song = filteredSongs()[virtualItem.index];
-							return (
-								<HStack
-									pos="absolute"
-									top={0}
-									left={0}
-									w="full"
-									textAlign="left"
-									userSelect="none"
-									fontSize="14px"
-									pl={2}
-									cursor="pointer"
-									py={1.5}
-									css={{
-										"& *": {
-											pointerEvents: "none",
-										},
-										_hover: {
-											bgColor: "purple.800/40",
-										},
-									}}
-									style={{
-										height: `${virtualItem.size}px`,
-										transform: `translateY(${virtualItem.start}px)`,
-										// "background-color": virtualItem.index === fluidFocusId() ? isCurrentPanel() ? token.var(`colors.${defaultPalette}.900`) : token.var(`colors.gray.800`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
-										// color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
-										...getBaseFocusStyles(SONGS_TAB_FOCUS_NAME),
-										...getFocusableStyles(
-											SONGS_TAB_FOCUS_NAME,
-											virtualItem.index === fluidFocusId(),
-											isCurrentPanel(),
-											virtualItem.index === coreFocusId(),
-										),
-									}}
-									data-panel={SONGS_TAB_FOCUS_NAME}
-									data-focusId={virtualItem.index}
-								>
-									<Text>{song.title}</Text>
-									<Text>{song.author}</Text>
-									<Text>{song.copyright}</Text>
-								</HStack>
-							);
-						}}
-					</For>
-				</Box>
+				<Switch>
+					<Match when={filteredSongs().length}>
+						<Box
+							style={{
+								height: `${rowVirtualizer().getTotalSize()}px`,
+								width: "100%",
+								position: "relative",
+							}}
+						>
+							<For each={rowVirtualizer().getVirtualItems()}>
+								{(virtualItem) => {
+									const song = filteredSongs()[virtualItem.index];
+									return (
+										<HStack
+											pos="absolute"
+											top={0}
+											left={0}
+											w="full"
+											textAlign="left"
+											userSelect="none"
+											fontSize="14px"
+											pl={2}
+											cursor="pointer"
+											py={1.5}
+											css={{
+												"& *": {
+													pointerEvents: "none",
+												},
+												_hover: {
+													bgColor: "purple.800/40",
+												},
+											}}
+											style={{
+												height: `${virtualItem.size}px`,
+												transform: `translateY(${virtualItem.start}px)`,
+												// "background-color": virtualItem.index === fluidFocusId() ? isCurrentPanel() ? token.var(`colors.${defaultPalette}.900`) : token.var(`colors.gray.800`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
+												// color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
+												...getBaseFocusStyles(SONGS_TAB_FOCUS_NAME),
+												...getFocusableStyles(
+													SONGS_TAB_FOCUS_NAME,
+													virtualItem.index === fluidFocusId(),
+													isCurrentPanel(),
+													virtualItem.index === coreFocusId(),
+												),
+											}}
+											data-panel={SONGS_TAB_FOCUS_NAME}
+											data-focusId={virtualItem.index}
+										>
+											<Text>{song.title}</Text>
+											<Text>{song.author}</Text>
+											<Text>{song.copyright}</Text>
+										</HStack>
+									);
+								}}
+							</For>
+						</Box>
+					</Match>
+					<Match when={!filteredSongs().length}>
+						<VStack w="full" h="full" justifyContent="center">
+							<Text textStyle="2xl" color="gray.100">
+								No Songs in your Database
+							</Text>
+							<Text color="gray.400">
+								You can import or manually add songs yourself
+							</Text>
+						</VStack>
+					</Match>
+				</Switch>
 			</ControlTabDisplay>
 		</Flex>
 	);
@@ -371,13 +416,25 @@ const SongSearchInput = (props: SearchInputProps) => {
 			startElementProps={{ padding: 0, pointerEvents: "auto" }}
 			endElement={() => <Kbd variant="plain">⌘A</Kbd>}
 		>
-			<SearchInput
-				firstBookMatch=""
+			<Input
+				pos="relative"
+				fontSize={14}
+				zIndex={10}
+				variant="outline"
+				// borderWidth={2}
+				// borderColor="border.emphasized"
+				rounded="none"
+				border="unset"
+				px="2"
+				h="9"
+				outline="none"
+				w="full"
+				_selection={{
+					bgColor: "blue.600",
+				}}
 				value={props.query}
 				placeholder="Search songs"
 				onInput={props.onFilter}
-				// ref={searchInputRef}
-				// onFocus={handleSearchInputFocus}
 				data-testid="song-search-input"
 				aria-label="Search songs"
 			/>

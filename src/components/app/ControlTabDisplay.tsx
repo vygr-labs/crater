@@ -7,6 +7,7 @@ import ContextMenu from "./ContextMenu";
 
 interface Props {
 	open: boolean;
+	setOpen: (o: boolean) => void;
 	contextMenuContent: JSXElement;
 	actionBarMenu: JSXElement;
 	children: JSXElement;
@@ -27,6 +28,7 @@ export default function ControlTabDisplay(props: Props) {
 			>
 				<ContextMenu
 					open={props.open}
+					setOpen={props.setOpen}
 					content={props.contextMenuContent}
 					ref={props.ref}
 				>
