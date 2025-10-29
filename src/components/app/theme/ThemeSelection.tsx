@@ -433,10 +433,10 @@ export default function ThemeSelection() {
 					</Match>
 					<Match when={!filteredThemes().length}>
 						<VStack w="full" h="full" justifyContent="center">
-							<Text textStyle="2xl" color="gray.100">
+							<Text textStyle="xl" color="gray.100">
 								No Themes in your Database
 							</Text>
-							<Text color="gray.400">
+							<Text fontSize="sm" color="gray.400">
 								Express your creativity by creating one yourself
 							</Text>
 						</VStack>

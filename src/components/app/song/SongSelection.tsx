@@ -102,6 +102,8 @@ export default function SongSelection() {
 			return;
 
 		const metadata = filteredSongs()[focusId];
+		if (!metadata) return;
+
 		window.electronAPI.fetchSongLyrics(metadata.id).then((songData) => {
 			setAppStore(isLive ? "liveItem" : "previewItem", {
 				metadata,
@@ -367,10 +369,10 @@ export default function SongSelection() {
 					</Match>
 					<Match when={!filteredSongs().length}>
 						<VStack w="full" h="full" justifyContent="center">
-							<Text textStyle="2xl" color="gray.100">
+							<Text textStyle="xl" color="gray.100">
 								No Songs in your Database
 							</Text>
-							<Text color="gray.400">
+							<Text fontSize="sm" color="gray.400">
 								You can import or manually add songs yourself
 							</Text>
 						</VStack>

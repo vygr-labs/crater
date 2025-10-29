@@ -482,11 +482,11 @@ export default function MediaSelection() {
 					</Match>
 					<Match when={!filteredMedia().length}>
 						<VStack w="full" h="full" justifyContent="center">
-							<Text textStyle="2xl" color="gray.100">
-								No Themes in your Database
+							<Text textStyle="xl" color="gray.100">
+								No Media in your Database
 							</Text>
-							<Text color="gray.400">
-								Express your creativity by creating one yourself
+							<Text fontSize="sm" color="gray.400">
+								Import one from your device by clicking the "+" button below
 							</Text>
 						</VStack>
 					</Match>
