@@ -89,6 +89,15 @@ enum LINKAGES {
 	CUSTOM,
 }
 
+const LINKAGE_DEFAULTS = {
+	[LINKAGES.CUSTOM]: ["Custom Text Here"],
+	[LINKAGES.SCRIPTURE_REFERENCE]: ["Genesis 1:1"],
+	[LINKAGES.SCRIPTURE_TEXT]: [
+		"In the beginning, God created the Heavens & the Earth",
+	],
+	[LINKAGES.SONG_LYRIC]: ["We Worship the Most High God - El-Elohe Israel"],
+};
+
 export default function EditorText(props: EditorContainer) {
 	const {
 		getters: { getDemoLyric, getDemoScripture },
@@ -207,8 +216,9 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 	let textNodeRenderRef!: HTMLDivElement;
 
 	const textArr: Accessor<string[]> = createMemo(() => {
+		let displayText: string[] = [];
 		if (props.node.data.linkage === LINKAGES.CUSTOM) {
-			return [props.node.data.text] as string[];
+			displayText = [props.node.data.text];
 		} else {
 			const { displayStore } = useDisplayStore();
 			const displayContent = displayStore.displayContent;
@@ -219,25 +229,31 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 					displayContent.type === "song" &&
 					displayContent.song
 				) {
-					return displayContent.song.text;
+					displayText = displayContent.song.text;
 				} else if (
 					displayContent.type === "scripture" &&
 					displayContent.scripture
 				) {
 					if (props.node.data.linkage === LINKAGES.SCRIPTURE_TEXT) {
-						return [displayContent.scripture.text];
+						displayText = [displayContent.scripture.text];
 					} else if (props.node.data.linkage === LINKAGES.SCRIPTURE_REFERENCE) {
-						return [getReference(displayContent.scripture)];
+						displayText = [getReference(displayContent.scripture)];
 					}
 				}
 			}
-			return [];
 		}
+
+		if (!displayText.length) {
+			displayText = LINKAGE_DEFAULTS[props.node.data.linkage as LINKAGES];
+		}
+
+		return displayText;
 	});
 
 	createEffect(() => {
 		if (textNodeRenderRef && props.node.data.autoResize && textArr()) {
 			console.log("Resizing Element: ");
+			// resize leads to font: 0 when element is not rendered (i.e. you switch away from the themes tab to the songs tab. you could add a reactive variable linked to the current tab that triggers this effect and ensures a re-render)
 			TextFill(textNodeRenderRef, {
 				innerTag: "p",
 				correctLineHeightOffset: false, // allows modification of top css value which interferes with drag & drop

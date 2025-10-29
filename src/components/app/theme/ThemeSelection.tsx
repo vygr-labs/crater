@@ -371,9 +371,10 @@ export default function ThemeSelection() {
 					<Match when={filteredThemes().length}>
 						<Flex h="full">
 							<Box
+								w="7/12"
 								style={{
 									height: `${rowVirtualizer().getTotalSize()}px`,
-									width: "50%",
+									// width: "50%",
 									position: "relative",
 								}}
 							>
@@ -413,7 +414,7 @@ export default function ThemeSelection() {
 									}}
 								</For>
 							</Box>
-							<Box w="1/2" h="full" pointerEvents="none" p={5}>
+							<Box w="5/12" h="full" pointerEvents="none" p={5}>
 								<Box
 									aspectRatio={16 / 9}
 									border="4px solid"
