@@ -130,7 +130,6 @@ export function EditorContainerSettings(props: EditorContainerSettings) {
 				</PopoverButton>
 
 				<PopoverButton
-					enabled={false}
 					trigger={
 						<ControlIconBtn onclick={handleChangeBackground}>
 							<HiSolidPhoto />
@@ -138,7 +137,7 @@ export function EditorContainerSettings(props: EditorContainerSettings) {
 					}
 				>
 					<VStack>
-						<Button>Change Background</Button>
+						<Button variant="surface">Change Background</Button>
 					</VStack>
 				</PopoverButton>
 			</HStack>

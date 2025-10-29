@@ -367,13 +367,25 @@ export default function SongSelection() {
 							</For>
 						</Box>
 					</Match>
-					<Match when={!filteredSongs().length}>
+					<Match when={!allSongs().length}>
 						<VStack gap={1} w="full" h="full" justifyContent="center">
 							<Text textStyle="xl" color="gray.100">
 								No Songs in your Database
 							</Text>
 							<Text fontSize="sm" color="gray.400">
 								You can import or manually add songs yourself
+							</Text>
+						</VStack>
+					</Match>
+					<Match
+						when={allSongs() && songControls.query && !filteredSongs().length}
+					>
+						<VStack gap={1} w="full" h="full" justifyContent="center">
+							<Text textStyle="lg" color="gray.200">
+								We didn't find that song
+							</Text>
+							<Text fontSize="13px" color="gray.500">
+								Try changing your query
 							</Text>
 						</VStack>
 					</Match>

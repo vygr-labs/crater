@@ -442,6 +442,20 @@ export default function ThemeSelection() {
 							</Text>
 						</VStack>
 					</Match>
+					<Match
+						when={
+							allThemes() && themeControls.query && !filteredThemes().length
+						}
+					>
+						<VStack gap={1} w="full" h="full" justifyContent="center">
+							<Text textStyle="lg" color="gray.200">
+								We didn't find that theme
+							</Text>
+							<Text fontSize="13px" color="gray.500">
+								Try changing your query
+							</Text>
+						</VStack>
+					</Match>
 				</Switch>
 			</ControlTabDisplay>
 		</Flex>

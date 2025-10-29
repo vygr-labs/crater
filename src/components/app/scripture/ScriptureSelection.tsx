@@ -1,4 +1,4 @@
-import { Box, Flex, HStack } from "styled-system/jsx";
+import { Box, Flex, HStack, VStack } from "styled-system/jsx";
 import SelectionGroups from "../SelectionGroups";
 import { createStore, produce, unwrap } from "solid-js/store";
 import { For, Portal } from "solid-js/web";
@@ -8,7 +8,9 @@ import ControlTabDisplay from "../ControlTabDisplay";
 import {
 	createEffect,
 	createMemo,
+	Match,
 	Show,
+	Switch,
 	type Accessor,
 	type JSX,
 	type Setter,
@@ -583,8 +585,11 @@ export default function ScriptureSelection() {
 	};
 
 	const updateSearchMode = () => {
-		setScriptureControls("searchMode", (former) =>
-			former === "search" ? "title" : "search",
+		setScriptureControls(
+			produce((store) => {
+				store.searchMode = store.searchMode === "search" ? "title" : "search";
+				store.query = "";
+			}),
 		);
 	};
 
@@ -619,72 +624,97 @@ export default function ScriptureSelection() {
 				actionBarMenu={<MainActionBarMenu />}
 				ref={virtualizerParentRef}
 			>
-				<Box
-					style={{
-						height: `${rowVirtualizer().getTotalSize()}px`,
-						width: "100%",
-						position: "relative",
-					}}
-				>
-					<For each={rowVirtualizer().getVirtualItems()}>
-						{(virtualItem) => {
-							const scripture = filteredScriptures()[virtualItem.index];
-							return (
-								<HStack
-									pos="absolute"
-									top={0}
-									left={0}
-									w="full"
-									textAlign="left"
-									userSelect="none"
-									fontSize="14px"
-									pl={2}
-									cursor="pointer"
-									py={1.5}
-									css={{
-										"& *": {
-											pointerEvents: "none",
-										},
-										_hover: {
-											bgColor: "purple.800/40",
-										},
-									}}
-									style={{
-										height: `${virtualItem.size}px`,
-										transform: `translateY(${virtualItem.start}px)`,
-										...getBaseFocusStyles(SONGS_TAB_FOCUS_NAME),
-										...getFocusableStyles(
-											SONGS_TAB_FOCUS_NAME,
-											virtualItem.index === fluidFocusId(),
-											isCurrentPanel(),
-											virtualItem.index === coreFocusId(),
-										),
-										// "background-color": virtualItem.index === fluidFocusId() ? token.var(`colors.${defaultPalette}.900`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
-										// color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
-									}}
-									data-panel={SCRIPTURE_TAB_FOCUS_NAME}
-									data-focusId={virtualItem.index}
-								>
-									<Box pl={2} textTransform="uppercase">
-										{scripture.version}
-									</Box>
-									<Box pl={2} textTransform="capitalize" whiteSpace="nowrap">
-										{scripture.book_name} {scripture.chapter}:{scripture.verse}
-									</Box>
-									<Box
-										pl={2}
-										pr={2}
-										whiteSpace="nowrap"
-										overflow="hidden"
-										textOverflow="ellipsis"
-									>
-										{scripture.text}
-									</Box>
-								</HStack>
-							);
-						}}
-					</For>
-				</Box>
+				<Switch>
+					<Match when={filteredScriptures().length}>
+						<Box
+							style={{
+								height: `${rowVirtualizer().getTotalSize()}px`,
+								width: "100%",
+								position: "relative",
+							}}
+						>
+							<For each={rowVirtualizer().getVirtualItems()}>
+								{(virtualItem) => {
+									const scripture = filteredScriptures()[virtualItem.index];
+									return (
+										<HStack
+											pos="absolute"
+											top={0}
+											left={0}
+											w="full"
+											textAlign="left"
+											userSelect="none"
+											fontSize="14px"
+											pl={2}
+											cursor="pointer"
+											py={1.5}
+											css={{
+												"& *": {
+													pointerEvents: "none",
+												},
+												_hover: {
+													bgColor: "purple.800/40",
+												},
+											}}
+											style={{
+												height: `${virtualItem.size}px`,
+												transform: `translateY(${virtualItem.start}px)`,
+												...getBaseFocusStyles(SONGS_TAB_FOCUS_NAME),
+												...getFocusableStyles(
+													SONGS_TAB_FOCUS_NAME,
+													virtualItem.index === fluidFocusId(),
+													isCurrentPanel(),
+													virtualItem.index === coreFocusId(),
+												),
+												// "background-color": virtualItem.index === fluidFocusId() ? token.var(`colors.${defaultPalette}.900`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
+												// color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
+											}}
+											data-panel={SCRIPTURE_TAB_FOCUS_NAME}
+											data-focusId={virtualItem.index}
+										>
+											<Box pl={2} textTransform="uppercase">
+												{scripture.version}
+											</Box>
+											<Box
+												pl={2}
+												textTransform="capitalize"
+												whiteSpace="nowrap"
+											>
+												{scripture.book_name} {scripture.chapter}:
+												{scripture.verse}
+											</Box>
+											<Box
+												pl={2}
+												pr={2}
+												whiteSpace="nowrap"
+												overflow="hidden"
+												textOverflow="ellipsis"
+											>
+												{scripture.text}
+											</Box>
+										</HStack>
+									);
+								}}
+							</For>
+						</Box>
+					</Match>
+					<Match
+						when={
+							allScriptures() &&
+							scriptureControls.query &&
+							!filteredScriptures().length
+						}
+					>
+						<VStack gap={1} w="full" h="full" justifyContent="center">
+							<Text textStyle="lg" color="gray.200">
+								We didn't find that scripture
+							</Text>
+							<Text fontSize="13px" color="gray.500">
+								Try changing your query
+							</Text>
+						</VStack>
+					</Match>
+				</Switch>
 			</ControlTabDisplay>
 		</Flex>
 	);
@@ -752,7 +782,7 @@ const ScriptureSearchInput = (props: SearchInputProps) => {
 					props.searchMode === "search" ? props.onFilter : props.onSearch
 				}
 				onkeydown={props.handleKeyNav}
-				textTransform="capitalize"
+				textTransform={props.searchMode === "title" ? "capitalize" : "initial"}
 				// onFocus={handleSearchInputFocus}
 				data-testid="scripture-search-input"
 				aria-label="Search scriptures"
