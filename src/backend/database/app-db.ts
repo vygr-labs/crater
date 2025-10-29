@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS themes (
     title TEXT UNIQUE NOT NULL,
     author TEXT,
     type TEXT CHECK(type IN ('song', 'scripture', 'presentation')) NOT NULL DEFAULT 'song',
-    preview TEXT,
     theme_data TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP

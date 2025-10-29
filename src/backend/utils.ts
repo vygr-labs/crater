@@ -1,5 +1,5 @@
 import path from "node:path";
-import { MEDIA_IMAGES, MEDIA_VIDEOS, PREVIEW_IMG_PATH } from "./constants.js";
+import { MEDIA_IMAGES, MEDIA_VIDEOS } from "./constants.js";
 import mime from "mime";
 import fs from "node:fs";
 import fsExtra from "fs-extra";
@@ -20,14 +20,6 @@ export function getMediaDestination(filePath: string) {
 	}
 
 	return destination;
-}
-
-export function saveThemePreview(preview: ArrayBuffer, id: number | bigint) {
-	const buffer = Buffer.from(preview);
-	fs.writeFile(`${PREVIEW_IMG_PATH}/theme-${id}.png`, buffer, (err) => {
-		if (err) throw err;
-		console.log("File Saved Successfully");
-	});
 }
 
 export function moveFiles(sourceDir: string, targetDir: string): boolean {

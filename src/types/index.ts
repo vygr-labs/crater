@@ -73,7 +73,6 @@ export type ThemeMetadata = {
 	id: number;
 	title: string;
 	author: string;
-	preview_path: string;
 	created_at: string;
 	updated_at: string;
 	type: ThemeType;
@@ -87,7 +86,6 @@ export type ThemeInput = {
 	title: string;
 	author: string;
 	type?: ThemeType;
-	preview: ArrayBuffer;
 	theme_data: string;
 };
 

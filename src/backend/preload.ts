@@ -6,7 +6,6 @@ const { contextBridge, ipcRenderer } = require("electron");
 type ThemeInput = {
 	title: string;
 	author: string;
-	preview: ArrayBuffer;
 	theme_data: string;
 };
 

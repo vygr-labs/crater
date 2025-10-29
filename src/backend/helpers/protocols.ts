@@ -9,12 +9,7 @@ import { fileURLToPath, pathToFileURL } from "url";
 import fs from "fs-extra";
 import { createReadStream } from "fs";
 import { getMimeType } from "../utils.js";
-import {
-	__dirname,
-	MEDIA_PATH,
-	PREVIEW_IMG_PATH,
-	RESOURCES_PATH,
-} from "../constants.js";
+import { __dirname, MEDIA_PATH, RESOURCES_PATH } from "../constants.js";
 import { Readable } from "stream";
 // import { fromFilename } from '@joplin/lib/mime-utils';
 
@@ -142,7 +137,7 @@ const handleRangeRequest = async (request: Request, targetPath: string) => {
 // TODO: Use Logger.create (doesn't work for now because Logger is only initialized
 // in the main process.)
 const handleCustomProtocols = (): CustomProtocolHandler => {
-	const readableDirectories: string[] = [MEDIA_PATH, PREVIEW_IMG_PATH];
+	const readableDirectories: string[] = [MEDIA_PATH];
 	const readableFiles = new Map<string, number>();
 	const appBundleDirectory = dirname(dirname(__dirname));
 	const allowedHosts = ["note-viewer", ""];

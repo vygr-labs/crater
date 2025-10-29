@@ -3,7 +3,6 @@ import {
 	__dirname,
 	RESOURCES_PATH,
 	DB_PATH,
-	PREVIEW_IMG_PATH,
 	MEDIA_PATH,
 	MEDIA_IMAGES,
 	MEDIA_VIDEOS,
@@ -28,7 +27,6 @@ const store = new ElectronStore<CraterStoreType>({
 
 createAppPaths([
 	DB_PATH,
-	PREVIEW_IMG_PATH,
 	RESOURCES_PATH,
 	MEDIA_PATH,
 	MEDIA_IMAGES,

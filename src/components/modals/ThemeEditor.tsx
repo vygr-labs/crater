@@ -67,20 +67,11 @@ export default function ThemeEditor() {
 
 		const themeData = exportTheme();
 		const formerTheme = initial();
-		// const canvas = await screenshotDiv(rootRef);
-		let preview: ArrayBuffer = new ArrayBuffer();
-		// canvas.toBlob(async (blob) => {
-		// if (blob) {
-		// 	preview = await blob.arrayBuffer();
-		// }
-		console.log("Here is the preview blob: ", preview);
-
 		const theme: ThemeInput = {
 			title: themeName,
 			author: "Eyetu Kingsley",
 			type: type(),
 			theme_data: JSON.stringify(themeData),
-			preview,
 		};
 		console.log("THEME TO ADD: ", theme);
 		if (formerTheme === null) {
@@ -100,9 +91,7 @@ export default function ThemeEditor() {
 				}
 			});
 			console.log("Updated Theme: ", updatedTheme);
-			// dispatch(bustMediaCache([updatedTheme.preview_path]))
 
-			// dispatch(updateThemeEditor({ open: false }))
 			toaster.create({
 				type: getToastType(success),
 				title: message,
@@ -113,7 +102,6 @@ export default function ThemeEditor() {
 		}
 		setAppStore("themesUpdateTrigger", (former) => former + 1);
 		onDialogOpen({ open: false });
-		// });
 	};
 
 	const onDialogOpen = (e: DialogOpenChangeDetails) => {

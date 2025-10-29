@@ -47,12 +47,6 @@ export default function ScheduleItem(props: Props) {
 			cursor="pointer"
 		>
 			{/* <Square bg="teal" h="full" w={24}></Square> */}
-			<Image
-				// h="full"
-				class={css({ w: 20, aspectRatio: 16 / 9 })}
-				src={props.theme?.preview_path}
-				alt={props.item.metadata?.title}
-			/>
 			<Text textTransform="capitalize" fontSize="14px">
 				{props.item.metadata?.title}
 			</Text>

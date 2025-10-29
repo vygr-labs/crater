@@ -1,8 +1,6 @@
 import path from "node:path";
-import { PREVIEW_IMG_PATH } from "../constants.js";
 import appDB from "./app-db.js";
 import fs from "node:fs";
-import { saveThemePreview } from "../utils.js";
 
 export type ThemeType = "song" | "scripture" | "presentation";
 
@@ -13,7 +11,6 @@ export type ThemeMetadata = {
 	type: ThemeType;
 	created_at: string;
 	updated_at: string;
-	preview_path: string;
 };
 
 export interface Theme extends ThemeMetadata {
@@ -24,17 +21,12 @@ export type ThemeInput = {
 	title: string;
 	author: string;
 	type?: ThemeType;
-	preview: ArrayBuffer;
 	theme_data: string;
 };
 
 export interface Theme extends ThemeMetadata {
 	theme_data: string;
 }
-const attachPreviewPath = (theme: Theme): Theme => ({
-	...theme,
-	preview_path: path.join(PREVIEW_IMG_PATH, `theme-${theme.id}.png`),
-});
 
 // Fetch all themes
 const fetchAllThemes = (): ThemeMetadata[] => {
@@ -48,19 +40,16 @@ const fetchAllThemes = (): ThemeMetadata[] => {
 		)
 		.all() as Theme[];
 
-	// return response
-
-	return response.map((theme) => attachPreviewPath(theme));
+	return response;
 };
 
 // Add theme
 const addTheme = ({
 	title,
 	author,
-	preview,
 	type,
 	theme_data,
-}: ThemeInput & { preview: ArrayBuffer }): {
+}: ThemeInput): {
 	success: boolean;
 	message: string;
 } => {
@@ -73,9 +62,6 @@ const addTheme = ({
 		);
 
 		const info = insertThemeStmt.run(title, author, type, theme_data);
-		saveThemePreview(preview, info.lastInsertRowid);
-
-		console.log(`Preview image saved as theme-${info.lastInsertRowid}.png`);
 
 		return { success: true, message: "Theme added successfully." };
 	} catch (error) {
@@ -87,7 +73,7 @@ const addTheme = ({
 // Update an existing theme
 const updateTheme = (
 	id: number,
-	{ title, author, theme_data, preview }: ThemeInput,
+	{ title, author, theme_data }: ThemeInput,
 ): { success: boolean; message: string; updatedTheme?: Theme } => {
 	try {
 		const result = appDB
@@ -107,7 +93,6 @@ const updateTheme = (
 			};
 		}
 
-		saveThemePreview(preview, id);
 		const updatedTheme = appDB
 			.prepare("SELECT * FROM themes WHERE id = ?")
 			.get(id) as Theme;
@@ -115,7 +100,7 @@ const updateTheme = (
 		return {
 			success: true,
 			message: "Theme updated successfully.",
-			updatedTheme: attachPreviewPath(updatedTheme),
+			updatedTheme,
 		};
 	} catch (error) {
 		console.log("Error occured while updating theme", error);
@@ -137,16 +122,6 @@ const deleteTheme = (id: number): { success: boolean; message: string } => {
     `,
 			)
 			.run(id);
-
-		const preview_img = `${PREVIEW_IMG_PATH}/theme-${id}.png`;
-		console.log("DELETING PREVIEW IMG: ", preview_img);
-		if (fs.existsSync(preview_img)) {
-			console.log("EXISTS PREVIEW IMG: ", preview_img);
-			fs.unlink(preview_img, (err) => {
-				if (err) throw err;
-				console.log(`${preview_img} was deleted`);
-			});
-		}
 
 		return { success: true, message: "Theme deleted successfully." };
 	} catch (error) {
@@ -170,15 +145,7 @@ const fetchThemeById = (id: number): Theme | null => {
 		)
 		.get(id) as Theme | undefined;
 
-	if (theme) {
-		return {
-			...theme,
-			// theme_data: JSON.parse(theme.theme_data), // Parse JSON theme data
-			preview_path: path.join(PREVIEW_IMG_PATH, `theme-${theme.id}.png`),
-		};
-	}
-
-	return null;
+	return theme || null;
 };
 
 const filterThemes = (type?: ThemeType): ThemeMetadata[] => {
@@ -194,10 +161,7 @@ const filterThemes = (type?: ThemeType): ThemeMetadata[] => {
 
 	const response = appDB.prepare(query).all(...params) as ThemeMetadata[];
 
-	return response.map((theme) => ({
-		...theme,
-		preview_path: path.join(PREVIEW_IMG_PATH, `theme-${theme.id}.png`),
-	}));
+	return response;
 };
 
 export {
