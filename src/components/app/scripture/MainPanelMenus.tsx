@@ -18,10 +18,9 @@ export const MainDisplayMenuContent = (
 			value="edit-song"
 			// onClick={props.onSongEdit}
 		>
-			Edit Song
+			Add to Schedule
 		</Menu.Item>
-		<Menu.Item value="rename-song">Rename Song</Menu.Item>
-		<Menu.Item value="duplicate-song">Duplicate Song</Menu.Item>
+		<Menu.Item value="rename-song">Mark Up</Menu.Item>
 		<Menu.Separator />
 		<Menu.Item
 			value="add-to-favorites"
@@ -53,14 +52,6 @@ export const MainDisplayMenuContent = (
 			<Menu.Item value="refresh">Refresh</Menu.Item>
 		</Menu.ItemGroup>
 		<Menu.Separator />
-		<Menu.Item
-			value="delete"
-			color="fg.error"
-			_hover={{ bg: "bg.error", color: "fg.error" }}
-			// onClick={() => onSongDelete(songListContextIndex)}
-		>
-			Delete Song
-		</Menu.Item>
 	</Menu.Content>
 );
 
