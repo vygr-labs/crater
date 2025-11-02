@@ -1,4 +1,4 @@
-import { onCleanup, onMount, splitProps } from "solid-js";
+import { createEffect, onCleanup, onMount, splitProps } from "solid-js";
 import type { JSX } from "solid-js/jsx-runtime";
 import videojs from "video.js";
 import "video.js/dist/video-js.css";
@@ -27,8 +27,13 @@ export default function Video(_props: Props) {
 
 	return (
 		<div data-vjs-player>
-			<video id={props.id} class="video-js vjs-crater" {...rest}>
-				<source src={"video://" + props.src} />
+			<video
+				id={props.id}
+				class="video-js vjs-crater"
+				src={"video://" + props.src}
+				{...rest}
+			>
+				{/* <source src={"video://" + props.src} /> */}
 			</video>
 		</div>
 	);

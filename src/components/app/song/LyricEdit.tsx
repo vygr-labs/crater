@@ -14,6 +14,11 @@ interface Props extends SongLyric {
 	onLabelEdit: JSX.ChangeEventHandlerUnion<HTMLInputElement, Event>;
 	onTextEdit: JSX.ChangeEventHandlerUnion<HTMLTextAreaElement, Event>;
 	onActiveEl: () => void;
+	onPaste: (
+		type: "label" | "text",
+		index: number,
+		event: ClipboardEvent,
+	) => void;
 }
 
 export default function LyricEdit(props: Props) {
@@ -71,6 +76,7 @@ export default function LyricEdit(props: Props) {
 							el.focus();
 						}
 					}}
+					onpaste={(e) => props.onPaste("label", props.index, e)}
 				/>
 				<Field.Textarea
 					id={"song-edit-text-" + props.index}
@@ -95,6 +101,7 @@ export default function LyricEdit(props: Props) {
 					data-key={`text-${props.index}`}
 					data-type="text"
 					data-index={props.index}
+					onpaste={(e) => props.onPaste("text", props.index, e)}
 					// border="unset"
 				/>
 			</Field.Root>

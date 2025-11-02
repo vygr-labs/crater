@@ -17,6 +17,7 @@ import { getToastType, parseThemeData, toaster } from "~/utils";
 import RenderTheme from "../app/editor/RenderTheme";
 import { defaultThemeRenderMap } from "../app/projection/RenderProjection";
 import { useDisplayStore } from "~/layouts/DisplayContext";
+import { Field } from "../ui/field";
 
 type Props = {
 	open: boolean;
@@ -245,6 +246,7 @@ function SongEditor() {
 	});
 
 	let containerRef!: HTMLDivElement;
+	let lyricEditRef!: HTMLTextAreaElement;
 
 	const closeModal = () => {
 		const revert = previousPanel();
@@ -271,12 +273,22 @@ function SongEditor() {
 		const songTitle = titleInputEl.value;
 		if (!songTitle) return;
 		console.log(songMeta, nSong);
+
+		const lyrics = lyricEditRef.value.split("\n\n").map((t) => {
+			const text = t.trim().split("\n");
+			console.log(text);
+			return {
+				label: text.length > 1 ? text[0] : "",
+				text: text.length > 1 ? text.slice(1) : text,
+			};
+		});
+
 		if (nSong) {
 			window.electronAPI
 				.updateSong({
 					songId: nSong.id,
 					newTitle: songTitle,
-					newLyrics: unwrap(lyrics),
+					newLyrics: lyrics,
 				})
 				.then(({ success, message }) => {
 					closeModal();
@@ -288,7 +300,7 @@ function SongEditor() {
 				});
 		} else {
 			window.electronAPI
-				.createSong({ title: songTitle, lyrics: unwrap(lyrics) })
+				.createSong({ title: songTitle, lyrics: lyrics })
 				.then(({ success, message, songId }) => {
 					closeModal();
 					toaster.create({
@@ -300,6 +312,31 @@ function SongEditor() {
 		}
 		titleInputEl.value = "";
 		setAppStore("songsUpdateCounter", (former) => ++former);
+	};
+
+	const handlePaste = (
+		type: "label" | "text",
+		index: number,
+		event: ClipboardEvent,
+	) => {
+		console.log(type, index, event);
+		if (type === "label") {
+			const newLyrics =
+				event.clipboardData?.getData("text").split("\n\r") ?? [];
+			// .map((t) => t.trim())
+			const lyricGroups = newLyrics.map((t, i) => {
+				const text = t.trim().split("\r\n");
+				console.log(text);
+				return {
+					label: text.length > 1 ? text[0] : "",
+					text: (text.length > 1 ? text[1] : text[0]).split("\n"),
+				};
+			});
+			console.log(newLyrics, lyricGroups);
+			if (lyricGroups?.length) {
+				setLyrics(lyricGroups);
+			}
+		}
 	};
 
 	return (
@@ -330,8 +367,43 @@ function SongEditor() {
 										mx={5}
 										scrollBehavior="smooth"
 									>
-										<VStack alignItems="left" gap={4} pr={1} ref={containerRef}>
-											<For each={lyrics}>
+										<VStack
+											alignItems="left"
+											gap={4}
+											pr={1}
+											ref={containerRef}
+											h="full"
+										>
+											<Field.Root
+												w="full"
+												gap={0}
+												h="full"
+												// borderBottom="unset"
+											>
+												<Field.Textarea
+													ref={lyricEditRef}
+													_selection={{
+														bgColor: "blue.600",
+													}}
+													w="full"
+													minH={9}
+													px={3}
+													py={3}
+													h="full"
+													lineHeight={1.5}
+													variant="subtle"
+													border="2px solid"
+													borderColor="gray.800"
+													_focusVisible={{
+														outline: "unset",
+														borderColor: "purple.800",
+													}}
+													resize="none"
+													placeholder="Lyrics"
+													// border="unset"
+												/>
+											</Field.Root>
+											{/* <For each={lyrics}>
 												{(lyric, index) => (
 													<LyricEdit
 														index={index()}
@@ -349,9 +421,10 @@ function SongEditor() {
 															)
 														}
 														onActiveEl={() => setSongMeta("current", index())}
+														onPaste={handlePaste}
 													/>
 												)}
-											</For>
+											</For> */}
 										</VStack>
 									</Box>
 									<Box

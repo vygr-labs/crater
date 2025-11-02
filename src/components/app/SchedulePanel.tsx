@@ -23,18 +23,18 @@ export default function SchedulePanel() {
 		return appStore.scheduleItems;
 	});
 	const themeMap = createMemo(() => ({
-		song: appStore.songTheme,
-		scripture: appStore.scriptureTheme,
-		presentation: appStore.presentationTheme,
+		song: appStore.displayData.songTheme,
+		scripture: appStore.displayData.scriptureTheme,
+		presentation: appStore.displayData.presentationTheme,
 		video: null,
 		image: null,
 		message: null,
 	}));
 
-	const pushToLive = (focusId?: number | null) => {
+	const pushToLive = (focusId?: number | null, live?: boolean) => {
 		// const focusId = itemIndex;
 		if (typeof focusId !== "number") return; // || !isCurrentPanel()
-		setAppStore("liveItem", {
+		setAppStore(live ? "liveItem" : "previewItem", {
 			...appStore.scheduleItems[focusId],
 			index: focusId,
 		});
@@ -83,12 +83,13 @@ export default function SchedulePanel() {
 			onClick: ({ changeFluidFocus, focusId, event }) => {
 				if (typeof focusId === "number") {
 					changeFluidFocus(focusId);
+					pushToLive(focusId, false);
 				}
 			},
 			onDblClick: ({ changeFocus, focusId }) => {
 				if (typeof focusId === "number") {
 					changeFocus(focusId);
-					pushToLive(focusId);
+					pushToLive(focusId, true);
 				}
 			},
 		},
@@ -124,7 +125,7 @@ export default function SchedulePanel() {
 			gap={2}
 			ref={virtualizerParentRef}
 		>
-			<ContextMenu open={false} ref={virtualizerParentRef}>
+			<ContextMenu open={false} setOpen={() => null} ref={virtualizerParentRef}>
 				<Box
 					style={{
 						height: `${rowVirtualizer().getTotalSize()}px`,

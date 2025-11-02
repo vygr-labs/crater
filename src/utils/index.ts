@@ -298,7 +298,7 @@ const mappings: Record<
 			true: {
 				isCurrentPanel: {
 					true: {
-						"background-color": token.var(`colors.${defaultPalette}.800`),
+						"background-color": token.var(`colors.${defaultPalette}.900`),
 						color: "white",
 					},
 					false: {

@@ -21,8 +21,8 @@ export default function ScheduleItem(props: Props) {
 			userSelect="none"
 			gap={2}
 			h="full"
-			px={1.5}
-			py={3.5}
+			px={4.5}
+			py={2.5}
 			data-focusId={props.index}
 			data-panel={props.panelName}
 			style={getFocusableStyles(

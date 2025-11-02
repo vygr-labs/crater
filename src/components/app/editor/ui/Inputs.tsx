@@ -2,6 +2,7 @@ import {
 	parseColor,
 	type RadioGroupValueChangeDetails,
 	type SliderRootProps,
+	type SliderValueChangeDetails,
 } from "@ark-ui/solid";
 import {
 	createEffect,
@@ -12,6 +13,7 @@ import {
 	type JSX,
 	type JSXElement,
 	type ParentProps,
+	type Setter,
 } from "solid-js";
 import type { SetStoreFunction } from "solid-js/store";
 import { ColorPicker } from "~/components/ui/color-picker";
@@ -27,11 +29,16 @@ import { Dynamic } from "solid-js/web";
 import { RadioGroup } from "~/components/ui/radio-group";
 
 interface PropUpdateComponent {
-	styleKey: keyof JSX.CSSProperties;
 	label?: JSXElement;
-	setStyle: (styles: JSX.CSSProperties) => void;
 	children?: JSXElement;
+	styleKey: keyof JSX.CSSProperties;
+	setStyle: (styles: JSX.CSSProperties) => void;
 	styles: JSX.CSSProperties;
+}
+
+interface DataUpdateComponent {
+	label?: JSXElement;
+	children?: JSXElement;
 }
 
 export interface ColorUpdateInputProps extends PropUpdateComponent {}
@@ -142,6 +149,55 @@ export const SliderWithInput = (props: SliderWithInputProps) => {
 					maxW={16}
 					value={sliderValue().toString()}
 					onValueChange={(nv) => setValue(nv.valueAsNumber)}
+				>
+					<NumberInput.Input />
+					<NumberInput.Control>
+						<NumberInput.IncrementTrigger>
+							<TbChevronUp />
+						</NumberInput.IncrementTrigger>
+						<NumberInput.DecrementTrigger>
+							<TbChevronDown />
+						</NumberInput.DecrementTrigger>
+					</NumberInput.Control>
+				</NumberInput.Root>
+				{/* <Slider.ValueText /> */}
+			</Dynamic>
+		</Slider.Root>
+	);
+};
+
+export interface SliderWithInputPropsTwo extends DataUpdateComponent {
+	orientation?: "horizontal" | "vertical";
+	rootProps?: SliderRootProps;
+	sliderValue: number[];
+	setValue: Setter<number>;
+}
+export const SliderWithInputTwo = (props: SliderWithInputPropsTwo) => {
+	return (
+		<Slider.Root
+			orientation={props.orientation}
+			w={props.orientation ? undefined : 56}
+			value={props.sliderValue}
+			onValueChange={(v) => props.setValue(v.value[0])}
+			{...props.rootProps}
+		>
+			<Dynamic
+				component={props.orientation === "vertical" ? VStack : HStack}
+				gap={5}
+			>
+				<Slider.Label>{props.label}</Slider.Label>
+				<Slider.Control cursor="pointer">
+					<Slider.Track>
+						<Slider.Range />
+					</Slider.Track>
+					<Slider.Thumb index={0}>
+						<Slider.HiddenInput />
+					</Slider.Thumb>
+				</Slider.Control>
+				<NumberInput.Root
+					maxW={16}
+					value={props.sliderValue[0].toString()}
+					onValueChange={(nv) => props.setValue(nv.valueAsNumber)}
 				>
 					<NumberInput.Input />
 					<NumberInput.Control>
