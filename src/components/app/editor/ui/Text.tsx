@@ -164,6 +164,7 @@ export default function EditorText(props: EditorContainer) {
 		const element = node.el;
 		const isResize = node.data.autoResize;
 		const textChanges = textArr();
+		const maxFontSize = node.data.maxFontSize ?? 0;
 
 		// use a promise to ensure that it is run after the element is rendered (needed for the first run);
 		Promise.resolve().then(() => {
@@ -179,6 +180,7 @@ export default function EditorText(props: EditorContainer) {
 					innerTag: "p",
 					correctLineHeightOffset: false, // allows modification of top css value which interferes with drag & drop
 					success: dynamicSizeUpdate,
+					maxFontPixels: maxFontSize,
 				});
 			}
 		});
@@ -257,6 +259,7 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 			TextFill(textNodeRenderRef, {
 				innerTag: "p",
 				correctLineHeightOffset: false, // allows modification of top css value which interferes with drag & drop
+				maxFontPixels: props.node.data.maxFontSize ?? 0,
 			});
 		}
 	});
@@ -379,11 +382,23 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 								onClick={() =>
 									setData({ autoResize: !props.node.data.autoResize })
 								}
-								roundedLeft="unset"
+								roundedLeft={props.node.data.autoResize ? "unset" : "initial"}
+								rounded={props.node.data.autoResize ? "unset" : "initial"}
 								borderLeft="unset"
 							>
 								<TbTextResize width={28} height={28} />
 							</IconButton>
+							<Show when={props.node.data.autoResize}>
+								<GenericNumberInput
+									value={props.node.data.maxFontSize?.toString() ?? "200"}
+									onValueChange={({ valueAsNumber }) =>
+										setData({ maxFontSize: valueAsNumber })
+									}
+									inputProps={{
+										class: css({ roundedLeft: "unset" }),
+									}}
+								/>
+							</Show>
 						</Flex>
 
 						<ColorUpdateInput
@@ -581,6 +596,7 @@ EditorText.config = {
 		linkage: LINKAGES.CUSTOM,
 		text: "Learning New Things",
 		autoResize: false,
+		maxFontSize: 220,
 		// bgColor: defaultPalette
 	},
 	defaultStyles: {
