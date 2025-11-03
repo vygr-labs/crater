@@ -11,7 +11,7 @@ import {
 } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 import { onKeyDown, useEventListener } from "solidjs-use";
-import { DEFAULT_PANEL } from "~/utils/constants";
+import { DEFAULT_PANEL, GLOBAL_FOCUS_NAME } from "~/utils/constants";
 
 export type FocusType = number | undefined | null;
 type ChangeFocusFn = (newFocusId?: FocusType) => void;
@@ -41,10 +41,12 @@ interface FocusEventHandlerParams {
 
 type ClickEventType = "onClick" | "onDblClick" | "onRightClick";
 
+export type FocusEventHandlerFn = (
+	params: FocusEventHandlerParams & { event: KeyboardEvent },
+) => void;
+
 type EventsSubscription = {
-	[event: KeyboardEvent["key"]]: (
-		params: FocusEventHandlerParams & { event: KeyboardEvent },
-	) => void; // the fn is the event handler
+	[event: KeyboardEvent["key"]]: FocusEventHandlerFn; // the fn is the event handler
 };
 
 type ClickEventsSubscription = {
@@ -59,18 +61,21 @@ type EventSubscriberParams = {
 	clickHandlers?: ClickEventsSubscription;
 	defaultFluidFocus?: any;
 	defaultCoreFocus?: any;
+	global?: boolean;
 };
+
+interface FocusSubscriber {
+	coreFocusId: FocusType;
+	fluidFocusId?: FocusType;
+	handlers: EventsSubscription;
+	clickHandlers?: ClickEventsSubscription;
+}
 
 interface FocusStore {
 	previous: string;
 	current: string;
 	subscribers: {
-		[name: string]: {
-			coreFocusId: FocusType;
-			fluidFocusId?: FocusType;
-			handlers: EventsSubscription;
-			clickHandlers?: ClickEventsSubscription;
-		};
+		[name: string]: FocusSubscriber;
 	};
 }
 
@@ -98,7 +103,7 @@ export default function FocusContextProvider(props: ParentProps) {
 	const currentPanel = createMemo(() => store.current);
 	const previousPanel = createMemo(() => store.previous);
 	const currentSubscriber = createMemo(() => store.subscribers[store.current]);
-	const GLOBAL_SHORTCUTS = ["T", "L", "C"];
+	const GLOBAL_SHORTCUTS: string[] = [];
 
 	const changeCoreFocus: InternalChangeFocusFn = ({
 		contextName,
@@ -129,30 +134,34 @@ export default function FocusContextProvider(props: ParentProps) {
 		);
 	};
 
+	const calllHandlers = (focusPanel: FocusSubscriber, event: KeyboardEvent) => {
+		if (focusPanel && Object.hasOwn(focusPanel.handlers, event.key)) {
+			focusPanel.handlers[event.key]({
+				name: store.current,
+				coreFocusId: focusPanel.coreFocusId,
+				fluidFocusId: focusPanel.fluidFocusId,
+				changeFocus: (newId) =>
+					changeFocus({ contextName: store.current, newFocusId: newId }),
+				changeCoreFocus: (newId) =>
+					changeCoreFocus({ contextName: store.current, newFocusId: newId }),
+				changeFluidFocus: (newId) =>
+					changeFluidFocus({ contextName: store.current, newFocusId: newId }),
+				event,
+			});
+		}
+	};
+
 	onKeyDown(
 		(e) =>
 			Object.values(store.subscribers)
 				.flatMap((subscriber) => Object.keys(subscriber.handlers)) // .concat(GLOBAL_SHORTCUTS)
 				.includes(e.key),
 		(e) => {
-			// if (GLOBAL_SHORTCUTS.includes(e.key)) {
-			// 	handleShortcut(e);
-			// }
-			const currentPanel = store.subscribers[store.current];
-			if (currentPanel && Object.hasOwn(currentPanel.handlers, e.key)) {
-				currentPanel.handlers[e.key]({
-					name: store.current,
-					coreFocusId: currentPanel.coreFocusId,
-					fluidFocusId: currentPanel.fluidFocusId,
-					changeFocus: (newId) =>
-						changeFocus({ contextName: store.current, newFocusId: newId }),
-					changeCoreFocus: (newId) =>
-						changeCoreFocus({ contextName: store.current, newFocusId: newId }),
-					changeFluidFocus: (newId) =>
-						changeFluidFocus({ contextName: store.current, newFocusId: newId }),
-					event: e,
-				});
+			if (GLOBAL_SHORTCUTS.includes(e.key)) {
+				console.log("calling global shortcuts: ", GLOBAL_SHORTCUTS);
+				calllHandlers(store.subscribers[GLOBAL_FOCUS_NAME], e);
 			}
+			calllHandlers(store.subscribers[store.current], e);
 		},
 	);
 
@@ -211,14 +220,30 @@ export default function FocusContextProvider(props: ParentProps) {
 		defaultCoreFocus,
 		defaultFluidFocus,
 		clickHandlers,
+		global,
 	}) => {
 		// const name = "combo-" + Math.random() * 100
-		setStore("subscribers", name, {
-			handlers,
-			coreFocusId: defaultCoreFocus,
-			fluidFocusId: defaultFluidFocus,
-			clickHandlers,
-		});
+		if (global) {
+			console.log(
+				"setting global shortcuts: ",
+				Object.keys(handlers),
+				GLOBAL_SHORTCUTS,
+			);
+			GLOBAL_SHORTCUTS.push(...Object.keys(handlers));
+			setStore("subscribers", GLOBAL_FOCUS_NAME, {
+				handlers,
+				coreFocusId: defaultCoreFocus,
+				fluidFocusId: defaultFluidFocus,
+				clickHandlers,
+			});
+		} else {
+			setStore("subscribers", name, {
+				handlers,
+				coreFocusId: defaultCoreFocus,
+				fluidFocusId: defaultFluidFocus,
+				clickHandlers,
+			});
+		}
 
 		return {
 			name,

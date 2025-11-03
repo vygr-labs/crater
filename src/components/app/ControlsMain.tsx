@@ -11,10 +11,14 @@ import {
 } from "solid-icons/tb";
 import SongSelection from "./song/SongSelection";
 import ScriptureSelection from "./scripture/ScriptureSelection";
-import { useFocusContext } from "~/layouts/FocusContext";
+import {
+	useFocusContext,
+	type FocusEventHandlerFn,
+} from "~/layouts/FocusContext";
 import {
 	DEFAULT_PANEL,
 	defaultPalette,
+	GLOBAL_FOCUS_NAME,
 	MEDIA_TAB_FOCUS_NAME,
 	PRESENTATIONS_TAB_FOCUS_NAME,
 	SCRIPTURE_TAB_FOCUS_NAME,
@@ -22,7 +26,11 @@ import {
 	THEMES_TAB_FOCUS_NAME,
 } from "~/utils/constants";
 import ThemeSelection from "./theme/ThemeSelection";
-import { addToSchedule } from "~/utils/store-helpers";
+import {
+	addToSchedule,
+	toggleClearDisplay,
+	toggleLogo,
+} from "~/utils/store-helpers";
 import { useAppContext } from "~/layouts/AppContext";
 import { unwrap } from "solid-js/store";
 import MediaSelection from "./media/MediaSelection";
@@ -36,6 +44,42 @@ export default function ControlsMain() {
 		}
 		console.log("Schedule Updated: ", appStore.scheduleItems);
 	};
+
+	const handleShortcutT: FocusEventHandlerFn = ({ event }) => {
+		if (event.ctrlKey) {
+			handleAddToSchedule();
+		}
+	};
+
+	const handleShortcutL: FocusEventHandlerFn = ({ event }) => {
+		console.log("handling shortcut: ", event);
+		if (event.ctrlKey) {
+			toggleLogo(setAppStore);
+		}
+	};
+
+	const handleShortcutC: FocusEventHandlerFn = ({ event }) => {
+		console.log("handling shortcut: ", event);
+		if (event.ctrlKey) {
+			toggleClearDisplay(setAppStore);
+		}
+	};
+
+	const { subscribeEvent, currentPanel } = useFocusContext();
+	const { name, coreFocusId, fluidFocusId, changeFluidFocus } = subscribeEvent({
+		name: GLOBAL_FOCUS_NAME,
+		defaultCoreFocus: 0,
+		defaultFluidFocus: 0,
+		handlers: {
+			t: handleShortcutT,
+			T: handleShortcutT,
+			c: handleShortcutC,
+			C: handleShortcutC,
+			l: handleShortcutL,
+			L: handleShortcutL,
+		},
+		global: true,
+	});
 
 	return (
 		<VStack h="full">
