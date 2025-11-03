@@ -239,6 +239,11 @@ function SongEditor() {
 	createEffect(() => {
 		if (appStore.songEdit.open) {
 			setLyrics(fetchedSongLyrics() ?? [{ ...NEW_LYRIC }]);
+			console.log(lyrics);
+			// const lyricArr = fetchedSongLyrics() ?? [{ ...NEW_LYRIC }];
+			// lyricEditRef.value = lyricArr
+			// 	.map((l) => `${l.label}\n${l.text.join("\n")}`)
+			// 	.join("\n\n");
 			console.log("changing focus to song editor");
 			changeFocusPanel(SONG_EDITOR_FOCUS_NAME);
 			titleInputEl.value = appStore.songEdit.song?.title || "";
@@ -252,6 +257,7 @@ function SongEditor() {
 		const revert = previousPanel();
 		setAppStore("songEdit", { open: false });
 		setLyrics([]);
+		// lyricEditRef.value = "";
 		if (revert) {
 			changeFocusPanel(revert);
 		}
@@ -274,21 +280,21 @@ function SongEditor() {
 		if (!songTitle) return;
 		console.log(songMeta, nSong);
 
-		const lyrics = lyricEditRef.value.split("\n\n").map((t) => {
-			const text = t.trim().split("\n");
-			console.log(text);
-			return {
-				label: text.length > 1 ? text[0] : "",
-				text: text.length > 1 ? text.slice(1) : text,
-			};
-		});
+		// const lyrics = lyricEditRef.value.split("\n\n").map((t) => {
+		// 	const text = t.trim().split("\n");
+		// 	console.log(text);
+		// 	return {
+		// 		label: text.length > 1 ? text[0] : "",
+		// 		text: text.length > 1 ? text.slice(1) : text,
+		// 	};
+		// });
 
 		if (nSong) {
 			window.electronAPI
 				.updateSong({
 					songId: nSong.id,
 					newTitle: songTitle,
-					newLyrics: lyrics,
+					newLyrics: unwrap(lyrics),
 				})
 				.then(({ success, message }) => {
 					closeModal();
@@ -300,7 +306,7 @@ function SongEditor() {
 				});
 		} else {
 			window.electronAPI
-				.createSong({ title: songTitle, lyrics: lyrics })
+				.createSong({ title: songTitle, lyrics: unwrap(lyrics) })
 				.then(({ success, message, songId }) => {
 					closeModal();
 					toaster.create({
@@ -374,7 +380,7 @@ function SongEditor() {
 											ref={containerRef}
 											h="full"
 										>
-											<Field.Root
+											{/* <Field.Root
 												w="full"
 												gap={0}
 												h="full"
@@ -402,8 +408,8 @@ function SongEditor() {
 													placeholder="Lyrics"
 													// border="unset"
 												/>
-											</Field.Root>
-											{/* <For each={lyrics}>
+											</Field.Root> */}
+											<For each={lyrics}>
 												{(lyric, index) => (
 													<LyricEdit
 														index={index()}
@@ -424,7 +430,7 @@ function SongEditor() {
 														onPaste={handlePaste}
 													/>
 												)}
-											</For> */}
+											</For>
 										</VStack>
 									</Box>
 									<Box

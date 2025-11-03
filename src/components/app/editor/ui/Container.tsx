@@ -58,6 +58,8 @@ export default function EditorContainer(props: EditorContainer) {
 			style={styles}
 			transformOrigin="top left"
 			overflow="hidden"
+			// disabling child clicks so that the drag (target) is not any of the child elements.
+			class="disable-child-clicks"
 		>
 			<Show when={node.data.overlayColor}>
 				<Box bg={node.data.overlayColor} position="absolute" inset={0} />
