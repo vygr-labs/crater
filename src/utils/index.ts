@@ -128,9 +128,9 @@ export function formatReference(
 
 const capitalize = (str?: string) =>
 	str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
-export function capitalizeFirstLetter(str?: string, all?: boolean) {
+export function capitalizeFirstLetter(str?: string, all?: boolean): string {
 	if (all) {
-		return str?.split(" ").map(capitalize).join(" ");
+		return str?.split(" ").map(capitalize).join(" ") ?? "";
 	}
 	return capitalize(str);
 }

@@ -27,6 +27,7 @@ import {
 } from "~/utils/constants";
 import { focusStyles } from "~/utils/atomic-recipes";
 import {
+	capitalizeFirstLetter,
 	formatReference,
 	getBaseFocusStyles,
 	getFocusableStyles,
@@ -163,7 +164,10 @@ export default function ScriptureSelection() {
 		if (previewScripture) {
 			setAppStore(isLive ? "liveItem" : "previewItem", {
 				metadata: {
-					title: `${previewScripture.book_name} ${previewScripture.chapter}:${previewScripture.verse} (${previewScripture.version.toUpperCase()})`,
+					title: capitalizeFirstLetter(
+						`${previewScripture.book_name} ${previewScripture.chapter}:${previewScripture.verse} (${previewScripture.version.toUpperCase()})`,
+						true,
+					),
 					id: `${previewScripture.book_name}-${previewScripture.chapter}-${previewScripture.verse}`.toLowerCase(),
 				},
 				type: "scripture",

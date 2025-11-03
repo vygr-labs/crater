@@ -603,7 +603,7 @@ EditorText.config = {
 		width: "20%",
 		height: "15%",
 		color: token(`colors.whiteAlpha.900`),
-		"font-family": "Inter",
+		"font-family": "Figtree",
 		"font-size": "16px",
 		"line-height": 1.25,
 		"text-align": "left" as TextAlign,

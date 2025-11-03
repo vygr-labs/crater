@@ -36,7 +36,7 @@ export default function SchedulePanel() {
 		if (typeof focusId !== "number") return; // || !isCurrentPanel()
 		setAppStore(live ? "liveItem" : "previewItem", {
 			...appStore.scheduleItems[focusId],
-			index: focusId,
+			index: 0,
 		});
 	};
 

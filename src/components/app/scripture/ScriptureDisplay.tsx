@@ -1,7 +1,8 @@
-import { For, Show } from "solid-js";
+import { createEffect, For, Show } from "solid-js";
 import { Box, Flex, Stack } from "styled-system/jsx";
 import { token } from "styled-system/tokens";
 import { Text } from "~/components/ui/text";
+import type { ScriptureVerse } from "~/types";
 import type { SongLyric } from "~/types/context";
 import { getFocusableStyles } from "~/utils";
 import {
@@ -20,14 +21,13 @@ export interface DisplayScripture {
 
 interface Props {
 	index: number;
-	scripture: DisplayScripture;
+	scripture: ScriptureVerse;
 	isFocusItem: boolean;
 	panelName: string;
 	isCurrentPanel: boolean;
 }
 
 export default function ScriptureDisplay(props: Props) {
-	const isHovered = false;
 	return (
 		<Box
 			class="disable-child-clicks transition-children-backgrounds"
@@ -95,7 +95,7 @@ export default function ScriptureDisplay(props: Props) {
 							)}
 							fontWeight={600}
 						>
-							{props.scripture.book} {props.scripture.chapter}:
+							{props.scripture.book_name} {props.scripture.chapter}:
 							{props.scripture.verse}
 						</Text>
 					</Box>

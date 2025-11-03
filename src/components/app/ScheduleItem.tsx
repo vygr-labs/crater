@@ -4,6 +4,7 @@ import { Text } from "~/components/ui/text";
 import type { DisplayProps, Theme } from "~/types";
 import { getFocusableStyles } from "~/utils";
 import Image from "./Image";
+import { defaultPalette } from "~/utils/constants";
 
 interface Props {
 	index: number;
@@ -30,6 +31,9 @@ export default function ScheduleItem(props: Props) {
 				props.isFocusItem,
 				props.isCurrentPanel,
 			)}
+			_hover={{
+				bgColor: `purple.800/40`,
+			}}
 			// bgColor={
 			// 	renderIndex === navigatedItem
 			// 		? `${defaultPalette}.800`
