@@ -37,6 +37,8 @@ import {
 	MEDIA_VIDEOS,
 	RESOURCES_PATH,
 	userData,
+	SCHEDULE_ITEMS_PATH,
+	getAssetPath,
 } from "./constants.js";
 import { screen } from "electron/main";
 import {
@@ -53,11 +55,15 @@ import {
 	handleErr,
 	moveFiles,
 } from "./utils.js";
-import { SONG_DB_PATHS } from "./types.js";
+import { SavedSchedule, ScheduleSaveItem, SONG_DB_PATHS } from "./types.js";
 import { pathToFileURL } from "node:url";
 import handleCustomProtocols from "./helpers/protocols.js";
 import { getFonts2 } from "font-list";
 import { Worker } from "node:worker_threads";
+import {
+	getSavedSchedules,
+	saveScheduleToDB,
+} from "./database/app-operations.js";
 // import processSongs from './scripts/songs-importer/index.js'
 // import grandiose from 'grandiose'
 // const { GrandioseFinder } = grandiose
@@ -110,9 +116,6 @@ const installExtensions = async () => {
 	*/
 };
 const PRELOAD_PATH = path.join(__dirname, "preload.js");
-const getAssetPath = (...paths: string[]): string => {
-	return path.join(RESOURCES_PATH, ...paths);
-};
 
 protocol.registerSchemesAsPrivileged([
 	{
@@ -148,7 +151,7 @@ const spawnAppWindow = async () => {
 		movable: false,
 		resizable: false,
 		transparent: true,
-		alwaysOnTop: true,
+		alwaysOnTop: electronIsDev ? false : true,
 	});
 
 	loadingWindow.once("show", () => {
@@ -600,4 +603,17 @@ ipcMain.handle("delete-media", async (_, path) => {
 	} catch {
 		console.error("Failed to delete media");
 	}
+});
+
+ipcMain.handle("save-schedule", async (_, scheduleData: ScheduleSaveItem) => {
+	console.log("SENT DATA: ", _, scheduleData);
+	const filePath = path.join(SCHEDULE_ITEMS_PATH, `${scheduleData.name}.json`);
+	await fs.promises.writeFile(filePath, JSON.stringify(scheduleData));
+	return saveScheduleToDB(filePath, scheduleData.name);
+});
+
+ipcMain.handle("get-recent-schedules", getSavedSchedules);
+
+ipcMain.handle("get-schedule-data", async (_, schedule: SavedSchedule) => {
+	return await fs.promises.readFile(schedule.path, { encoding: "utf8" });
 });

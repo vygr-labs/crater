@@ -65,6 +65,9 @@ export default function SongSelection() {
 		const updated = appStore.songsUpdateCounter;
 		return await window.electronAPI.fetchAllSongs();
 	}, []);
+	// const queriedSongs = createAsyncMemo(async () => {
+	// 	return await window.electronAPI.filterSongsByPhrase(songControls.query);
+	// }, []);
 	const [songControls, setSongControls] = createStore<SongControlsData>({
 		group: "all",
 		collection: null,

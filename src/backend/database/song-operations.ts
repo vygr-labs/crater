@@ -121,17 +121,20 @@ const updateSong = ({
 
 // Filter songs by a phrase in their lyrics
 const filterSongsByPhrase = (phrase: string): Song[] => {
+	console.log("SEARCHING BY PHRASE: ", phrase);
 	const response = songsDB
 		.prepare(
+			// 		`
+			// SELECT DISTINCT s.id, s.title, s.author, s.copyright
+			// FROM songs s
+			// JOIN song_lyrics sl ON s.id = sl.song_id
+			// WHERE sl.lyrics LIKE ?
+			// ORDER BY s.title ASC
+			// `,
 			`
-    SELECT DISTINCT s.id, s.title, s.author, s.copyright
-    FROM songs s
-    JOIN song_lyrics sl ON s.id = sl.song_id
-    WHERE sl.lyrics LIKE ?
-    ORDER BY s.title ASC
-    `,
+	SELECT word FROM lyrics_search WHERE word MATCH ?;`,
 		)
-		.all(`%${phrase}%`) as Song[];
+		.all(phrase) as Song[];
 
 	return response;
 };

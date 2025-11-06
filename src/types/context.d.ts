@@ -13,8 +13,11 @@ import type {
 	ThemeMetadata,
 	ThemeType,
 	Theme,
+	ScheduleSaveItem,
+	DisplayProps,
 } from "./index";
 import { Display } from "electron/main";
+import type { SavedSchedule } from "~/backend/types";
 
 export interface ChapterCountObj {
 	[book: string]: number;
@@ -47,6 +50,9 @@ export interface MediaImportResponse extends BridgeResponse {
 export interface IElectronAPI {
 	// Miscellaneous
 	controlsWindowLoaded: () => void;
+	saveSchedule: (schedule: ScheduleSaveItem) => Promise<void>;
+	getRecentSchedules: () => Promise<SavedSchedule[]>;
+	getScheduleData: (sched: SavedSchedule) => Promise<string>;
 
 	// Bible operations
 	fetchTranslations: () => Promise<ScriptureTranslation[]>;

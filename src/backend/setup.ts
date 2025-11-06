@@ -9,6 +9,7 @@ import {
 	TEMP_FOLDER,
 	DB_IMPORT_TEMP_DIR,
 	userData,
+	SCHEDULE_ITEMS_PATH,
 	createAppPaths,
 } from "./constants.js";
 import electronIsDev from "electron-is-dev";
@@ -33,6 +34,7 @@ createAppPaths([
 	MEDIA_VIDEOS,
 	TEMP_FOLDER,
 	DB_IMPORT_TEMP_DIR,
+	SCHEDULE_ITEMS_PATH,
 ]);
 
 const setupFiles = electronIsDev

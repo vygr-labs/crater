@@ -208,3 +208,8 @@ export interface BasicSelectOption {
 	label: string;
 	value: any;
 }
+
+export interface ScheduleSaveItem {
+	name: string;
+	items: DisplayProps[];
+}

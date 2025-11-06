@@ -20,6 +20,7 @@ const DB_PATH = path.join(userData, "databases");
 const SONGS_DB_PATH = path.join(DB_PATH, "songs.sqlite");
 
 const MEDIA_PATH = path.join(userData, "media");
+const SCHEDULE_ITEMS_PATH = path.join(userData, "schedules");
 const MEDIA_IMAGES = path.join(MEDIA_PATH, "images");
 const MEDIA_VIDEOS = path.join(MEDIA_PATH, "videos");
 const TEMP_FOLDER = path.join(app.getPath("temp"), APP);
@@ -36,6 +37,10 @@ function createAppPaths(paths: string[]) {
 	});
 }
 
+const getAssetPath = (...paths: string[]): string => {
+	return path.join(RESOURCES_PATH, ...paths);
+};
+
 export {
 	__dirname,
 	RESOURCES_PATH,
@@ -47,5 +52,7 @@ export {
 	TEMP_FOLDER,
 	DB_IMPORT_TEMP_DIR,
 	userData,
+	SCHEDULE_ITEMS_PATH,
+	getAssetPath,
 	createAppPaths,
 };
