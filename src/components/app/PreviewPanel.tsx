@@ -102,8 +102,11 @@ export default function PreviewPanel() {
 	);
 
 	createEffect(() => {
-		console.log("Fluid Focus is CHanged: ", fluidFocusId());
-		rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+		const id = fluidFocusId();
+		console.log("Fluid Focus is CHanged: ", fluidFocusId(), previewData());
+		if (id && id < previewData().length) {
+			rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+		}
 	});
 
 	return (
@@ -132,7 +135,7 @@ export default function PreviewPanel() {
 				top={0}
 				zIndex={0}
 			/>
-			<ContextMenu open={false} ref={virtualizerParentRef}>
+			<ContextMenu open={false} setOpen={() => null} ref={virtualizerParentRef}>
 				<Box
 					style={{
 						height: `${rowVirtualizer().getTotalSize()}px`,
@@ -155,9 +158,12 @@ export default function PreviewPanel() {
 							{(virtualItem) => {
 								const item = previewData()[virtualItem.index];
 								return (
-									<Box
-										data-index={virtualItem.index}
-										ref={rowVirtualizer().measureElement}
+									<div
+										// data-index={virtualItem.index} // this is not set by the time the ref is called
+										ref={(ref) => {
+											ref.dataset["index"] = virtualItem.index.toString();
+											rowVirtualizer().measureElement(ref);
+										}}
 									>
 										<ItemDisplay
 											type={itemType()}
@@ -167,7 +173,7 @@ export default function PreviewPanel() {
 											panelName={name}
 											isCurrentPanel={currentPanel() === name}
 										/>
-									</Box>
+									</div>
 								);
 							}}
 						</For>

@@ -7,6 +7,7 @@ import { useAppContext } from "~/layouts/AppContext";
 import { Match, Switch } from "solid-js";
 import RenderImage from "./RenderImage";
 import { parseThemeData } from "~/utils";
+import RenderVideo from "./RenderVideo";
 
 export const defaultThemeRenderMap = {
 	EditorContainer: RenderEditorContainer,
@@ -36,26 +37,46 @@ export default function RenderProjection() {
 			}}
 		>
 			<LogoBackground />
-			{/* Live Display */}
-			<Switch>
-				<Match when={appStore.displayData.displayContent?.type === "scripture"}>
-					<RenderTheme
-						data={parseThemeData(
-							appStore.displayData.scriptureTheme?.theme_data,
-						)}
-						renderMap={defaultThemeRenderMap}
-					/>
-				</Match>
-				<Match when={appStore.displayData.displayContent?.type === "song"}>
-					<RenderTheme
-						data={parseThemeData(appStore.displayData.songTheme?.theme_data)}
-						renderMap={defaultThemeRenderMap}
-					/>
-				</Match>
-				<Match when={appStore.displayData.displayContent?.type === "image"}>
-					<RenderImage imageData={appStore.displayData.displayContent?.image} />
-				</Match>
-			</Switch>
+			<Box
+				w="full"
+				h="full"
+				style={{
+					opacity: appStore.showLogo ? 0 : 1,
+					visibility: appStore.showLogo ? "hidden" : "visible",
+				}}
+			>
+				{/* Live Display */}
+				<Switch>
+					<Match
+						when={appStore.displayData.displayContent?.type === "scripture"}
+					>
+						<RenderTheme
+							data={parseThemeData(
+								appStore.displayData.scriptureTheme?.theme_data,
+							)}
+							renderMap={defaultThemeRenderMap}
+							extraProps={{ isProjectionDisplay: true }}
+						/>
+					</Match>
+					<Match when={appStore.displayData.displayContent?.type === "song"}>
+						<RenderTheme
+							data={parseThemeData(appStore.displayData.songTheme?.theme_data)}
+							renderMap={defaultThemeRenderMap}
+							extraProps={{ isProjectionDisplay: true }}
+						/>
+					</Match>
+					<Match when={appStore.displayData.displayContent?.type === "image"}>
+						<RenderImage
+							imageData={appStore.displayData.displayContent?.image}
+						/>
+					</Match>
+					<Match when={appStore.displayData.displayContent?.type === "video"}>
+						<RenderVideo
+							videoData={appStore.displayData.displayContent?.video}
+						/>
+					</Match>
+				</Switch>
+			</Box>
 		</Box>
 	);
 }

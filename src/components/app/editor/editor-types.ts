@@ -150,4 +150,5 @@ export interface NodeSettings {
 
 export interface RenderEditorItemProps {
 	node: EditorNode;
+	extraData?: Record<string, any>;
 }

@@ -299,7 +299,9 @@ export default function ScriptureSelection() {
 
 	// scroll to current fluid item
 	createEffect(() => {
-		rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+		if (isCurrentPanel() && filteredScriptures().length) {
+			rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+		}
 	});
 
 	// close contextMenu when we scroll

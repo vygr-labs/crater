@@ -160,7 +160,8 @@ export default function EditorText(props: EditorContainer) {
 
 	createEffect(() => {
 		// tracking is not possible after an async function is awaited
-		const trackChanges = node.style.width && node.style.height;
+		const trackChanges =
+			node.style.width && node.style.height && node.style["font-weight"];
 		const element = node.el;
 		const isResize = node.data.autoResize;
 		const textChanges = textArr();
@@ -224,6 +225,7 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 		} else {
 			const { displayStore } = useDisplayStore();
 			const displayContent = displayStore.displayContent;
+			console.log(displayContent, displayContent?.song);
 			// const displayData = appStore.liveItem
 			if (displayContent) {
 				if (
@@ -245,7 +247,7 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 			}
 		}
 
-		if (!displayText.length) {
+		if (!displayText.length && !props.extraData?.isProjectionDisplay) {
 			displayText = LINKAGE_DEFAULTS[props.node.data.linkage as LINKAGES];
 		}
 
@@ -603,7 +605,7 @@ EditorText.config = {
 		width: "20%",
 		height: "15%",
 		color: token(`colors.whiteAlpha.900`),
-		"font-family": "Figtree",
+		"font-family": "Funnel Sans",
 		"font-size": "16px",
 		"line-height": 1.25,
 		"text-align": "left" as TextAlign,

@@ -152,8 +152,11 @@ export default function LivePanel() {
 								const item = liveData()[virtualItem.index];
 								return (
 									<Box
-										data-index={virtualItem.index}
-										ref={rowVirtualizer().measureElement}
+										// data-index={virtualItem.index} // this is not set by the time the ref is called
+										ref={(ref) => {
+											ref.dataset["index"] = virtualItem.index.toString();
+											rowVirtualizer().measureElement(ref);
+										}}
 									>
 										<ItemDisplay
 											type={itemType()}

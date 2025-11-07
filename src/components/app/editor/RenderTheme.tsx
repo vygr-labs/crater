@@ -9,6 +9,7 @@ import type {
 interface Props {
 	data: ExportedTheme;
 	renderMap: ThemeRenderMap;
+	extraProps?: Record<string, any>;
 }
 export default function RenderTheme(props: Props) {
 	return (
@@ -21,7 +22,11 @@ export default function RenderTheme(props: Props) {
 		>
 			<For each={props.data?.nodes ?? []}>
 				{(node) => (
-					<Dynamic component={props.renderMap[node.compName]} node={node} />
+					<Dynamic
+						component={props.renderMap[node.compName]}
+						node={node}
+						extraData={props.extraProps}
+					/>
 				)}
 			</For>
 		</Box>

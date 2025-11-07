@@ -29,7 +29,11 @@ import { Text } from "../../ui/text";
 import { createVirtualizer } from "@tanstack/solid-virtual";
 import { useAppContext } from "~/layouts/AppContext";
 import { useFocusContext } from "~/layouts/FocusContext";
-import { defaultPalette, THEMES_TAB_FOCUS_NAME } from "~/utils/constants";
+import {
+	defaultPalette,
+	defaultSupportingPalette,
+	THEMES_TAB_FOCUS_NAME,
+} from "~/utils/constants";
 import { focusStyles } from "~/utils/atomic-recipes";
 import {
 	getBaseFocusStyles,
@@ -52,6 +56,7 @@ import Image from "../Image";
 import RenderTheme from "../editor/RenderTheme";
 import { defaultThemeRenderMap } from "../projection/RenderProjection";
 import { Input } from "~/components/ui/input";
+import { Badge } from "~/components/ui/badge";
 
 type ThemePanelGroupValues = "all" | "collections" | "favorites";
 type ThemeListData = {
@@ -159,10 +164,7 @@ export default function ThemeSelection() {
 				changeCoreFocus,
 				changeFluidFocus,
 			}) => {
-				const newCoreFocusId = Math.max(
-					(fluidFocusId ?? 0) - NUM_OF_DISPLAY_LANES,
-					0,
-				);
+				const newCoreFocusId = Math.max((fluidFocusId ?? 0) - 1, 0);
 				changeFluidFocus(newCoreFocusId);
 			},
 			ArrowDown: ({
@@ -173,7 +175,7 @@ export default function ThemeSelection() {
 				changeFluidFocus,
 			}) => {
 				const newCoreFocusId = Math.min(
-					(fluidFocusId ?? 0) + NUM_OF_DISPLAY_LANES,
+					(fluidFocusId ?? 0) + 1,
 					filteredThemes().length - 1,
 				);
 				changeFluidFocus(newCoreFocusId);
@@ -244,7 +246,9 @@ export default function ThemeSelection() {
 
 	// scroll to current fluid item
 	createEffect(() => {
-		rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+		if (isCurrentPanel() && filteredThemes().length) {
+			rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+		}
 	});
 
 	// close contextMenu when we scroll
@@ -391,6 +395,8 @@ export default function ThemeSelection() {
 												py={2}
 												w="full"
 												h="full"
+												display="flex"
+												justifyContent="space-between"
 												class="disable-child-clicks"
 												style={{
 													height: `${virtualItem.size}px`,
@@ -409,6 +415,23 @@ export default function ThemeSelection() {
 												<Text maxW="full" textStyle="sm" truncate>
 													{theme.title}
 												</Text>
+												<Show
+													when={
+														appStore.displayData.songTheme?.id === theme.id ||
+														appStore.displayData.scriptureTheme?.id === theme.id
+													}
+												>
+													<Badge
+														variant="subtle"
+														colorPalette={
+															virtualItem.index === fluidFocusId()
+																? defaultSupportingPalette
+																: defaultPalette
+														}
+													>
+														Default
+													</Badge>
+												</Show>
 											</Box>
 										);
 									}}

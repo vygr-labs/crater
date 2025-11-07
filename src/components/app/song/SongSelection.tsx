@@ -220,7 +220,9 @@ export default function SongSelection() {
 
 	// scroll to current fluid item
 	createEffect(() => {
-		rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+		if (isCurrentPanel() && filteredSongs().length) {
+			rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+		}
 	});
 
 	// close contextMenu when we scroll

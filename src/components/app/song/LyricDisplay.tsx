@@ -1,5 +1,5 @@
 import { For, Show } from "solid-js";
-import { Box, Flex, Stack } from "styled-system/jsx";
+import { Box, Flex, Stack, VStack } from "styled-system/jsx";
 import { token } from "styled-system/tokens";
 import { Text } from "~/components/ui/text";
 import type { SongLyric } from "~/types/context";
@@ -44,9 +44,6 @@ export default function LyricDisplay(props: Props) {
 					props.isFocusItem,
 					props.isCurrentPanel,
 				)}
-				// style={{
-				// 	// "background-color": props.isFocusItem ? token.var(`colors.${defaultPalette}.800`) : isHovered ? token.var(`colors.${defaultSupportingPalette}.800`) : 'transparent'
-				// }}
 			>
 				<Box
 					w={PREVIEW_INDEX_WIDTH}
@@ -62,9 +59,6 @@ export default function LyricDisplay(props: Props) {
 						props.isFocusItem,
 						props.isCurrentPanel,
 					)}
-					// bgColor={
-					// 	props.isFocusItem ? `${defaultPalette}.700` : isHovered ? `${defaultPalette}.700/50` : 'gray.800'
-					// }
 				>
 					<Text>{props.index + 1}</Text>
 				</Box>
@@ -78,13 +72,6 @@ export default function LyricDisplay(props: Props) {
 									props.isFocusItem,
 									props.isCurrentPanel,
 								)}
-								// color={
-								// 	props.isFocusItem
-								// 		? 'gray.100'
-								// 		: isHovered
-								// 			? 'gray.100'
-								// 			: 'initial'
-								// }
 								fontWeight={600}
 							>
 								{props.lyric.label}
@@ -92,7 +79,7 @@ export default function LyricDisplay(props: Props) {
 						</Box>
 					</Show>
 
-					<Box
+					<VStack
 						py={2}
 						px={2}
 						style={getFocusableStyles(
@@ -100,13 +87,12 @@ export default function LyricDisplay(props: Props) {
 							props.isFocusItem,
 							props.isCurrentPanel,
 						)}
-						// color={
-						// 	props.isFocusItem ? 'gray.200' : isHovered ? 'gray.200' : 'fg.muted'
-						// }
+						alignItems="start"
+						gap={1}
 						fontFamily="body"
 					>
 						<For each={props.lyric?.text}>{(line) => <Text>{line}</Text>}</For>
-					</Box>
+					</VStack>
 				</Stack>
 			</Flex>
 		</Box>

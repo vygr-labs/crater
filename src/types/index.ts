@@ -135,6 +135,7 @@ export interface DisplayInfo {
 	scripture?: ScriptureVerse;
 	song?: SongLyric;
 	image?: MediaItem;
+	video?: MediaItem;
 }
 
 export interface ExtraRenderProps {

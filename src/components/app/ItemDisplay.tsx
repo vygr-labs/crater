@@ -3,7 +3,7 @@ import LyricDisplay from "./song/LyricDisplay";
 import ScriptureDisplay, {
 	type DisplayScripture,
 } from "./scripture/ScriptureDisplay";
-import type { DisplayType, MediaItem } from "~/types";
+import type { DisplayType, MediaItem, ScriptureVerse } from "~/types";
 import type { SongLyric } from "~/types/context";
 import ImageDisplay from "./media/ImageDisplay";
 import VideoDisplay from "./media/VideoDisplay";
@@ -32,7 +32,7 @@ export default function ItemDisplay(props: Props) {
 			<Match when={props.type === "scripture"}>
 				<ScriptureDisplay
 					index={props.index}
-					scripture={props.item as DisplayScripture}
+					scripture={props.item as ScriptureVerse}
 					isFocusItem={props.isFocusItem}
 					panelName={props.panelName}
 					isCurrentPanel={props.isCurrentPanel}

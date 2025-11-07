@@ -246,7 +246,9 @@ export default function MediaSelection() {
 
 	// scroll to current fluid item
 	createEffect(() => {
-		rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+		if (isCurrentPanel() && filteredMedia().length) {
+			rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
+		}
 	});
 
 	// close contextMenu when we scroll
