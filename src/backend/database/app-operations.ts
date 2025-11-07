@@ -13,7 +13,7 @@ export const saveScheduleToDB = (path: string, name: string) => {
 		);
 		const info = insertThemeStmt.run(path, name);
 
-		return { success: true, message: "Schedule saved successfully." };
+		return { success: true, message: "Schedule saved successfully.", path };
 	} catch (error) {
 		console.log("Error occurred while adding schedule", error);
 		return { success: false, message: "Failed to save schedule." };

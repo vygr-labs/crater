@@ -605,12 +605,25 @@ ipcMain.handle("delete-media", async (_, path) => {
 	}
 });
 
-ipcMain.handle("save-schedule", async (_, scheduleData: ScheduleSaveItem) => {
-	console.log("SENT DATA: ", _, scheduleData);
-	const filePath = path.join(SCHEDULE_ITEMS_PATH, `${scheduleData.name}.json`);
-	await fs.promises.writeFile(filePath, JSON.stringify(scheduleData));
-	return saveScheduleToDB(filePath, scheduleData.name);
-});
+ipcMain.handle(
+	"save-schedule",
+	async (
+		_,
+		{ schedule, overwrite }: { schedule: ScheduleSaveItem; overwrite: boolean },
+	) => {
+		console.log("SENT DATA: ", _, schedule);
+		const filePath = path.join(SCHEDULE_ITEMS_PATH, `${schedule.name}.json`);
+		if (!overwrite && fs.existsSync(filePath)) {
+			return {
+				success: false,
+				message: "File already exists in schedules directory",
+			};
+		} else {
+			await fs.promises.writeFile(filePath, JSON.stringify(schedule));
+			return saveScheduleToDB(filePath, schedule.name);
+		}
+	},
+);
 
 ipcMain.handle("get-recent-schedules", getSavedSchedules);
 

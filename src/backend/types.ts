@@ -58,8 +58,7 @@ export interface ScheduleSaveItem {
 }
 
 export interface SavedSchedule {
-	id: number;
 	path: string;
 	name: string;
-	last_used: any;
+	last_used: number;
 }

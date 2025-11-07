@@ -1,4 +1,5 @@
 import type { SetStoreFunction } from "solid-js/store";
+import type { SavedSchedule } from "~/backend/types";
 import type {
 	DisplayBounds,
 	DisplayProps,
@@ -68,6 +69,20 @@ export const changeDefaultTheme: AppStoreUpdateFn<Theme> = (
 				? "scriptureTheme"
 				: "presentationTheme";
 	setStore("displayData", storeKey, theme);
+};
+
+export const addRecentSchedule: AppStoreUpdateFn<SavedSchedule> = (
+	setStore,
+	sched,
+) => {
+	setStore("recentSchedules", (former) => {
+		const found = former.findIndex((rc) => rc.path === sched.path);
+		if (found > -1) {
+			former = former.filter((fs) => fs.path !== sched.path);
+		}
+		console.log("Attempting schedule save", former, found);
+		return [sched, ...former];
+	});
 };
 
 // SETTINGS HELPERS

@@ -47,6 +47,7 @@ export default function ControlsMain() {
 
 	const handleShortcutT: FocusEventHandlerFn = ({ event }) => {
 		if (event.ctrlKey) {
+			console.log("Adding Item: ");
 			handleAddToSchedule();
 		}
 	};

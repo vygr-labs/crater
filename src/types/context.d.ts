@@ -50,7 +50,10 @@ export interface MediaImportResponse extends BridgeResponse {
 export interface IElectronAPI {
 	// Miscellaneous
 	controlsWindowLoaded: () => void;
-	saveSchedule: (schedule: ScheduleSaveItem) => Promise<void>;
+	saveSchedule: (data: {
+		schedule: ScheduleSaveItem;
+		overwrite: boolean;
+	}) => Promise<BridgeResponse & { path: string }>;
 	getRecentSchedules: () => Promise<SavedSchedule[]>;
 	getScheduleData: (sched: SavedSchedule) => Promise<string>;
 

@@ -19,7 +19,8 @@ interface ImportOptions {
 contextBridge.exposeInMainWorld("electronAPI", {
 	// Miscellaneous
 	controlsWindowLoaded: () => ipcRenderer.send("controls-window-loaded"),
-	saveSchedule: (data: unknown) => ipcRenderer.invoke("save-schedule", data),
+	saveSchedule: (data: { schedule: unknown; overwite: boolean }) =>
+		ipcRenderer.invoke("save-schedule", data),
 	getRecentSchedules: () => ipcRenderer.invoke("get-recent-schedules"),
 	getScheduleData: (schedule: unknown) =>
 		ipcRenderer.invoke("get-schedule-data", schedule),

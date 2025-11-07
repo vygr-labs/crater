@@ -157,6 +157,7 @@ export const defaultAppStore: AppData = {
 	},
 	isLive: false,
 	openSettings: false,
+	recentSchedules: [],
 };
 
 export const defaultAppSettings: AppSettings = {

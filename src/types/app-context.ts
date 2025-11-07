@@ -12,6 +12,7 @@ import type {
 	Theme,
 } from "./index";
 import type { SetStoreFunction } from "solid-js/store";
+import type { SavedSchedule } from "~/backend/types";
 
 type AppLoading = {
 	reason: string;
@@ -106,6 +107,7 @@ export interface AppData {
 	namingModal: NamingModalData;
 	isLive: boolean;
 	openSettings: boolean;
+	recentSchedules: SavedSchedule[];
 }
 
 export interface AppSettings {

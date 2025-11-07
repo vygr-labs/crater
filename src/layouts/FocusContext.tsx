@@ -230,12 +230,24 @@ export default function FocusContextProvider(props: ParentProps) {
 				GLOBAL_SHORTCUTS,
 			);
 			GLOBAL_SHORTCUTS.push(...Object.keys(handlers));
-			setStore("subscribers", GLOBAL_FOCUS_NAME, {
-				handlers,
-				coreFocusId: defaultCoreFocus,
-				fluidFocusId: defaultFluidFocus,
-				clickHandlers,
-			});
+			setStore(
+				produce((store) => {
+					const panelObj = store.subscribers[GLOBAL_FOCUS_NAME] || {};
+					panelObj.coreFocusId = defaultCoreFocus;
+					panelObj.fluidFocusId = defaultFluidFocus;
+					panelObj.handlers = Object.assign(panelObj.handlers ?? {}, handlers);
+					panelObj.clickHandlers = Object.assign(
+						panelObj.clickHandlers ?? {},
+						clickHandlers,
+					);
+
+					store.subscribers[GLOBAL_FOCUS_NAME] = panelObj;
+				}),
+			);
+			console.log(
+				"Added Global Subscriber",
+				store.subscribers[GLOBAL_FOCUS_NAME],
+			);
 		} else {
 			setStore("subscribers", name, {
 				handlers,

@@ -7,12 +7,17 @@ import { FaSolidChevronDown } from "solid-icons/fa";
 import { IconButton } from "../ui/icon-button";
 import { ArkSwitch } from "../ui/switch";
 import { Text } from "../ui/text";
-import { TbArrowRight, TbArrowsRightDown, TbClearAll } from "solid-icons/tb";
+import { TbArrowsRightDown, TbChevronRight, TbClearAll } from "solid-icons/tb";
 import { TiSortNumerically } from "solid-icons/ti";
-import { defaultPalette, defaultAbsenteePalette } from "~/utils/constants";
+import {
+	defaultPalette,
+	defaultAbsenteePalette,
+	GLOBAL_FOCUS_NAME,
+} from "~/utils/constants";
 import { IoSettings } from "solid-icons/io";
 import { Portal } from "solid-js/web";
 import {
+	addRecentSchedule,
 	toggleClearDisplay,
 	toggleLive,
 	toggleLogo,
@@ -20,34 +25,60 @@ import {
 import type { SwitchCheckedChangeDetails } from "@ark-ui/solid";
 import { BsDisplayFill } from "solid-icons/bs";
 import { createStore, unwrap } from "solid-js/store";
-import { createEffect, createSignal, For, Show } from "solid-js";
+import { batch, createEffect, createSignal, For, Show } from "solid-js";
 import { getToastType, toaster } from "~/utils";
 import GenericModal from "../modals/GenericModal";
 import { GenericField } from "../ui/field";
 import { Input } from "../ui/input";
 import { createAsyncMemo } from "solidjs-use";
 import type { SavedSchedule } from "~/backend/types";
+import {
+	useFocusContext,
+	type FocusEventHandlerFn,
+} from "~/layouts/FocusContext";
 
 export type Props = {
 	// openAppSettings: () => void
 };
 
+interface MenuControlsType {
+	scheduleName: string;
+	openSchedModal: boolean;
+	loadedSchedule: SavedSchedule | null;
+}
+
 export default function MenuBar(props: Props) {
 	const { appStore, setAppStore, settings, updateSettings } = useAppContext();
-	const [menuStore, setMenuStore] = createStore({
+	const [menuStore, setMenuStore] = createStore<MenuControlsType>({
 		scheduleName: "",
 		openSchedModal: false,
-		triggerCounter: 0,
+		loadedSchedule: null,
 	});
 
-	const recentSchedules = createAsyncMemo(async () => {
-		const trigger = menuStore.triggerCounter;
+	const handleShortcutSave: FocusEventHandlerFn = ({ event }) => {
 		console.log(
-			"RECENT SCHEDULES: ",
-			await window.electronAPI.getRecentSchedules(),
+			"Saving schedule ",
+			menuStore.loadedSchedule,
+			appStore.recentSchedules,
 		);
-		return await window.electronAPI.getRecentSchedules();
-	}, []);
+		if (event.ctrlKey) {
+			if (menuStore.loadedSchedule) {
+				onSaveSchedule();
+			} else if (appStore.scheduleItems.length) {
+				setMenuStore("openSchedModal", true);
+			}
+		}
+	};
+
+	const { subscribeEvent, currentPanel } = useFocusContext();
+	const { name, coreFocusId, fluidFocusId, changeFluidFocus } = subscribeEvent({
+		name: GLOBAL_FOCUS_NAME,
+		handlers: {
+			s: handleShortcutSave,
+			S: handleShortcutSave,
+		},
+		global: true,
+	});
 
 	function openImportDialog() {
 		setAppStore("loading", {
@@ -84,21 +115,51 @@ export default function MenuBar(props: Props) {
 	});
 
 	const onSaveSchedule = () => {
+		const sched = {
+			name: menuStore.scheduleName,
+			items: unwrap(appStore.scheduleItems),
+		};
 		window.electronAPI
 			.saveSchedule({
-				name: menuStore.scheduleName,
-				items: unwrap(appStore.scheduleItems),
+				schedule: sched,
+				overwrite: Boolean(menuStore.loadedSchedule),
 			})
-			.finally(() => {
-				setMenuStore("triggerCounter", (former) => ++former);
+			.then(({ success, message, path }) => {
+				if (success) {
+					const savedSched = {
+						...sched,
+						path,
+						last_used: Date.now(),
+					};
+					addRecentSchedule(setAppStore, savedSched);
+					batch(() => {
+						setMenuStore("loadedSchedule", savedSched);
+						setMenuStore("scheduleName", savedSched.name);
+					});
+				}
+				toaster.create({ type: getToastType(success), title: message });
 			});
 	};
 
 	const loadSchedule = async (savedSched: SavedSchedule) => {
-		const scheduleData = await window.electronAPI.getScheduleData(savedSched);
+		const scheduleData = await window.electronAPI.getScheduleData(
+			unwrap(savedSched),
+		);
 		console.log(scheduleData);
 		console.log("SCHEDULE LOADED: ", JSON.parse(scheduleData));
 		setAppStore("scheduleItems", JSON.parse(scheduleData).items);
+		batch(() => {
+			setMenuStore("loadedSchedule", savedSched);
+			setMenuStore("scheduleName", savedSched.name);
+		});
+	};
+
+	const emptySchedule = () => {
+		batch(() => {
+			setAppStore("scheduleItems", []);
+			setMenuStore("loadedSchedule", null);
+			setMenuStore("scheduleName", "");
+		});
 	};
 
 	return (
@@ -125,7 +186,13 @@ export default function MenuBar(props: Props) {
 					<Portal>
 						<Menu.Positioner>
 							<Menu.Content>
-								<Menu.Item value="new">New</Menu.Item>
+								<Menu.Item
+									value="new"
+									onClick={emptySchedule}
+									disabled={appStore.scheduleItems.length === 0}
+								>
+									New
+								</Menu.Item>
 								<Menu.Item
 									value="save-schedule"
 									disabled={appStore.scheduleItems.length === 0}
@@ -141,7 +208,7 @@ export default function MenuBar(props: Props) {
 								</Menu.Item>
 								<Menu.Item value="open-schedule">Open</Menu.Item>
 								<Show
-									when={recentSchedules().length}
+									when={appStore.recentSchedules.length}
 									fallback={
 										<Menu.Item value="disabled-recent" disabled>
 											Recent
@@ -149,16 +216,16 @@ export default function MenuBar(props: Props) {
 									}
 								>
 									<Menu.Root>
-										<Menu.TriggerItem>
-											Recents <TbArrowRight />
+										<Menu.TriggerItem justifyContent="space-between">
+											Recents <TbChevronRight />
 										</Menu.TriggerItem>
 										<Portal>
 											<Menu.Positioner>
 												<Menu.Content>
-													<For each={recentSchedules()}>
+													<For each={appStore.recentSchedules}>
 														{(item) => (
 															<Menu.Item
-																value={item.id.toString()}
+																value={item.path}
 																onClick={() => loadSchedule(item)}
 															>
 																{item.path}
