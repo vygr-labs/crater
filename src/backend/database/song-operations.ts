@@ -1,4 +1,4 @@
-import songsDB from "./songs-db.js";
+import songsDB, { ftsTableName, spellfixTableName } from "./songs-db.js";
 
 // Define types for songs and lyrics
 type Song = {
@@ -89,10 +89,15 @@ const updateSong = ({
     `,
 	);
 
+	const lyricValues = newLyrics.map(
+		(l, i) =>
+			`(${songId}, '${l.label}', '${JSON.stringify(l.text)}', ${i + 1})`,
+	);
+
 	const insertNewLyrics = songsDB.prepare(
 		`
     INSERT INTO song_lyrics (song_id, label, lyrics, "order")
-    VALUES (?, ?, ?, ?)
+    VALUES ${lyricValues}
     `,
 	);
 
@@ -105,14 +110,16 @@ const updateSong = ({
 		deleteOldLyrics.run(songId);
 
 		// Insert new lyrics
-		newLyrics.forEach((lyric, index) => {
-			insertNewLyrics.run(
-				songId,
-				lyric.label,
-				JSON.stringify(lyric.text),
-				index + 1,
-			);
-		});
+		console.log(lyricValues, insertNewLyrics);
+		insertNewLyrics.run();
+		// newLyrics.forEach((lyric, index) => {
+		// 	insertNewLyrics.run(
+		// 		songId,
+		// 		lyric.label,
+		// 		JSON.stringify(lyric.text),
+		// 		index + 1,
+		// 	);
+		// });
 	});
 
 	transaction();
@@ -132,10 +139,11 @@ const filterSongsByPhrase = (phrase: string): Song[] => {
 			// ORDER BY s.title ASC
 			// `,
 			`
-	SELECT word FROM lyrics_search WHERE word MATCH ?;`,
+	SELECT * FROM ${ftsTableName} WHERE lyrics MATCH ?;`,
 		)
 		.all(phrase) as Song[];
 
+	console.log("FILTER RESPONSE: ", response);
 	return response;
 };
 

@@ -4,12 +4,17 @@ import path from "node:path";
 import { getAssetPath } from "../constants.js";
 
 const db = new Database(SONGS_DB_PATH);
-// db.loadExtension(path.join(getAssetPath(), "./extensions/spellfix.dll"));
+db.loadExtension(path.join(getAssetPath(), "./extensions/spellfix.dll"));
+export const songsTableName = "songs";
+export const lyricsTableName = "song_lyrics";
+export const ftsTableName = "song_ft";
+export const spellfixTableName = "songs_search";
+export const ftsAuxTableName = "songs_ft_aux";
 
 // Create Tables
 db.prepare(
 	`
-CREATE TABLE IF NOT EXISTS songs (
+CREATE TABLE IF NOT EXISTS ${songsTableName} (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     author TEXT,
@@ -21,7 +26,7 @@ CREATE TABLE IF NOT EXISTS songs (
 
 db.prepare(
 	`
-CREATE TABLE IF NOT EXISTS song_lyrics (
+CREATE TABLE IF NOT EXISTS ${lyricsTableName} (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     song_id INTEGER NOT NULL,
     label TEXT NOT NULL,
@@ -33,15 +38,88 @@ CREATE TABLE IF NOT EXISTS song_lyrics (
 
 // INSERT INTO songs_search(word) SELECT word FROM big_vocabulary;
 // INSERT INTO songs_search(word) SELECT term FROM search_aux WHERE col='*';
-// db.exec(
-// 	`
-//   CREATE VIRTUAL TABLE IF NOT EXISTS lyrics_search USING spellfix1;
-//   CREATE VIRTUAL TABLE IF NOT EXISTS lyrics_ft USING fts4(lyrics);
-//   CREATE VIRTUAL TABLE IF NOT EXISTS lyrics_ft_terms USING fts4aux(lyrics_ft);
-//   INSERT INTO lyrics_search(word,rank)
-//     SELECT term, documents FROM lyrics_ft_terms WHERE col='*';
-//   `,
-// );
+// ftsTableName option: content="${songsTableName}",
+db.exec(`
+  CREATE VIRTUAL TABLE IF NOT EXISTS ${spellfixTableName} USING spellfix1;
+  CREATE VIRTUAL TABLE IF NOT EXISTS ${ftsTableName} USING fts4(title, lyrics);
+  CREATE VIRTUAL TABLE IF NOT EXISTS ${ftsAuxTableName} USING fts4aux(${ftsTableName});
+  
+    CREATE TRIGGER IF NOT EXISTS ${songsTableName}_bu BEFORE UPDATE ON ${songsTableName} BEGIN
+        DELETE FROM ${ftsTableName} WHERE docid=old.rowid;
+    END;
+    CREATE TRIGGER IF NOT EXISTS ${songsTableName}_au AFTER UPDATE ON ${songsTableName} BEGIN
+        INSERT INTO ${ftsTableName}(docid, title, lyrics) VALUES(
+        new.rowid, (SELECT title from ${songsTableName} where id = new.rowid), 
+        (
+          SELECT GROUP_CONCAT(
+            REPLACE(
+              TRIM(
+                TRIM(lyrics, '["'), 
+                ']"'), '","', ', ')) as lyrics
+                      FROM song_lyrics
+                      WHERE song_id = new.rowid
+                      ORDER BY "order" ASC
+          )
+        );
+    END;
+    CREATE TRIGGER IF NOT EXISTS ${songsTableName}_bd BEFORE DELETE ON ${songsTableName} BEGIN
+        DELETE FROM ${ftsTableName} WHERE docid=old.rowid;
+    END;
+
+
+    CREATE TRIGGER IF NOT EXISTS ${lyricsTableName}_bd BEFORE DELETE ON ${lyricsTableName} BEGIN
+        DELETE FROM ${ftsTableName} WHERE docid=old.song_id;
+    END;
+    CREATE TRIGGER IF NOT EXISTS ${lyricsTableName}_bu BEFORE UPDATE ON ${lyricsTableName} BEGIN
+        DELETE FROM ${ftsTableName} WHERE docid=old.song_id;
+    END;
+    CREATE TRIGGER IF NOT EXISTS ${lyricsTableName}_au AFTER UPDATE ON ${lyricsTableName} BEGIN
+        INSERT INTO ${ftsTableName}(docid, title, lyrics) VALUES(
+        new.song_id, (SELECT title from ${songsTableName} where id = new.song_id), 
+        (
+          SELECT GROUP_CONCAT(
+            REPLACE(
+              TRIM(
+                TRIM(lyrics, '["'), 
+                ']"'), '","', ', ')) as lyrics
+                      FROM song_lyrics
+                      WHERE song_id = new.song_id
+                      ORDER BY "order" ASC
+          )
+        );
+    END;
+
+    CREATE TRIGGER IF NOT EXISTS ${lyricsTableName}_bi BEFORE INSERT ON ${lyricsTableName}
+      BEGIN
+          DELETE FROM ${ftsTableName} WHERE docid=new.song_id;
+      END;
+    CREATE TRIGGER IF NOT EXISTS ${lyricsTableName}_ai AFTER INSERT ON ${lyricsTableName} 
+      BEGIN
+          INSERT INTO ${ftsTableName}(docid, title, lyrics) VALUES(
+          new.song_id, (SELECT title from ${songsTableName} where id = new.song_id), 
+          (
+            SELECT GROUP_CONCAT(
+              REPLACE(
+                TRIM(
+                  TRIM(lyrics, '["'), 
+                  ']"'), '","', ', ')) as lyrics
+                        FROM song_lyrics
+                        WHERE song_id = new.song_id
+                        ORDER BY "order" ASC
+            )
+          );
+      END;
+    `);
+// CREATE TRIGGER IF NOT EXISTS ${ftsAuxTableName}_bi BEFORE DELETE ON ${ftsAuxTableName} BEGIN
+//     DELETE FROM ${spellfixTableName} WHERE word=new.term;
+// END;
+// CREATE TRIGGER IF NOT EXISTS ${ftsAuxTableName}_bi BEFORE INSERT ON ${ftsAuxTableName} BEGIN
+//     DELETE FROM ${spellfixTableName} WHERE word=new.term;
+// END;
+// CREATE TRIGGER IF NOT EXISTS ${ftsAuxTableName}_ai AFTER INSERT ON ${ftsAuxTableName} BEGIN
+//     INSERT INTO ${spellfixTableName}(word,rank)
+//         VALUES (new.term, new.documents);
+// END;
 
 db.prepare(
 	`
