@@ -19,6 +19,7 @@ export default function RenderVideo(props: Props) {
 				preload="auto"
 				autoplay
 				loop
+				muted={false}
 			/>
 		</Box>
 	);

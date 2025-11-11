@@ -9,7 +9,7 @@ interface Props extends JSX.VideoHTMLAttributes<HTMLVideoElement> {
 }
 
 export default function Video(_props: Props) {
-	const [props, rest] = splitProps(_props, ["src", "id", "fluid"]);
+	const [props, rest] = splitProps(_props, ["src", "id", "fluid", "muted"]);
 	let player: Player;
 
 	onMount(() => {
@@ -31,6 +31,7 @@ export default function Video(_props: Props) {
 				id={props.id}
 				class="video-js vjs-crater"
 				src={"video://" + props.src}
+				muted={typeof props.muted === "boolean" ? props.muted : true}
 				{...rest}
 			>
 				{/* <source src={"video://" + props.src} /> */}

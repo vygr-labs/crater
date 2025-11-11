@@ -45,13 +45,14 @@ import type { AvailableTranslation, ScriptureVerse } from "~/types";
 import bibleData from "~/utils/parser/osis.json";
 import bookInfo from "~/utils/parser/books.json";
 import { Input } from "~/components/ui/input";
+import Fuse from "fuse.js";
 
 type ScripturePanelGroupValues = "all" | "collections" | "favorites";
 type ScriptureListData = {
 	title: string;
 	value: ScripturePanelGroupValues;
 };
-type ScriptureSearchMode = "search" | "title";
+type ScriptureSearchMode = "search" | "special";
 
 type ScriptureControlsData = {
 	searchMode: ScriptureSearchMode;
@@ -73,13 +74,17 @@ interface StageMarkData {
 	selectionEnd: number;
 }
 
+const fuzzy = new Fuse([] as ScriptureVerse[], {
+	keys: ["text"],
+});
+
 export default function ScriptureSelection() {
 	const { appStore, setAppStore } = useAppContext();
 	const [scriptureControls, setScriptureControls] =
 		createStore<ScriptureControlsData>({
 			group: "all",
 			collection: null,
-			searchMode: "title",
+			searchMode: "special",
 			query: "",
 			filter: "",
 			contextMenuOpen: false,
@@ -88,9 +93,11 @@ export default function ScriptureSelection() {
 	const allScriptures = createAsyncMemo(async () => {
 		// const updated = appStore.scripturesUpdateCounter
 		console.log("Translation: ", scriptureControls.translation);
-		return await window.electronAPI.fetchAllScripture(
+		const results = await window.electronAPI.fetchAllScripture(
 			scriptureControls.translation,
 		);
+		fuzzy.setCollection(results);
+		return results;
 	}, []);
 	const allTranslations = createAsyncMemo(async () => {
 		return await window.electronAPI.fetchTranslations();
@@ -128,10 +135,12 @@ export default function ScriptureSelection() {
 	// );
 
 	let searchInputRef!: HTMLInputElement;
-	const applyQueryFilter = (scriptures: ScriptureVerse[]) =>
-		scriptures.filter((scripture) =>
-			scripture.text.includes(scriptureControls.query),
-		);
+	// const applyQueryFilter = (scriptures: ScriptureVerse[]) => {
+	// return fuzzy.search(scriptureControls.query).map((m) => m.item);
+	// scriptures.filter((scripture) =>
+	// 	scripture.text.includes(scriptureControls.query),
+	// );
+	// };
 	const filteredScriptures = createMemo<ScriptureVerse[]>(() => {
 		// const scriptureCollection = currentCollection();
 		console.log(
@@ -147,7 +156,11 @@ export default function ScriptureSelection() {
 		// 		),
 		// 	);
 		// } else {
-		return applyQueryFilter(allScriptures());
+		if (scriptureControls.query) {
+			return fuzzy.search(scriptureControls.query).map((m) => m.item);
+		} else {
+			return allScriptures();
+		}
 		// }
 	});
 
@@ -320,6 +333,7 @@ export default function ScriptureSelection() {
 	});
 
 	const updateFilterInput = (scripture?: ScriptureVerse) => {
+		if (scriptureControls.searchMode !== "special") return;
 		console.log(
 			"Checking: ",
 			scripture,
@@ -444,7 +458,7 @@ export default function ScriptureSelection() {
 	};
 
 	const scripturePattern = /^(\d*\s*\w*)\s*(\d*)[:|\s]*(\d*)$/gm;
-	const handleSearch = (e: InputEvent) => {
+	const handleSpecialSearch = (e: InputEvent) => {
 		e.preventDefault();
 		const target = e.target as HTMLInputElement;
 		let stage = stageMarkData.stage;
@@ -639,14 +653,14 @@ export default function ScriptureSelection() {
 	const updateSearchMode = () => {
 		setScriptureControls(
 			produce((store) => {
-				store.searchMode = store.searchMode === "search" ? "title" : "search";
+				store.searchMode = store.searchMode === "search" ? "special" : "search";
 				store.query = "";
 			}),
 		);
 	};
 
 	const handleInputClick = (e: MouseEvent) => {
-		if (scriptureControls.searchMode !== "title") return;
+		if (scriptureControls.searchMode !== "special") return;
 		e.preventDefault();
 		console.log(e, searchInputRef.selectionStart, searchInputRef.selectionEnd);
 		const stageOffsets: Record<number, number> = {
@@ -705,7 +719,7 @@ export default function ScriptureSelection() {
 						query={scriptureControls.query}
 						filter={scriptureControls.filter}
 						onFilter={handleFilter}
-						onSearch={handleSearch}
+						onSpecialSearch={handleSpecialSearch}
 						onInputClick={handleInputClick}
 						setSearchInputRef={(el) => {
 							searchInputRef = el;
@@ -827,7 +841,7 @@ interface SearchInputProps {
 	query: string;
 	filter: string;
 	onFilter: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
-	onSearch: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
+	onSpecialSearch: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
 	onInputClick: JSX.EventHandlerUnion<HTMLInputElement, MouseEvent>;
 	searchMode: ScriptureSearchMode;
 	updateSearchMode: () => void;
@@ -848,13 +862,13 @@ const ScriptureSearchInput = (props: SearchInputProps) => {
 					cursor="pointer"
 					onClick={props.updateSearchMode}
 					aria-label={
-						props.searchMode === "title"
+						props.searchMode === "special"
 							? "Switch to search mode"
 							: "Switch to title mode"
 					}
 				>
 					<Show
-						when={props.searchMode === "title"}
+						when={props.searchMode === "special"}
 						fallback={<VsSearchFuzzy />}
 					>
 						<VsListTree />
@@ -882,16 +896,23 @@ const ScriptureSearchInput = (props: SearchInputProps) => {
 				}}
 				ref={props.setSearchInputRef}
 				value={
-					props.markData.book
+					props.searchMode === "special" && props.markData.book
 						? `${props.markData.book} ${props.markData.chapter}:${props.markData.verse}`
 						: ""
 				}
-				onclick={props.onInputClick}
-				onbeforeinput={
-					props.searchMode === "search" ? props.onFilter : props.onSearch
+				onclick={
+					props.searchMode === "special" ? props.onInputClick : undefined
 				}
-				onkeydown={props.handleKeyNav}
-				textTransform={props.searchMode === "title" ? "capitalize" : "initial"}
+				onbeforeinput={
+					props.searchMode === "special" ? props.onSpecialSearch : undefined
+				}
+				oninput={props.searchMode === "search" ? props.onFilter : undefined}
+				onkeydown={
+					props.searchMode === "special" ? props.handleKeyNav : undefined
+				}
+				textTransform={
+					props.searchMode === "special" ? "capitalize" : "initial"
+				}
 				// onFocus={handleSearchInputFocus}
 				data-testid="scripture-search-input"
 				aria-label="Search scriptures"
