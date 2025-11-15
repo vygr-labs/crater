@@ -117,14 +117,7 @@ export default function SchedulePanel() {
 	});
 
 	return (
-		<Stack
-			pos="relative"
-			h="full"
-			pt={7}
-			pb="1"
-			gap={2}
-			ref={virtualizerParentRef}
-		>
+		<Stack pos="relative" h="full" pt={7} pb="1" gap={2}>
 			<ContextMenu open={false} setOpen={() => null} ref={virtualizerParentRef}>
 				<Box
 					style={{

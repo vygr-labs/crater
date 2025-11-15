@@ -110,14 +110,7 @@ export default function PreviewPanel() {
 	});
 
 	return (
-		<Stack
-			pos="relative"
-			h="full"
-			pt={7}
-			pb="1"
-			gap={2}
-			ref={virtualizerParentRef}
-		>
+		<Stack pos="relative" h="full" pt={7} pb="1" gap={2}>
 			<Box
 				visibility={
 					["image", "video"].includes(appStore.previewItem?.type ?? "")
