@@ -1,10 +1,9 @@
 import {
-	createListCollection,
 	useListCollection,
 	type SelectValueChangeDetails,
 } from "@ark-ui/solid";
-import { createEffect, createMemo, createSignal, For, Switch } from "solid-js";
-import { Box, HStack, Stack, VStack } from "styled-system/jsx";
+import { createEffect, createSignal, For, on, onMount } from "solid-js";
+import { Box, HStack, Stack } from "styled-system/jsx";
 import { Tabs } from "../ui/tabs";
 import { Dialog } from "../ui/dialog";
 import { Select } from "../ui/select";
@@ -25,6 +24,7 @@ import { Icon } from "../ui/icon";
 import { FaSolidMoon, FaSolidSun } from "solid-icons/fa";
 import { ArkSwitch, GenericSwitch } from "../ui/switch";
 import { TbCheck, TbChevronDown } from "solid-icons/tb";
+import { DEFAULT_PROJECTION_DISPLAY_ID } from "~/utils/constants";
 
 export function AppSettingsDialog() {
 	const [displayBounds, setDisplayBounds] = createSignal<
@@ -43,23 +43,56 @@ export function AppSettingsDialog() {
 		}
 	});
 
-	createEffect(() => {
-		if (appStore.openSettings) {
-			window.electronAPI.getConnectedDisplays().then((result) => {
-				console.log("Connected Displays: ", result);
-				setDisplayCollection(
-					result.map((val, index) => ({
-						...val,
-						label: val.label || `Display ${index + 1}`,
-						value: val.id,
-					})),
-				);
+	const handleDisplaysUpdate = (allDisplays: Display[]) => {
+		console.log("Connected Displays: ", allDisplays);
+		setDisplayCollection(
+			allDisplays.map((val, index) => ({
+				...val,
+				label: val.label || `Display ${index + 1}`,
+				value: val.id.toString(),
+			})),
+		);
+
+		console.log(
+			"CONNECTED: Current Display: ",
+			settings.projectionBounds,
+			settings.projectionDisplayId,
+		);
+		if (settings.projectionDisplayId === DEFAULT_PROJECTION_DISPLAY_ID) {
+			const externalDisplay =
+				allDisplays.length > 1
+					? (allDisplays.find((display) => {
+							return display.bounds.x !== 0 || display.bounds.y !== 0;
+						}) ?? allDisplays[1])
+					: allDisplays[0];
+			console.log("Setting Default Screen: ", externalDisplay);
+
+			updateDisplayBounds(updateSettings, {
+				...externalDisplay.workArea,
 			});
+			updateProjectionDisplayId(updateSettings, externalDisplay.id);
 		}
+	};
+
+	onMount(() => {
+		window.electronAPI.getConnectedDisplays().then(handleDisplaysUpdate);
+		window.electronAPI.onDisplaysUpdate(handleDisplaysUpdate);
 	});
 
+	createEffect(
+		on(
+			() => appStore.openSettings,
+			(settingsOpen) => {
+				if (settingsOpen) {
+					console.log("Getting All Displays:");
+					window.electronAPI.getConnectedDisplays().then(handleDisplaysUpdate);
+				}
+			},
+		),
+	);
+
 	function handleDisplayChange(details: SelectValueChangeDetails) {
-		console.log(details);
+		console.log("Display Select Change Details: ", details);
 		// setDisplayBounds(details)
 		updateDisplayBounds(updateSettings, { ...details.items[0].workArea });
 		updateProjectionDisplayId(updateSettings, details.items[0].id);
@@ -96,7 +129,7 @@ export function AppSettingsDialog() {
 										collection={displayCollection()}
 										// size="sm"
 										width="full"
-										defaultValue={[settings.projectionDisplayId.toString()]}
+										value={[settings.projectionDisplayId.toString()]}
 										onValueChange={handleDisplayChange}
 									>
 										<Select.HiddenSelect />
@@ -208,14 +241,8 @@ export function AppSettingsDialog() {
 						</Tabs.Root>
 					</Dialog.Body>
 					<Dialog.Footer>
-						<Button
-							variant="outline"
-							onClick={() => setAppStore("openSettings", false)}
-						>
-							Cancel
-						</Button>
 						<Button onClick={() => setAppStore("openSettings", false)}>
-							Save
+							Done
 						</Button>
 					</Dialog.Footer>
 					<Dialog.CloseTrigger />

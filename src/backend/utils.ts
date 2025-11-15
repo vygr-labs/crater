@@ -3,6 +3,9 @@ import { MEDIA_IMAGES, MEDIA_VIDEOS } from "./constants.js";
 import mime from "mime";
 import fs from "node:fs";
 import fsExtra from "fs-extra";
+import pino from "pino";
+
+export const logger = pino();
 
 export function getMediaDestination(filePath: string) {
 	let destination = "";

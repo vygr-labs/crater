@@ -125,7 +125,7 @@ export function RenderEditorContainer(props: RenderEditorItemProps) {
 							about={props.node.data.background.title}
 							controls={false}
 							preload="auto"
-							autoplay
+							autoplay={props.extraData?.isProjectionDisplay}
 							loop
 						/>
 					</Match>

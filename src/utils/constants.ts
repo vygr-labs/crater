@@ -160,6 +160,7 @@ export const defaultAppStore: AppData = {
 	recentSchedules: [],
 };
 
+export const DEFAULT_PROJECTION_DISPLAY_ID = 0;
 export const defaultAppSettings: AppSettings = {
 	theme: "light",
 	language: "en",
@@ -169,7 +170,7 @@ export const defaultAppSettings: AppSettings = {
 		x: 0,
 		y: 0,
 	},
-	projectionDisplayId: 0,
+	projectionDisplayId: DEFAULT_PROJECTION_DISPLAY_ID,
 };
 
 export const storageKey = "crater-store";

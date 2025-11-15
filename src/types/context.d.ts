@@ -48,6 +48,9 @@ export interface MediaImportResponse extends BridgeResponse {
 }
 
 export interface IElectronAPI {
+	// Events
+	onDisplaysUpdate: (c: (allDisplays: Display[]) => void) => void;
+
 	// Miscellaneous
 	controlsWindowLoaded: () => void;
 	saveSchedule: (data: {

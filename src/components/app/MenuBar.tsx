@@ -26,7 +26,7 @@ import type { SwitchCheckedChangeDetails } from "@ark-ui/solid";
 import { BsDisplayFill } from "solid-icons/bs";
 import { createStore, unwrap } from "solid-js/store";
 import { batch, createEffect, createSignal, For, Show } from "solid-js";
-import { getToastType, toaster } from "~/utils";
+import { getToastType, logger, toaster } from "~/utils";
 import GenericModal from "../modals/GenericModal";
 import { GenericField } from "../ui/field";
 import { Input } from "../ui/input";
@@ -98,6 +98,11 @@ export default function MenuBar(props: Props) {
 	}
 
 	function handleLiveToggle() {
+		logger.info([
+			"Default Projection Bounds: ",
+			settings.projectionBounds,
+			settings.projectionDisplayId,
+		]);
 		console.log("Former Live: ", appStore.isLive);
 		toggleLive(setAppStore); // toggleLive(setAppStore, checked)
 		console.log("New Live: ", appStore.isLive);

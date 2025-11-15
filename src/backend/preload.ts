@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 // Electron doesnt support ESM for renderer process. Alternatively, pass this file
 // through a bundler but that feels like an overkill
-const { contextBridge, ipcRenderer } = require("electron");
+const { contextBridge, ipcRenderer, Display } = require("electron");
 
 type ThemeInput = {
 	title: string;
@@ -17,6 +17,12 @@ interface ImportOptions {
 }
 
 contextBridge.exposeInMainWorld("electronAPI", {
+	// Event Listeners:
+	onDisplaysUpdate: (callback: (_: any) => void) =>
+		ipcRenderer.on(
+			"displays-update",
+			(_: any, allDisplays: (typeof Display)[]) => callback(allDisplays),
+		),
 	// Miscellaneous
 	controlsWindowLoaded: () => ipcRenderer.send("controls-window-loaded"),
 	saveSchedule: (data: { schedule: unknown; overwite: boolean }) =>

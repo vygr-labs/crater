@@ -237,6 +237,7 @@ function spawnProjectionWindow({ x, y }: { x: number; y: number }) {
 		projectionWindow.loadFile("dist/index.html");
 	}
 	projectionWindow.show();
+	appWindow?.focus();
 
 	// projectionWindow.setIgnoreMouseEvents(true)
 	// if (electronIsDev)
@@ -306,6 +307,12 @@ app.on("ready", async () => {
 			return new Response("Internal Server Error", { status: 500 });
 		}
 	});
+
+	const handleDisplaysChange = () => {
+		appWindow?.webContents.send("displays-updated", screen.getAllDisplays());
+	};
+	screen.on("display-added", handleDisplaysChange);
+	screen.on("display-removed", handleDisplaysChange);
 });
 
 /*

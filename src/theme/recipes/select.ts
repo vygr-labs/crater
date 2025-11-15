@@ -97,6 +97,7 @@ export const selectSlotRecipe = defineSlotRecipe({
 		},
 		control: {
 			pos: "relative",
+			cursor: "pointer",
 		},
 		itemText: {
 			flex: "1",
