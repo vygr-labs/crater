@@ -1,3 +1,4 @@
+import videojs from "video.js";
 import type { OpenEditData, ScriptureVerse } from "~/types";
 import type {
 	AppSettings,
@@ -112,7 +113,7 @@ export const defaultDisplayData: AppDisplayData = {
 	scriptureTheme: undefined,
 	songTheme: undefined,
 	presentationTheme: undefined,
-	displayContent: { type: "song" },
+	displayContent: { type: "none" },
 };
 
 // adding arrays to app state takes a few reloads to show in redux/persist and are undefined till then
@@ -191,3 +192,5 @@ export const SONG_EDITOR_FOCUS_NAME = "SONG_EDITOR";
 export const THEME_EDITOR_FOCUS_NAME = "THEME_EDITOR";
 
 export const DEFAULT_PANEL = THEMES_TAB_FOCUS_NAME;
+export const PANEL_VIDEO_ID = "PANEL-LIVE-190293827";
+export const WINDOW_VIDEO_ID = "WINDOW-LIVE-190293827";

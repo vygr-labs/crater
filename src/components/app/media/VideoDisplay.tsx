@@ -2,6 +2,11 @@ import { Box } from "styled-system/jsx";
 import type { MediaItem } from "~/types";
 import Image from "../Image";
 import Video from "../Video";
+import {
+	LIVE_PANEL_FOCUS_NAME,
+	PANEL_VIDEO_ID,
+	WINDOW_VIDEO_ID,
+} from "~/utils/constants";
 
 interface Props {
 	index: number;
@@ -23,7 +28,12 @@ export default function VideoDisplay(props: Props) {
 			data-index={props.index}
 		>
 			<Video
-				id={props.panelName + "-vid-" + props.index}
+				id={
+					props.panelName === LIVE_PANEL_FOCUS_NAME
+						? PANEL_VIDEO_ID
+						: props.panelName + "-vid-" + props.index
+				}
+				synchronize={[WINDOW_VIDEO_ID]}
 				src={props.video.path}
 				about={props.video.title}
 				controls

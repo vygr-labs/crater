@@ -115,7 +115,8 @@ export type DisplayType =
 	| "image"
 	| "video"
 	| "message"
-	| "presentation";
+	| "presentation"
+	| "none";
 
 export interface MediaItem {
 	id: number;
