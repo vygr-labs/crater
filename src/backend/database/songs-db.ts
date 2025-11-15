@@ -1,7 +1,6 @@
 import Database from "better-sqlite3";
 import { DB_EXTENSIONS_PATH, SONGS_DB_PATH } from "../constants.js";
 import path from "node:path";
-import { getAssetPath } from "../constants.js";
 
 const db = new Database(SONGS_DB_PATH);
 db.loadExtension(path.join(DB_EXTENSIONS_PATH, "spellfix.dll"));

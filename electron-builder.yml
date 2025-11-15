@@ -1,5 +1,6 @@
 productName: Crater Bible Project
-artifactName: ${productName}-${os}-${arch}.${ext}
+artifactName: ${productName}-${os}-${arch}-${buildVersion}.${ext}
+appId: "voyager.applications.crater-bible-project"
 win:
   target: nsis
 linux:
@@ -10,6 +11,6 @@ mac:
   target: dmg
   category: public.app-category.social-networking
 files: ["src/backend/build/**/*", "dist/**/*"]
-extraResources: [{from: "src/assets/default", to: "store"}]
+extraResources: [{from: "src/assets/default", to: "store"}, {from: "src/assets/media", to: "application-assets"}]
 directories:
   output: "build"

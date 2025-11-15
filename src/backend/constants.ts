@@ -39,7 +39,7 @@ function createAppPaths(paths: string[]) {
 }
 
 const getAssetPath = (...paths: string[]): string => {
-	return path.join(RESOURCES_PATH, ...paths);
+	return path.join(RESOURCES_PATH, "media", ...paths);
 };
 
 export {
