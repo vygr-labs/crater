@@ -11,6 +11,7 @@ import {
 	userData,
 	SCHEDULE_ITEMS_PATH,
 	createAppPaths,
+	DB_EXTENSIONS_PATH,
 } from "./constants.js";
 import electronIsDev from "electron-is-dev";
 import ElectronStore from "electron-store";
@@ -28,6 +29,7 @@ const store = new ElectronStore<CraterStoreType>({
 
 createAppPaths([
 	DB_PATH,
+	DB_EXTENSIONS_PATH,
 	RESOURCES_PATH,
 	MEDIA_PATH,
 	MEDIA_IMAGES,

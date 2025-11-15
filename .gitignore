@@ -30,3 +30,4 @@ styled-system-studio
 src/backend/build
 src/assets/store/media
 build/
+*backup.sqlite
