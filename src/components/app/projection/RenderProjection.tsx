@@ -4,15 +4,28 @@ import RenderTheme from "../editor/RenderTheme";
 import { RenderEditorContainer } from "../editor/ui/Container";
 import { RenderEditorText } from "../editor/ui/Text";
 import { useAppContext } from "~/layouts/AppContext";
-import { Match, Switch } from "solid-js";
+import { Match, Show, Switch } from "solid-js";
 import RenderImage from "./RenderImage";
 import { parseThemeData } from "~/utils";
 import RenderVideo from "./RenderVideo";
+import { Text } from "~/components/ui/text";
 
 export const defaultThemeRenderMap = {
 	EditorContainer: RenderEditorContainer,
 	EditorText: RenderEditorText,
 };
+
+const NoThemeError = (props: { type: string }) => (
+	<Text
+		fontSize="6xl"
+		textTransform="uppercase"
+		h="full"
+		alignContent="center"
+		textAlign="center"
+	>
+		Default {props.type} theme has not been set
+	</Text>
+);
 
 export default function RenderProjection() {
 	const { appStore } = useAppContext();
@@ -50,20 +63,32 @@ export default function RenderProjection() {
 					<Match
 						when={appStore.displayData.displayContent?.type === "scripture"}
 					>
-						<RenderTheme
-							data={parseThemeData(
-								appStore.displayData.scriptureTheme?.theme_data,
-							)}
-							renderMap={defaultThemeRenderMap}
-							extraProps={{ isProjectionDisplay: true }}
-						/>
+						<Show
+							when={appStore.displayData.scriptureTheme}
+							fallback={<NoThemeError type="scripture" />}
+						>
+							<RenderTheme
+								data={parseThemeData(
+									appStore.displayData.scriptureTheme?.theme_data,
+								)}
+								renderMap={defaultThemeRenderMap}
+								extraProps={{ isProjectionDisplay: true }}
+							/>
+						</Show>
 					</Match>
 					<Match when={appStore.displayData.displayContent?.type === "song"}>
-						<RenderTheme
-							data={parseThemeData(appStore.displayData.songTheme?.theme_data)}
-							renderMap={defaultThemeRenderMap}
-							extraProps={{ isProjectionDisplay: true }}
-						/>
+						<Show
+							when={appStore.displayData.songTheme}
+							fallback={<NoThemeError type="song" />}
+						>
+							<RenderTheme
+								data={parseThemeData(
+									appStore.displayData.songTheme?.theme_data,
+								)}
+								renderMap={defaultThemeRenderMap}
+								extraProps={{ isProjectionDisplay: true }}
+							/>
+						</Show>
 					</Match>
 					<Match when={appStore.displayData.displayContent?.type === "image"}>
 						<RenderImage
