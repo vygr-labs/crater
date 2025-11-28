@@ -13,13 +13,26 @@
 - **Custom Themes** - Make your projections beautiful with custom designs
 - **Service Schedules** - Plan your entire service in advance
 
+## Download
+
+Get Crater for your platform:
+
+| Platform | Download |
+|----------|----------|
+| **Windows** | [Download for Windows](downloads.md#windows) |
+| **macOS** | [Download for macOS](downloads.md#macos) |
+| **Linux** | [Download for Linux](downloads.md#linux) |
+
+[View all downloads](downloads.md) for all architectures and previous versions.
+
 ## Quick Start
 
 New to Crater? Start here:
 
-1. [Installation Guide](getting-started/installation.md) - Download and install Crater
-2. [First Launch](getting-started/first-launch.md) - Set up your projection display
-3. [Interface Overview](getting-started/interface-overview.md) - Learn the main controls
+1. [Download Crater](downloads.md) - Get the latest version for your platform
+2. [Installation Guide](getting-started/installation.md) - Download and install Crater
+3. [First Launch](getting-started/first-launch.md) - Set up your projection display
+4. [Interface Overview](getting-started/interface-overview.md) - Learn the main controls
 
 ## Common Tasks
 

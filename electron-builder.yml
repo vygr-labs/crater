@@ -1,5 +1,5 @@
 productName: Crater Bible Project
-artifactName: ${productName}-${os}-${arch}-${buildVersion}.${ext}
+artifactName: ${productName}-${os}-${arch}.${ext}
 appId: "voyager.applications.crater-bible-project"
 win:
   target: nsis
