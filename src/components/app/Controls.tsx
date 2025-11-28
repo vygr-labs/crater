@@ -23,6 +23,7 @@ import EditorText from "./editor/ui/Text";
 import SchedulePanel from "./SchedulePanel";
 import SongEditor from "../modals/SongEditor";
 import { DisplayContextProvider } from "~/layouts/DisplayContext";
+import { ConfirmDialogProvider } from "../modals/ConfirmDialog";
 
 const config = {
 	EditorContainer,
@@ -37,48 +38,50 @@ export default function AppControls() {
 	return (
 		<AppContextProvider>
 			<FocusContextProvider>
-				<Box w="vw" h="vh" bg="bg.muted" pos="relative" overflow="hidden">
-					<MenuBar />
-					<Flex
-						w="full"
-						h="7/12"
-						columns={3}
-						pos="absolute"
-						top="calc(100%/12)"
-					>
-						<Box w="1/3" h="full" border="1px solid" borderColor="gray.700">
-							<SchedulePanel />
-						</Box>
-						<Box w="1/3" h="full" border="1px solid" borderColor="gray.700">
-							<PreviewPanel />
-						</Box>
-						<Box w="1/3" h="full" border="1px solid" borderColor="gray.700">
-							<LivePanel />
-						</Box>
-					</Flex>
+				<ConfirmDialogProvider>
+					<Box w="vw" h="vh" bg="bg.muted" pos="relative" overflow="hidden">
+						<MenuBar />
+						<Flex
+							w="full"
+							h="7/12"
+							columns={3}
+							pos="absolute"
+							top="calc(100%/12)"
+						>
+							<Box w="1/3" h="full" border="1px solid" borderColor="gray.700">
+								<SchedulePanel />
+							</Box>
+							<Box w="1/3" h="full" border="1px solid" borderColor="gray.700">
+								<PreviewPanel />
+							</Box>
+							<Box w="1/3" h="full" border="1px solid" borderColor="gray.700">
+								<LivePanel />
+							</Box>
+						</Flex>
 
-					<Box w="full" h="4/12" pos="absolute" bottom="0">
-						<ControlsMain />
+						<Box w="full" h="4/12" pos="absolute" bottom="0">
+							<ControlsMain />
+						</Box>
+
+						<AppSettingsDialog />
+						<AppLoading />
+						<NamingModal />
+
+						{/* Song Editor Modal */}
+						<DisplayContextProvider>
+							<SongEditor />
+						</DisplayContextProvider>
+
+						{/* <Editor resolver={{ UserContainer, UserText, UserRootContainer }}>
+							<ThemeEditor />
+						</Editor> */}
+						<Editor renderMap={config}>
+							<ThemeEditor />
+						</Editor>
+
+						<RenderToaster />
 					</Box>
-
-					<AppSettingsDialog />
-					<AppLoading />
-					<NamingModal />
-
-					{/* Song Editor Modal */}
-					<DisplayContextProvider>
-						<SongEditor />
-					</DisplayContextProvider>
-
-					{/* <Editor resolver={{ UserContainer, UserText, UserRootContainer }}>
-						<ThemeEditor />
-					</Editor> */}
-					<Editor renderMap={config}>
-						<ThemeEditor />
-					</Editor>
-
-					<RenderToaster />
-				</Box>
+				</ConfirmDialogProvider>
 			</FocusContextProvider>
 		</AppContextProvider>
 	);

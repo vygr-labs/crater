@@ -1,12 +1,16 @@
 import type { JSX } from "solid-js/jsx-runtime";
-import { Box, Flex } from "styled-system/jsx";
+import { Box, Flex, HStack } from "styled-system/jsx";
 import { Field } from "~/components/ui/field";
 import { Text } from "~/components/ui/text";
+import { IconButton } from "~/components/ui/icon-button";
 import type { SongLyric } from "~/types/context";
+import { FiTrash2, FiCopy, FiMove } from "solid-icons/fi";
+import { Show } from "solid-js";
 
 interface Props extends SongLyric {
 	index: number;
 	isCurrentNavig?: boolean;
+	canDelete: boolean;
 	onLabelEdit: JSX.ChangeEventHandlerUnion<HTMLInputElement, Event>;
 	onTextEdit: JSX.ChangeEventHandlerUnion<HTMLTextAreaElement, Event>;
 	onActiveEl: () => void;
@@ -15,6 +19,8 @@ interface Props extends SongLyric {
 		index: number,
 		event: ClipboardEvent,
 	) => void;
+	onDelete: (index: number) => void;
+	onDuplicate: (index: number) => void;
 }
 
 export default function LyricEdit(props: Props) {
@@ -28,25 +34,69 @@ export default function LyricEdit(props: Props) {
 			overflow="hidden"
 			border="1px solid"
 			borderColor="gray.800"
-			// _hover={{
-			// 	borderColor: "gray.700",
-			// }}
+			_hover={{
+				// borderColor: "gray.700",
+				"& .action-buttons": {
+					opacity: 1,
+				},
+			}}
 			transition="border-color 0.2s"
 		>
-			{/* Index Number */}
-			<Box
+			{/* Index Number & Actions */}
+			<Flex
 				w="40px"
 				minH="full"
-				display="flex"
+				flexDirection="column"
 				alignItems="center"
-				justifyContent="center"
+				justifyContent="space-between"
 				bgColor="gray.800"
 				flexShrink={0}
+				py={2}
 			>
 				<Text fontWeight="semibold" color="gray.400" fontSize="sm">
 					{props.index + 1}
 				</Text>
-			</Box>
+
+				{/* Action Buttons - visible on hover */}
+				<Flex
+					class="action-buttons"
+					flexDirection="column"
+					gap={1}
+					opacity={0}
+					transition="opacity 0.2s"
+				>
+					<IconButton
+						size="xs"
+						variant="ghost"
+						colorPalette="gray"
+						aria-label="Duplicate section"
+						title="Duplicate section"
+						opacity={0.5}
+						_hover={{
+							opacity: 1,
+						}}
+						onClick={() => props.onDuplicate(props.index)}
+					>
+						<FiCopy size={12} />
+					</IconButton>
+					<Show when={props.canDelete}>
+						<IconButton
+							size="xs"
+							variant="ghost"
+							colorPalette="red"
+							aria-label="Delete section"
+							title="Delete section"
+							opacity={0.5}
+							_hover={{
+								opacity: 1,
+							}}
+							onClick={() => props.onDelete(props.index)}
+						>
+							<FiTrash2 size={12} />
+						</IconButton>
+					</Show>
+				</Flex>
+			</Flex>
 
 			{/* Input Fields */}
 			<Field.Root w="full" gap={1} py={2} pr={3} on:focusin={props.onActiveEl}>

@@ -25,6 +25,10 @@ Get Crater for your platform:
 
 [View all downloads](downloads.md) for all architectures and previous versions.
 
+## About the Creator
+
+Crater Bible Project is developed by **Eyetu Kingsley**, a software developer based in Lagos, Nigeria.
+
 ## Quick Start
 
 New to Crater? Start here:
@@ -53,12 +57,6 @@ If you encounter any issues or have suggestions:
 
 - [Open an issue on GitHub](https://github.com/CodeKing12/crater/issues) - Report bugs or request features
 - Contact the developer: eyetukingsley330@gmail.com
-
----
-
-## About the Creator
-
-Crater Bible Project is developed by **Eyetu Kingsley**, a software developer based in Lagos, Nigeria.
 
 ---
 

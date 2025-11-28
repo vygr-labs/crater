@@ -16,22 +16,22 @@ Visit the [GitHub Releases Page](https://github.com/CodeKing12/crater/releases/l
 
 | File | Architecture | Description |
 |------|--------------|-------------|
-| [Crater Bible Project (Win x64)](https://github.com/CodeKing12/crater/releases/latest/download/Crater-Bible.Project-win-x64.exe) | 64-bit | Windows Installer (Recommended) |
-| [Crater Bible Project (Win ia32)](https://github.com/CodeKing12/crater/releases/latest/download/Crater-Bible.Project-win-ia32.exe) | 32-bit | Windows Installer (Older PCs) |
+| [Crater Bible Project (Win x64)](https://github.com/CodeKing12/crater/releases/latest/download/Crater-Bible-Project-win-x64.exe) | 64-bit | Windows Installer (Recommended) |
+| [Crater Bible Project (Win ia32)](https://github.com/CodeKing12/crater/releases/latest/download/Crater-Bible-Project-win-ia32.exe) | 32-bit | Windows Installer (Older PCs) |
 
 ### macOS
 
 | File | Architecture | Description |
 |------|--------------|-------------|
-| [Crater Bible Project (Mac x64)](https://github.com/CodeKing12/crater/releases/latest/download/Crater-Bible.Project-mac-x64.dmg) | Intel | macOS Disk Image (Intel Macs) |
-| [Crater Bible Project (Mac arm64)](https://github.com/CodeKing12/crater/releases/latest/download/Crater-Bible.Project-mac-arm64.dmg) | Apple Silicon | macOS Disk Image (M1/M2/M3 Macs) |
+| [Crater Bible Project (Mac x64)](https://github.com/CodeKing12/crater/releases/latest/download/Crater-Bible-Project-mac-x64.dmg) | Intel | macOS Disk Image (Intel Macs) |
+| [Crater Bible Project (Mac arm64)](https://github.com/CodeKing12/crater/releases/latest/download/Crater-Bible-Project-mac-arm64.dmg) | Apple Silicon | macOS Disk Image (M1/M2/M3 Macs) |
 
 ### Linux
 
 | File | Architecture | Description |
 |------|--------------|-------------|
-| [Crater Bible Project (Linux x64)](https://github.com/CodeKing12/crater/releases/latest/download/Crater-Bible.Project-linux-x64.AppImage) | 64-bit | AppImage (Universal Linux) |
-| [Crater Bible Project (Linux arm64)](https://github.com/CodeKing12/crater/releases/latest/download/Crater-Bible.Project-linux-arm64.AppImage) | ARM 64-bit | AppImage (Raspberry Pi, ARM devices) |
+| [Crater Bible Project (Linux x64)](https://github.com/CodeKing12/crater/releases/latest/download/Crater-Bible-Project-linux-x64.AppImage) | 64-bit | AppImage (Universal Linux) |
+| [Crater Bible Project (Linux arm64)](https://github.com/CodeKing12/crater/releases/latest/download/Crater-Bible-Project-linux-arm64.AppImage) | ARM 64-bit | AppImage (Raspberry Pi, ARM devices) |
 
 ---
 
