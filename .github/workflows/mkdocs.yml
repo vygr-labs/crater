@@ -1,0 +1,28 @@
+name: Deploy MkDocs Site
+
+on:
+  push:
+    branches:
+      - main # Or your default branch name (e.g., master)
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - name: Install dependencies
+        run: |
+          pip install mkdocs mkdocs-shadcn # Install mkdocs and any themes/plugins
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Build the site
+        run: mkdocs build
+      - name: Deploy to GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './site/site' # The directory where mkdocs builds the static site
+      - name: Deploy artifact to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

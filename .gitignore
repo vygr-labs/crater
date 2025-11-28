@@ -31,3 +31,4 @@ src/backend/build
 src/assets/store/media
 build/
 *backup.sqlite
+site/site
