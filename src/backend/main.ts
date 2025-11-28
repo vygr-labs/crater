@@ -142,7 +142,7 @@ const spawnAppWindow = async () => {
 		width: 500,
 		height: 300,
 		center: true,
-		icon: getAssetPath("icon.png"),
+		icon: getAssetPath("logo.png"),
 		title: "Crater Bible Project",
 		frame: false,
 		show: false,
@@ -161,7 +161,7 @@ const spawnAppWindow = async () => {
 		appWindow = new BrowserWindow({
 			width: awWidth,
 			height: awHeight,
-			icon: getAssetPath("icon.png"),
+			icon: getAssetPath("logo.png"),
 			title: electronIsDev
 				? "Controls Window - Development"
 				: "Crater Bible Project",
@@ -217,7 +217,7 @@ function spawnProjectionWindow({ x, y }: { x: number; y: number }) {
 		title: electronIsDev
 			? "Projection Window - Development"
 			: "Crater Projection Window",
-		icon: getAssetPath("icon.png"),
+		icon: getAssetPath("logo.png"),
 		show: false,
 		fullscreen: true,
 		frame: false,

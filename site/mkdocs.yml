@@ -2,15 +2,19 @@
 site_name: "Crater Bible Project"
 theme:
   name: shadcn
-  show_title: true # show the title in the top bar
-  show_stargazers: true # show the stargazers in the top bar
-  pygments_style: # default styles 
+  show_title: true
+  show_stargazers: true
+  pygments_style:
         light: shadcn-light
-        dark: github-dark
-  icon: heroicons:rocket-launch # use the shadcn svg if not defined
-  topbar_sections: false # NEW!
-  katex_options: # optional
+        dark: github-dark 
+  icon: img/logo-black.svg
+  topbar_sections: false
+  katex_options:
     macros: # example of macros
       "\\RR": "\\mathbb{R}" 
       "\\dx": "\\mathrm{d}x"
   show_datetime: false 
+repo_name: crater
+repo_url: https://github.com/CodeKing12/crater
+site_author: Eyetu Kingsley
+site_description: Open Source Scripture Projection Software for Churches
