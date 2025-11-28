@@ -43,4 +43,10 @@ If you encounter any issues or have suggestions:
 
 ---
 
+## About the Creator
+
+Crater Bible Project is developed by **Eyetu Kingsley**, a software developer based in Lagos, Nigeria.
+
+---
+
 *Crater is developed with love for the Church. Star the repository on GitHub to support this project!*
