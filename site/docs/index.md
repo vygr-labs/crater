@@ -6,6 +6,8 @@
 
 - **100% Free** - No subscription fees or hidden costs
 - **Easy to Use** - Designed for church volunteers of all technical levels
+- **High Performance** - Built to be fast and responsive, even on modest hardware
+- **Runs Anywhere** - Works on any device that can run Chrome
 - **Multiple Bible Translations** - Access various Bible versions
 - **Song Library** - Store and organize your worship songs
 - **Custom Themes** - Make your projections beautiful with custom designs

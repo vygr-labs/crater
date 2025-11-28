@@ -90,6 +90,7 @@ The theme applied for general presentations.
 ### What is the Logo?
 
 The logo is a background image shown when:
+
 - The Clear/Logo button is pressed
 - No content is being displayed
 - You want to show a default background

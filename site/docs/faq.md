@@ -56,6 +56,7 @@ Currently, you use the translations that come with Crater. Future updates may in
 ### How do I search for a specific verse?
 
 Use the quick search feature:
+
 1. Go to the Scripture tab
 2. Make sure quick search mode is active (tree icon)
 3. Type the reference (e.g., "John 3:16")
@@ -84,6 +85,7 @@ Currently, songs need to be entered manually. Copy/paste from lyrics websites wo
 ### How should I format song sections?
 
 Use clear labels like:
+
 - Verse 1, Verse 2, Verse 3
 - Chorus
 - Bridge
@@ -124,6 +126,7 @@ Edit your theme and increase the font size. For projection, text should typicall
 ### How do I advance to the next verse/slide?
 
 Once content is in the Live Panel:
+
 - Press the **Down Arrow** key to advance
 - Press the **Up Arrow** key to go back
 
@@ -198,6 +201,7 @@ See [Troubleshooting](reference/troubleshooting.md) for more solutions.
 ### Where can I report bugs?
 
 Open an issue on the [GitHub repository](https://github.com/CodeKing12/crater/issues). Include:
+
 - What you were doing
 - What happened
 - Steps to reproduce the issue

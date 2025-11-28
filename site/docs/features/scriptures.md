@@ -61,6 +61,7 @@ Once you've found your scripture:
 ## Displaying Multiple Verses
 
 When you select a verse, Crater shows:
+
 - The book and chapter reference
 - The verse number
 - The verse text
@@ -74,6 +75,7 @@ To display consecutive verses:
 ## Scripture Reference Display
 
 When scripture is displayed, the audience sees:
+
 - The verse text (large and readable)
 - The reference (book, chapter, verse)
 - The translation abbreviation

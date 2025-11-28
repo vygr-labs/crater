@@ -67,6 +67,7 @@ Use consistent labels for easy navigation during worship:
 ### Making Changes
 
 You can:
+
 - Change the song title
 - Edit lyrics in any section
 - Change section labels
@@ -166,6 +167,7 @@ Label: Verse 3b
 ### Using Collections
 
 Group songs by category:
+
 - "Sunday Worship" - Regular rotation songs
 - "Christmas" - Holiday songs
 - "Easter" - Resurrection season songs
@@ -175,6 +177,7 @@ Group songs by category:
 ### Naming Conventions
 
 Be consistent with song titles:
+
 - Use the most common title
 - Include subtitle if helpful: "10,000 Reasons (Bless the Lord)"
 - Avoid articles at start if possible: "Amazing Grace" not "The Amazing Grace"
@@ -184,6 +187,7 @@ Be consistent with song titles:
 ### Manual Entry
 
 The most reliable method:
+
 1. Find lyrics from a trusted source
 2. Add the song using the Song Editor
 3. Format sections appropriately

@@ -103,10 +103,12 @@ Crater has a special logo feature for displaying a default background when no ot
 ### Showing/Hiding the Logo
 
 Use the **Logo** button in the menu bar to:
+
 - Show the logo (hides current content, shows background)
 - Hide the logo (returns to current content)
 
 This is useful for:
+
 - Covering the screen between songs
 - Showing a default church logo
 - Quick transitions

@@ -23,8 +23,9 @@ To find a specific song:
 4. Click on the song you want
 
 You can search by:
+
 - Song title
-- Partial title (e.g., "Amazing" will find "Amazing Grace")
+- Partial title (e.g., \"Amazing\" will find \"Amazing Grace\")
 
 ## Selecting and Displaying Songs
 

@@ -24,6 +24,7 @@ Understanding how content moves through Crater:
 ### Single-Click: Preview
 
 When you **single-click** on any item:
+
 - It loads in the Preview Panel
 - You can see all verses/sections
 - The audience does NOT see it yet
@@ -32,6 +33,7 @@ When you **single-click** on any item:
 ### Double-Click: Go Live
 
 When you **double-click** on any item:
+
 - It loads in the Live Panel
 - The first verse/section displays on projection
 - The audience sees it immediately
@@ -52,6 +54,7 @@ Once content is live, you need to move through verses or lyrics sections.
 ### Using Mouse Clicks
 
 In the Live Panel:
+
 - **Single-click** a verse/section to highlight it
 - **Double-click** to display it (same effect as arrow navigation)
 
@@ -66,6 +69,7 @@ To quickly blank the projection screen:
 3. Click again to show the current content
 
 **Use this when:**
+
 - Pausing between songs
 - During prayer (if you want a clear screen)
 - When transitioning between service sections
@@ -79,6 +83,7 @@ To display your church logo/background:
 3. Click again to return to current content
 
 **Use this when:**
+
 - Before service starts
 - Between service elements
 - During offering or announcements

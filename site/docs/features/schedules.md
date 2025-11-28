@@ -61,6 +61,7 @@ During service:
 ## Viewing Schedule Items
 
 Each item in the schedule shows:
+
 - **Icon** - Indicates the type (scripture, song, media)
 - **Title** - The item name or reference
 - **Preview** - Small theme preview (for songs/scriptures)
@@ -70,6 +71,7 @@ Each item in the schedule shows:
 ### Reordering Items
 
 Items appear in the order you'll use them:
+
 - Drag and drop to reorder items
 - Move items up or down as needed
 

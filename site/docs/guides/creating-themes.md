@@ -23,6 +23,7 @@ The main area where you design your theme. This represents what will appear on t
 ### Toolbox
 
 Contains the elements you can add to your theme:
+
 - **Container** - Background boxes and areas
 - **Text** - Text elements for content
 
@@ -102,6 +103,68 @@ When a text element is selected, you can customize:
 | Text Shadow | Drop shadow behind text |
 | Text Outline | Border around letters |
 
+### Text Auto-Resize
+
+Text elements can automatically resize to fit their container, ensuring your content always displays properly regardless of length.
+
+**How it works:**
+
+- When enabled, text automatically shrinks if it would overflow its container
+- Longer verses or lyrics will use a smaller font size
+- Shorter content displays at the maximum font size
+- This prevents text from being cut off on screen
+
+**Configuration options:**
+
+| Setting | Description |
+|---------|-------------|
+| Enable Auto-Resize | Turn automatic text resizing on/off |
+| Minimum Font Size | The smallest size text can shrink to |
+| Maximum Font Size | The largest size for short content |
+
+**Tips:**
+
+- Set a reasonable minimum size (e.g., 24pt) to ensure readability
+- Test with your longest verses/lyrics to ensure they fit
+- Auto-resize is especially useful for scripture with varying verse lengths
+
+### Text Linkages
+
+Text linkages connect text elements to specific data sources, telling Crater what content to display in each text element.
+
+**Available linkages:**
+
+| Linkage | Description | Use For |
+|---------|-------------|---------|
+| Scripture Text | The Bible verse content | Main verse display |
+| Scripture Reference | Book, chapter, verse | Reference line (e.g., "John 3:16") |
+| Scripture Version | Bible translation | Version indicator (e.g., "NKJV") |
+| Song Lyrics | The lyrics text | Main lyrics display |
+| Song Section | Verse/Chorus label | Section indicator |
+| Song Title | Name of the song | Title display |
+
+**How to set linkages:**
+
+1. Select a text element in the editor
+2. Find the "Linkage" or "Data Source" setting
+3. Choose what content this text should display
+4. The text element will show that data when the theme is used
+
+**Example setup for Scripture theme:**
+
+- Text Element 1: Linkage = "Scripture Text" (large, centered)
+- Text Element 2: Linkage = "Scripture Reference" (smaller, bottom)
+- Text Element 3: Linkage = "Scripture Version" (small, corner)
+
+**Example setup for Song theme:**
+
+- Text Element 1: Linkage = "Song Lyrics" (large, centered)
+- Text Element 2: Linkage = "Song Section" (smaller, top-left)
+
+**Why linkages matter:**
+
+Without proper linkages, text elements won't know what content to display. Always verify each text element has the correct linkage before saving your theme.
+
 ## Styling Containers
 
 When a container is selected, you can customize:
@@ -130,6 +193,7 @@ When a container is selected, you can customize:
 ### Scripture Theme Layout
 
 Recommended elements:
+
 1. **Main container** - Dark, semi-transparent background
 2. **Verse text** - Large, centered text
 3. **Reference text** - Smaller text for book/chapter/verse
@@ -150,6 +214,7 @@ Example layout:
 ### Song Theme Layout
 
 Recommended elements:
+
 1. **Main container** - Background area
 2. **Lyrics text** - Large, easy-to-read text
 3. **Section label** - Optional (Verse, Chorus, etc.)

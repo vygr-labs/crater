@@ -16,17 +16,22 @@ A theme defines the visual appearance of projected content:
 Crater uses different themes for different content types:
 
 ### Scripture Themes
+
 Applied when displaying Bible verses. Typically includes:
+
 - Scripture text styling
 - Reference display (book, chapter, verse)
 - Translation indicator
 
 ### Song Themes
+
 Applied when displaying song lyrics. Typically includes:
+
 - Lyrics text styling
 - Section labels (verse, chorus, etc.)
 
 ### Presentation Themes
+
 Applied to general presentations and announcements.
 
 ## Accessing Themes
