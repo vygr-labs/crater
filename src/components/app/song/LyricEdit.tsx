@@ -1,12 +1,8 @@
-import { ref } from "process";
 import type { JSX } from "solid-js/jsx-runtime";
-import { Box, Flex, VStack } from "styled-system/jsx";
+import { Box, Flex } from "styled-system/jsx";
 import { Field } from "~/components/ui/field";
-import { Input } from "~/components/ui/input";
 import { Text } from "~/components/ui/text";
-import { Textarea } from "~/components/ui/textarea";
 import type { SongLyric } from "~/types/context";
-import { defaultPalette, PREVIEW_INDEX_WIDTH } from "~/utils/constants";
 
 interface Props extends SongLyric {
 	index: number;
@@ -25,54 +21,62 @@ export default function LyricEdit(props: Props) {
 	return (
 		<Flex
 			w="full"
-			h="full"
-			// bgColor={isCurrentNavig ? `${defaultPalette}.800` : 'transparent'}
-			gap={0.5}
+			gap={2}
 			position="relative"
-			pl={PREVIEW_INDEX_WIDTH}
+			bgColor="gray.900"
+			borderRadius="sm"
+			overflow="hidden"
+			border="1px solid"
+			borderColor="gray.800"
+			// _hover={{
+			// 	borderColor: "gray.700",
+			// }}
+			transition="border-color 0.2s"
 		>
+			{/* Index Number */}
 			<Box
-				w={PREVIEW_INDEX_WIDTH}
-				h="full"
-				pt={2}
-				textAlign="center"
-				position="absolute"
-				left={0}
-				bottom={0}
-				top={0}
-				// bgColor={isCurrentNavig ? `${defaultPalette}.700` : 'gray.800'}
+				w="40px"
+				minH="full"
+				display="flex"
+				alignItems="center"
+				justifyContent="center"
+				bgColor="gray.800"
+				flexShrink={0}
 			>
-				<Text>{props.index + 1}</Text>
+				<Text fontWeight="semibold" color="gray.400" fontSize="sm">
+					{props.index + 1}
+				</Text>
 			</Box>
-			<Field.Root
-				w="full"
-				gap={0}
-				on:focusin={props.onActiveEl}
-				// borderBottom="unset"
-			>
+
+			{/* Input Fields */}
+			<Field.Root w="full" gap={1} py={2} pr={3} on:focusin={props.onActiveEl}>
 				<Field.Input
 					id={"song-edit-label-" + props.index}
 					px={2}
-					placeholder="Label"
+					placeholder="Section label (e.g., Verse 1, Chorus)"
 					value={props.label}
-					h={9}
-					variant="subtle"
+					h={8}
+					fontSize="sm"
+					variant="flushed"
 					onchange={props.onLabelEdit}
-					border="2px solid"
-					borderColor="gray.800"
-					borderBottomColor="transparent"
-					rounded="unset"
-					_focusVisible={{
-						outline: "unset",
-						borderColor: "purple.800",
+					borderRadius="xs"
+					bgColor="transparent"
+					_hover={{
+						bgColor: "gray.800",
 					}}
-					color="white"
+					_focusVisible={{
+						outline: "none",
+						bgColor: "gray.800",
+						ring: "2px",
+						ringColor: "purple.600",
+					}}
+					color="gray.300"
+					fontWeight="medium"
 					data-key={`label-${props.index}`}
 					data-type="label"
 					data-index={props.index}
 					ref={(el) => {
 						if (props.index === 0) {
-							console.log(el);
 							el.focus();
 						}
 					}}
@@ -83,26 +87,32 @@ export default function LyricEdit(props: Props) {
 					px={2}
 					py={2}
 					w="full"
-					minH={9}
-					lineHeight={1.5}
+					minH="60px"
+					lineHeight={1.6}
 					autoresize
 					variant="flushed"
-					border="2px solid"
-					borderColor="gray.800"
+					borderRadius="xs"
+					bgColor="transparent"
+					_hover={{
+						bgColor: "gray.800",
+					}}
 					_focusVisible={{
-						outline: "unset",
-						borderColor: "purple.800",
+						outline: "none",
+						bgColor: "gray.800",
+						ring: "2px",
+						ringColor: "purple.600",
 					}}
 					scrollbar="hidden"
 					overflow="hidden"
-					placeholder="Lyrics"
+					placeholder="Enter lyrics here..."
 					value={props.text.join("\n")}
 					oninput={props.onTextEdit}
+					color="white"
+					fontSize="sm"
 					data-key={`text-${props.index}`}
 					data-type="text"
 					data-index={props.index}
 					onpaste={(e) => props.onPaste("text", props.index, e)}
-					// border="unset"
 				/>
 			</Field.Root>
 		</Flex>

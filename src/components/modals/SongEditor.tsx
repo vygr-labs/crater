@@ -355,132 +355,112 @@ function SongEditor() {
 		>
 			<Dialog.Backdrop />
 			<Dialog.Positioner>
-				<Dialog.Content h="80vh">
-					<Dialog.Header>
-						<Dialog.Title>Edit Song</Dialog.Title>
+				<Dialog.Content h="85vh" maxW="1100px">
+					<Dialog.Header pb={2} borderBottomWidth="1px" borderColor="gray.800">
+						<HStack justifyContent="space-between" w="full">
+							<Dialog.Title fontSize="lg" fontWeight="semibold">
+								{song() ? "Edit Song" : "Create New Song"}
+							</Dialog.Title>
+							<Input
+								maxW="280px"
+								placeholder="Enter song title..."
+								variant="outline"
+								size="sm"
+								colorPalette="purple"
+								ref={titleInputEl}
+								fontWeight="medium"
+								required
+							/>
+						</HStack>
 					</Dialog.Header>
-					<Dialog.Body overflow="hidden">
-						<div style={{ margin: "0 auto", width: "100%", height: "100%" }}>
-							<Box h="full">
-								<Flex justifyContent="center" h="full" pos="relative">
+					<Dialog.Body overflow="hidden" p={0}>
+						<Flex h="full">
+							{/* Lyrics Editor Panel */}
+							<Box
+								flex="1"
+								h="full"
+								overflow="auto"
+								borderRightWidth="1px"
+								borderColor="gray.800"
+								p={4}
+								scrollBehavior="smooth"
+							>
+								<VStack alignItems="stretch" gap={3} ref={containerRef}>
+									<For each={lyrics}>
+										{(lyric, index) => (
+											<LyricEdit
+												index={index()}
+												{...lyric}
+												onLabelEdit={(e) =>
+													handleLabelEdit(
+														index(),
+														(e.target as HTMLInputElement).value,
+													)
+												}
+												onTextEdit={(e) =>
+													handleTextEdit(
+														index(),
+														(e.target as HTMLTextAreaElement).value,
+													)
+												}
+												onActiveEl={() => setSongMeta("current", index())}
+												onPaste={handlePaste}
+											/>
+										)}
+									</For>
+								</VStack>
+							</Box>
+
+							{/* Preview Panel */}
+							<Box
+								w="45%"
+								h="full"
+								p={4}
+								display="flex"
+								flexDirection="column"
+								bgColor="gray.950"
+							>
+								<Box fontSize="sm" color="gray.400" mb={3} fontWeight="medium">
+									Live Preview
+								</Box>
+								<Box
+									flex="1"
+									display="flex"
+									alignItems="center"
+									justifyContent="center"
+								>
 									<Box
-										// left={0}
-										width={(4 / 12) * 100 + "%"}
-										// pos="absolute"
 										w="full"
-										height="100%"
-										overflow="auto"
-										mx={5}
-										scrollBehavior="smooth"
+										maxW="400px"
+										border="3px solid"
+										borderColor="purple.700"
+										borderRadius="md"
+										overflow="hidden"
+										shadow="lg"
 									>
-										<VStack
-											alignItems="left"
-											gap={4}
-											pr={1}
-											ref={containerRef}
-											h="full"
-										>
-											{/* <Field.Root
-												w="full"
-												gap={0}
-												h="full"
-												// borderBottom="unset"
-											>
-												<Field.Textarea
-													ref={lyricEditRef}
-													_selection={{
-														bgColor: "blue.600",
-													}}
-													w="full"
-													minH={9}
-													px={3}
-													py={3}
-													h="full"
-													lineHeight={1.5}
-													variant="subtle"
-													border="2px solid"
-													borderColor="gray.800"
-													_focusVisible={{
-														outline: "unset",
-														borderColor: "purple.800",
-													}}
-													resize="none"
-													placeholder="Lyrics"
-													// border="unset"
-												/>
-											</Field.Root> */}
-											<For each={lyrics}>
-												{(lyric, index) => (
-													<LyricEdit
-														index={index()}
-														{...lyric}
-														onLabelEdit={(e) =>
-															handleLabelEdit(
-																index(),
-																(e.target as HTMLInputElement).value,
-															)
-														}
-														onTextEdit={(e) =>
-															handleTextEdit(
-																index(),
-																(e.target as HTMLTextAreaElement).value,
-															)
-														}
-														onActiveEl={() => setSongMeta("current", index())}
-														onPaste={handlePaste}
-													/>
+										<Box aspectRatio={16 / 9} bgColor="transparent">
+											<RenderTheme
+												data={parseThemeData(
+													appStore.displayData.songTheme?.theme_data,
 												)}
-											</For>
-										</VStack>
-									</Box>
-									<Box
-										// left={(4.2 / 12) * 100 + "%"}
-										width={(7.8 / 12) * 100 + "%"}
-										height="100%"
-										// pos="absolute"
-									>
-										<Box
-											border="4px solid"
-											borderColor="purple.800"
-											aspectRatio={16 / 9}
-										>
-											<Box w="full" h="full" bgColor="transparent">
-												<RenderTheme
-													data={parseThemeData(
-														appStore.displayData.songTheme?.theme_data,
-													)}
-													renderMap={defaultThemeRenderMap}
-													// scope={'song-edit'}
-												/>
-											</Box>
+												renderMap={defaultThemeRenderMap}
+											/>
 										</Box>
 									</Box>
-								</Flex>
+								</Box>
 							</Box>
-						</div>
+						</Flex>
 					</Dialog.Body>
-					<Dialog.Footer>
-						<Box>
-							<HStack>
-								<Input
-									maxW="60"
-									placeholder="Insert title"
-									variant="subtle"
-									colorPalette="white"
-									ref={titleInputEl}
-									// onInput={(e) => setSongMeta("title", e.currentTarget.value)}
-									required
-								/>
-								{/* <DialogActionTrigger asChild> */}
-								<Button variant="outline" onclick={closeModal}>
-									Cancel
-								</Button>
-								{/* </DialogActionTrigger> */}
-								<Button onclick={saveSong}>Save</Button>
-							</HStack>
-						</Box>
+					<Dialog.Footer pt={3} borderTopWidth="1px" borderColor="gray.800">
+						<HStack justifyContent="flex-end" w="full" gap={3}>
+							<Button variant="ghost" onclick={closeModal}>
+								Cancel
+							</Button>
+							<Button colorPalette="purple" onclick={saveSong}>
+								{song() ? "Save Changes" : "Create Song"}
+							</Button>
+						</HStack>
 					</Dialog.Footer>
-					{/* <DialogCloseTrigger /> */}
 				</Dialog.Content>
 			</Dialog.Positioner>
 		</Dialog.Root>
