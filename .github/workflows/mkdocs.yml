@@ -18,7 +18,7 @@ jobs:
           pip install mkdocs mkdocs-shadcn # Install mkdocs and any themes/plugins
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Build the site
-        run: mkdocs build
+        run: cd site && mkdocs build
       - name: Deploy to GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
