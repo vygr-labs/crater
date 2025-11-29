@@ -9,11 +9,13 @@ import {
 import { useNode } from "../Node";
 import { useEditor } from "../Editor";
 import {
+	batch,
 	createEffect,
 	createMemo,
 	For,
 	Index,
 	Match,
+	on,
 	onMount,
 	Show,
 	Switch,
@@ -64,6 +66,8 @@ import GenericCombobox from "~/components/custom/combobox";
 import { IconButton } from "~/components/ui/icon-button";
 import { RadioGroup } from "~/components/ui/radio-group";
 import { Field } from "~/components/ui/field";
+import { Slider } from "~/components/ui/slider";
+import { Tooltip } from "~/components/ui/tooltip";
 import { Dynamic } from "solid-js/web";
 import type { ScriptureVerse, TextAlign } from "~/types";
 import { useAppContext } from "~/layouts/AppContext";
@@ -80,7 +84,9 @@ import GenericNumberInput from "~/components/custom/number-input";
 import { FaSolidBold } from "solid-icons/fa";
 import { useDisplayStore } from "~/layouts/DisplayContext";
 
-interface EditorContainer extends BoxProps {}
+interface EditorTextProps extends BoxProps {
+	onMouseDown?: (e: MouseEvent) => void;
+}
 
 enum LINKAGES {
 	SCRIPTURE_REFERENCE,
@@ -98,7 +104,7 @@ const LINKAGE_DEFAULTS = {
 	[LINKAGES.SONG_LYRIC]: ["We Worship the Most High God - El-Elohe Israel"],
 };
 
-export default function EditorText(props: EditorContainer) {
+export default function EditorText(props: EditorTextProps) {
 	const {
 		getters: { getDemoLyric, getDemoScripture },
 	} = useEditor();
@@ -106,7 +112,6 @@ export default function EditorText(props: EditorContainer) {
 		node,
 		register,
 		styles,
-		bindDrag,
 		actions: { setStyle },
 	} = useNode();
 
@@ -144,56 +149,75 @@ export default function EditorText(props: EditorContainer) {
 		newLetterSpacing: number;
 		oldDisplayStyle: string;
 	}) => {
-		console.log(
-			"DYNAMIC SIZE: ",
-			parent,
-			newFontSize,
-			oldDisplayStyle,
-			newLineHeight,
-			newLetterSpacing,
+		// Check if values actually changed to prevent unnecessary updates
+		const currentFontSize = parseFloat(
+			String(node.style["font-size"]).replace("px", ""),
 		);
-		setStyle({ "font-size": newFontSize + "px", display: oldDisplayStyle });
-		if (!isNaN(newLineHeight)) setStyle("line-height", newLineHeight);
-		if (!isNaN(newLetterSpacing))
-			setStyle("letter-spacing", newLetterSpacing.toString());
+		const currentLineHeight = parseFloat(String(node.style["line-height"]));
+
+		// Only update if values are different (with small tolerance for floating point)
+		const fontSizeChanged = Math.abs(currentFontSize - newFontSize) > 0.1;
+		const lineHeightChanged =
+			!isNaN(newLineHeight) &&
+			Math.abs(currentLineHeight - newLineHeight) > 0.01;
+
+		if (fontSizeChanged || lineHeightChanged) {
+			batch(() => {
+				if (fontSizeChanged) {
+					setStyle({
+						"font-size": newFontSize + "px",
+						display: oldDisplayStyle,
+					});
+				}
+				if (lineHeightChanged) {
+					setStyle({ "line-height": newLineHeight });
+				}
+				if (!isNaN(newLetterSpacing)) {
+					setStyle({ "letter-spacing": newLetterSpacing.toString() });
+				}
+			});
+		}
 	};
 
-	createEffect(() => {
-		// tracking is not possible after an async function is awaited
-		const trackChanges =
-			node.style.width && node.style.height && node.style["font-weight"];
-		const element = node.el;
-		const isResize = node.data.autoResize;
-		const textChanges = textArr();
-		const maxFontSize = node.data.maxFontSize ?? 0;
+	// Track only specific properties that should trigger resize
+	createEffect(
+		on(
+			() => [
+				node.style.width,
+				node.style.height,
+				node.style["font-weight"],
+				node.data.autoResize,
+				node.data.maxFontSize,
+				textArr(),
+			],
+			() => {
+				const element = node.el;
+				const isResize = node.data.autoResize;
+				const maxFontSize = node.data.maxFontSize ?? 0;
 
-		// use a promise to ensure that it is run after the element is rendered (needed for the first run);
-		Promise.resolve().then(() => {
-			if (element && isResize && textChanges) {
-				console.log(
-					"Element Set?: ",
-					element,
-					element.offsetHeight,
-					element.style.width,
-					element.style.height,
-				);
-				TextFill(element, {
-					innerTag: "p",
-					correctLineHeightOffset: false, // allows modification of top css value which interferes with drag & drop
-					success: dynamicSizeUpdate,
-					maxFontPixels: maxFontSize,
+				// use a promise to ensure that it is run after the element is rendered
+				Promise.resolve().then(() => {
+					if (element && isResize) {
+						TextFill(element, {
+							innerTag: "p",
+							correctLineHeightOffset: false,
+							success: dynamicSizeUpdate,
+							maxFontPixels: maxFontSize,
+						});
+					}
 				});
-			}
-		});
-	});
+			},
+		),
+	);
 
 	return (
 		<Box
 			position="absolute"
 			ref={register}
-			{...bindDrag()}
-			style={styles}
+			style={styles()}
 			transformOrigin="top left"
+			onMouseDown={props.onMouseDown}
+			class="editor-node"
 		>
 			<Text userSelect="none" w="full" h="full" alignContent="inherit">
 				<For each={textArr()}>
@@ -289,7 +313,7 @@ export function RenderEditorText(props: RenderEditorItemProps) {
 	);
 }
 
-const textLinkOptions = [
+const textLinkOptions: { value: number; text: string }[] = [
 	{ value: LINKAGES.SCRIPTURE_REFERENCE, text: "Scripture Reference" },
 	{ value: LINKAGES.SCRIPTURE_TEXT, text: "Scripture Text" },
 	{ value: LINKAGES.SONG_LYRIC, text: "Lyric" },
@@ -317,28 +341,56 @@ const textTransformMap = {
 
 const weightMap = [100, 200, 300, 400, 500, 600, 700, 800, 900];
 
+// Section wrapper for settings groups
+const SettingsSection = (props: { title: string; children: any }) => (
+	<Box>
+		<Text
+			fontSize="2xs"
+			color="gray.500"
+			textTransform="uppercase"
+			letterSpacing="wide"
+			mb={2}
+		>
+			{props.title}
+		</Text>
+		{props.children}
+	</Box>
+);
+
+// Row component for inline settings
+const SettingsRow = (props: {
+	label?: string;
+	children: any;
+	alignItems?: string;
+}) => (
+	<Flex
+		alignItems={props.alignItems || "center"}
+		justifyContent="space-between"
+		gap={2}
+		py={1}
+	>
+		{props.label && (
+			<Text fontSize="xs" color="gray.400" minW="70px">
+				{props.label}
+			</Text>
+		)}
+		<Flex flex="1" gap={1} justifyContent="flex-end" alignItems="center">
+			{props.children}
+		</Flex>
+	</Flex>
+);
+
 export interface EditorTextSettingsProps extends NodeSettings {}
 export function EditorTextSettings(props: EditorTextSettingsProps) {
 	const {
-		editor,
-		// getters: { getSelectedNode },
 		setters: { setNodeStyle, setNodeData },
 	} = useEditor();
-	const styles = createMemo(() => {
-		console.log("Recalculating Styles");
-		return props.node?.style ?? {};
-	});
+	const styles = createMemo(() => props.node?.style ?? {});
 
-	onMount(() => {
-		console.log("Settings are being mounted for: ", props.node);
-	});
-	createEffect(() => {
-		console.log("Here is the selected node: ", props.node);
-	});
 	const allFonts = createAsyncMemo(async () => {
-		console.log("WINDOW AVAILABLE: ", window);
 		return await window.electronAPI.getSystemFonts();
 	}, []);
+
 	const comboboxFonts = createMemo(() => {
 		return allFonts().map((font) => ({
 			title: font.name,
@@ -346,16 +398,18 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 		}));
 	});
 
+	const setStyle = (newStyles: JSX.CSSProperties) =>
+		setNodeStyle(props.node?.id, newStyles);
+	const setData = (data: Record<string, any>) =>
+		setNodeData(props.node?.id, data);
+
 	return (
 		<Show when={props.visible}>
-			{(selected) => {
-				console.log("getting setStyle fn for: ", selected());
-				const setStyle = (styles: JSX.CSSProperties) =>
-					setNodeStyle(props.node.id, styles);
-				const setData = (data: Record<string, any>) =>
-					setNodeData(props.node.id, data);
-				return (
-					<HStack w="full" gap={4} rounded="md">
+			<VStack gap={4} alignItems="stretch" w="full">
+				{/* Typography Section */}
+				<SettingsSection title="Typography">
+					<VStack gap={2} alignItems="stretch">
+						{/* Font Family */}
 						<GenericCombobox
 							maxWidth={60}
 							groupLabel="Available Fonts"
@@ -369,27 +423,48 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 							}
 						/>
 
-						<Flex>
+						{/* Font Size with Auto-resize */}
+						<SettingsRow label="Size">
 							<GenericNumberInput
 								value={getNum(styles(), "font-size").toString()}
 								onValueChange={({ valueAsNumber }) =>
 									setStyle({ "font-size": valueAsNumber + "px" })
 								}
 								inputProps={{
-									class: css({ roundedRight: "unset" }),
+									class: css({
+										maxW: "60px",
+										rounded: "md",
+										fontSize: "xs",
+									}),
 								}}
 							/>
-							<IconButton
-								variant={props.node.data.autoResize ? "solid" : "outline"}
-								onClick={() =>
-									setData({ autoResize: !props.node.data.autoResize })
-								}
-								roundedLeft={props.node.data.autoResize ? "unset" : "initial"}
-								rounded={props.node.data.autoResize ? "unset" : "initial"}
-								borderLeft="unset"
-							>
-								<TbTextResize width={28} height={28} />
-							</IconButton>
+							<Tooltip.Root openDelay={200} closeDelay={0}>
+								<Tooltip.Trigger
+									asChild={(triggerProps) => (
+										<IconButton
+											{...triggerProps()}
+											size="xs"
+											variant={props.node.data.autoResize ? "solid" : "ghost"}
+											colorPalette={
+												props.node.data.autoResize ? "purple" : "gray"
+											}
+											onClick={() =>
+												setData({ autoResize: !props.node.data.autoResize })
+											}
+										>
+											<TbTextResize size={16} />
+										</IconButton>
+									)}
+								/>
+								<Tooltip.Positioner>
+									<Tooltip.Content>
+										<Tooltip.Arrow>
+											<Tooltip.ArrowTip />
+										</Tooltip.Arrow>
+										Auto-resize text
+									</Tooltip.Content>
+								</Tooltip.Positioner>
+							</Tooltip.Root>
 							<Show when={props.node.data.autoResize}>
 								<GenericNumberInput
 									value={props.node.data.maxFontSize?.toString() ?? "200"}
@@ -397,198 +472,256 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 										setData({ maxFontSize: valueAsNumber })
 									}
 									inputProps={{
-										class: css({ roundedLeft: "unset" }),
+										class: css({ maxW: "55px", fontSize: "xs" }),
+										placeholder: "Max",
 									}}
 								/>
 							</Show>
-						</Flex>
+						</SettingsRow>
 
+						{/* Font Weight */}
+						<SettingsRow label="Weight">
+							<HStack gap={0.5}>
+								<For each={[300, 400, 500, 600, 700, 800]}>
+									{(weight) => (
+										<IconButton
+											size="2xs"
+											variant={
+												styles()["font-weight"] === weight ? "solid" : "ghost"
+											}
+											colorPalette={
+												styles()["font-weight"] === weight ? "purple" : "gray"
+											}
+											onClick={() => setStyle({ "font-weight": weight })}
+											title={`Weight ${weight}`}
+										>
+											<Text fontSize="2xs" style={{ "font-weight": weight }}>
+												A
+											</Text>
+										</IconButton>
+									)}
+								</For>
+							</HStack>
+						</SettingsRow>
+					</VStack>
+				</SettingsSection>
+
+				{/* Color Section */}
+				<SettingsSection title="Color">
+					<SettingsRow label="Text">
 						<ColorUpdateInput
 							styleKey="color"
 							styles={styles()}
 							setStyle={setStyle}
 						/>
+					</SettingsRow>
+				</SettingsSection>
 
-						<PopoverButton
-							trigger={
-								<ControlIconBtn>
-									<BsTextParagraph />
-								</ControlIconBtn>
-							}
-						>
-							<HStack>
+				{/* Alignment Section */}
+				<SettingsSection title="Alignment">
+					<VStack gap={2} alignItems="stretch">
+						<SettingsRow label="Horizontal">
+							<HStack gap={0.5}>
 								<For each={Object.entries(textAlignMap)}>
 									{([value, icon]) => (
 										<IconButton
+											size="xs"
 											variant={
-												styles()["text-align"] === value ? "solid" : "surface"
+												styles()["text-align"] === value ? "solid" : "ghost"
 											}
-											size="md"
-											onclick={() =>
+											colorPalette={
+												styles()["text-align"] === value ? "purple" : "gray"
+											}
+											onClick={() =>
 												setStyle({ "text-align": value as TextAlign })
 											}
 										>
-											<Dynamic component={icon} />
+											<Dynamic component={icon} size={14} />
 										</IconButton>
 									)}
 								</For>
 							</HStack>
-						</PopoverButton>
-
-						<PopoverButton
-							trigger={
-								<ControlIconBtn>
-									<BiRegularVerticalCenter />
-								</ControlIconBtn>
-							}
-						>
-							<HStack>
+						</SettingsRow>
+						<SettingsRow label="Vertical">
+							<HStack gap={0.5}>
 								<For each={Object.entries(alignContentMap)}>
 									{([value, icon]) => (
 										<IconButton
+											size="xs"
 											variant={
-												styles()["align-content"] === value
-													? "solid"
-													: "surface"
+												styles()["align-content"] === value ? "solid" : "ghost"
 											}
-											size="md"
-											onclick={() =>
+											colorPalette={
+												styles()["align-content"] === value ? "purple" : "gray"
+											}
+											onClick={() =>
 												setStyle({ "align-content": value as TextAlign })
 											}
 										>
-											<Dynamic component={icon} />
+											<Dynamic component={icon} size={14} />
 										</IconButton>
 									)}
 								</For>
 							</HStack>
-						</PopoverButton>
+						</SettingsRow>
+					</VStack>
+				</SettingsSection>
 
-						<PopoverButton
-							trigger={
-								<ControlIconBtn>
-									<FaSolidBold />
-								</ControlIconBtn>
+				{/* Spacing Section */}
+				<SettingsSection title="Spacing">
+					<VStack gap={2} alignItems="stretch">
+						<SettingsRow label="Line Height">
+							<Slider.Root
+								w="100px"
+								min={0.5}
+								max={3}
+								step={0.05}
+								value={[parseFloat(String(styles()["line-height"])) || 1.25]}
+								onValueChange={(v) => setStyle({ "line-height": v.value[0] })}
+							>
+								<Slider.Control cursor="pointer">
+									<Slider.Track>
+										<Slider.Range />
+									</Slider.Track>
+									<Slider.Thumb index={0}>
+										<Slider.HiddenInput />
+									</Slider.Thumb>
+								</Slider.Control>
+							</Slider.Root>
+							<Text
+								fontSize="xs"
+								color="gray.400"
+								minW="30px"
+								textAlign="right"
+							>
+								{(parseFloat(String(styles()["line-height"])) || 1.25).toFixed(
+									2,
+								)}
+							</Text>
+						</SettingsRow>
+						<SettingsRow label="Letter">
+							<Slider.Root
+								w="100px"
+								min={-2}
+								max={10}
+								step={0.1}
+								value={[parseFloat(String(styles()["letter-spacing"])) || 0]}
+								onValueChange={(v) =>
+									setStyle({ "letter-spacing": v.value[0] + "px" })
+								}
+							>
+								<Slider.Control cursor="pointer">
+									<Slider.Track>
+										<Slider.Range />
+									</Slider.Track>
+									<Slider.Thumb index={0}>
+										<Slider.HiddenInput />
+									</Slider.Thumb>
+								</Slider.Control>
+							</Slider.Root>
+							<Text
+								fontSize="xs"
+								color="gray.400"
+								minW="30px"
+								textAlign="right"
+							>
+								{(parseFloat(String(styles()["letter-spacing"])) || 0).toFixed(
+									1,
+								)}
+							</Text>
+						</SettingsRow>
+					</VStack>
+				</SettingsSection>
+
+				{/* Transform Section */}
+				<SettingsSection title="Transform">
+					<SettingsRow label="Case">
+						<HStack gap={0.5}>
+							<For each={Object.entries(textTransformMap)}>
+								{([value, icon]) => (
+									<IconButton
+										size="xs"
+										variant={
+											styles()["text-transform"] === value ? "solid" : "ghost"
+										}
+										colorPalette={
+											styles()["text-transform"] === value ? "purple" : "gray"
+										}
+										onClick={() =>
+											setStyle({
+												"text-transform":
+													value as JSX.CSSProperties["text-transform"],
+											})
+										}
+									>
+										<Dynamic component={icon} size={14} />
+									</IconButton>
+								)}
+							</For>
+						</HStack>
+					</SettingsRow>
+				</SettingsSection>
+
+				{/* Content Link Section */}
+				<SettingsSection title="Content">
+					<VStack gap={2} alignItems="stretch">
+						<RadioGroup.Root
+							size="sm"
+							value={String(props.node.data.linkage)}
+							onValueChange={(d) =>
+								setData({ linkage: parseInt(d.value ?? "3") })
 							}
 						>
-							<HStack>
-								<For each={weightMap}>
-									{(value) => (
-										<IconButton
-											variant={
-												styles()["font-weight"] === value ? "solid" : "surface"
+							<VStack gap={1.5} alignItems="stretch">
+								<Index each={textLinkOptions}>
+									{(option) => (
+										<RadioGroup.Item
+											value={String(option().value) as any}
+											fontWeight={400}
+											fontSize="xs"
+											_checked={{ colorPalette: "purple" }}
+											cursor="pointer"
+											p={1.5}
+											rounded="md"
+											bg={
+												props.node.data.linkage === option().value
+													? "purple.900/30"
+													: "transparent"
 											}
-											size="md"
-											onclick={() => setStyle({ "font-weight": value })}
+											_hover={{ bg: "gray.800" }}
 										>
-											<Text style={{ "font-weight": value }}>T</Text>
-										</IconButton>
+											<RadioGroup.ItemControl />
+											<RadioGroup.ItemText>{option().text}</RadioGroup.ItemText>
+											<RadioGroup.ItemHiddenInput />
+										</RadioGroup.Item>
 									)}
-								</For>
-							</HStack>
-						</PopoverButton>
+								</Index>
+							</VStack>
+						</RadioGroup.Root>
 
-						<PopoverButton
-							trigger={
-								<ControlIconBtn>
-									<TbLetterCaseToggle />
-								</ControlIconBtn>
-							}
-						>
-							<HStack>
-								<For each={Object.entries(textTransformMap)}>
-									{([value, icon]) => (
-										<IconButton
-											variant={
-												styles()["text-transform"] === value
-													? "solid"
-													: "surface"
-											}
-											size="md"
-											onclick={() =>
-												setStyle({
-													"text-transform":
-														value as JSX.CSSProperties["text-transform"],
-												})
-											}
-										>
-											<Dynamic component={icon} />
-										</IconButton>
-									)}
-								</For>
-							</HStack>
-						</PopoverButton>
-
-						<PopoverButton
-							trigger={
-								<ControlIconBtn>
-									<ImTextHeight />
-								</ControlIconBtn>
-							}
-						>
-							<SliderWithInput
-								styleKey="line-height"
-								label={<ImTextHeight size={14} />}
-								styles={styles()}
-								setStyle={setStyle}
-							/>
-						</PopoverButton>
-
-						<PopoverButton
-							trigger={
-								<ControlIconBtn>
-									<ImTextWidth />
-								</ControlIconBtn>
-							}
-						>
-							<SliderWithInput
-								styleKey="letter-spacing"
-								label={<ImTextWidth size={16} />}
-								styles={styles()}
-								setStyle={setStyle}
-								rootProps={{ max: 20 }}
-							/>
-						</PopoverButton>
-
-						<PopoverButton
-							trigger={
-								<ControlIconBtn>
-									<FiLink />
-								</ControlIconBtn>
-							}
-						>
-							<RadioInput
-								options={textLinkOptions}
-								label="Link Text"
-								value={props.node.data.linkage}
-								onValueChange={(d) => setData({ linkage: d.value })}
-							/>
-
-							<Switch>
-								<Match when={props.node.data.linkage === LINKAGES.CUSTOM}>
-									<Field.Root mt={4}>
-										<Field.Label fontSize="xs" fontWeight={400}>
-											Update Text
-										</Field.Label>
-										<Field.Textarea
-											colorPalette="purple"
-											bg="bg.muted"
-											border="2px solid"
-											borderColor="purple.700"
-											py={1.5}
-											px={3}
-											value={props.node.data.text}
-											oninput={(e) => setData({ text: e.target.value })}
-											autoresize
-										/>
-										<Field.HelperText>Some additional Info</Field.HelperText>
-										<Field.ErrorText>Error Info</Field.ErrorText>
-									</Field.Root>
-								</Match>
-							</Switch>
-						</PopoverButton>
-					</HStack>
-				);
-			}}
+						<Show when={props.node.data.linkage === LINKAGES.CUSTOM}>
+							<Field.Root>
+								<Field.Textarea
+									w="full"
+									colorPalette="purple"
+									bg="gray.800"
+									border="1px solid"
+									borderColor="gray.700"
+									py={2}
+									px={3}
+									fontSize="xs"
+									rounded="md"
+									value={props.node.data.text}
+									onInput={(e) => setData({ text: e.target.value })}
+									placeholder="Enter your text..."
+									rows={3}
+									_focus={{ borderColor: "purple.500" }}
+								/>
+							</Field.Root>
+						</Show>
+					</VStack>
+				</SettingsSection>
+			</VStack>
 		</Show>
 	);
 }

@@ -222,9 +222,7 @@ export interface PopoverBtnProps extends ParentProps {
 export const PopoverButton = (props: PopoverBtnProps) => {
 	return (
 		<Popover.Root open={props.enabled}>
-			<Popover.Trigger w={5} h={5}>
-				{props.trigger}
-			</Popover.Trigger>
+			<Popover.Trigger>{props.trigger}</Popover.Trigger>
 			<Popover.Positioner>
 				<Popover.Content w="fit" py={3} px={4}>
 					{props.children}

@@ -1,78 +1,131 @@
-// Resize functionality adapted from Hung Nguyen's implementation
-
 import { Box } from "styled-system/jsx";
 import { useEditor } from "../Editor";
 import { Dynamic, For } from "solid-js/web";
-import NodeProvider, { NodeContext } from "../Node";
-import { cva } from "styled-system/css";
-import { useGesture } from "solid-gesture";
-import type { FullGestureState } from "@use-gesture/core/types";
-import { createStore, unwrap } from "solid-js/store";
+import NodeProvider from "../Node";
+import { css } from "styled-system/css";
+import { createStore } from "solid-js/store";
 import {
 	createEffect,
 	createMemo,
 	createSignal,
+	onCleanup,
 	onMount,
+	Show,
 	type JSX,
 } from "solid-js";
-import {
-	calculateParentOffset,
-	getPositionPercent,
-	getSizePercent,
-} from "~/utils";
-import { useElementSize, usePointer } from "solidjs-use";
 
-const demarcationBorderWidth = 2;
+// Constants
+const BORDER_WIDTH = 2;
+const MIN_SIZE = 20;
+const HANDLE_SIZE = 10;
 
-const axes = ["top-left", "top-right", "bottom-left", "bottom-right"] as const;
-const resizeHandlerRecipe = cva({
-	base: {
-		backgroundColor: "red.400",
-		width: "10px",
-		height: "10px",
-		borderRadius: "100%",
+type ResizeHandle =
+	| "top-left"
+	| "top"
+	| "top-right"
+	| "right"
+	| "bottom-right"
+	| "bottom"
+	| "bottom-left"
+	| "left";
+
+const resizeHandles: ResizeHandle[] = [
+	"top-left",
+	"top",
+	"top-right",
+	"right",
+	"bottom-right",
+	"bottom",
+	"bottom-left",
+	"left",
+];
+
+// Cursor mapping for resize handles
+const cursorMap: Record<ResizeHandle, string> = {
+	"top-left": "nwse-resize",
+	top: "ns-resize",
+	"top-right": "nesw-resize",
+	right: "ew-resize",
+	"bottom-right": "nwse-resize",
+	bottom: "ns-resize",
+	"bottom-left": "nesw-resize",
+	left: "ew-resize",
+};
+
+// Handle position styles
+const getHandleStyle = (handle: ResizeHandle): JSX.CSSProperties => {
+	const base: JSX.CSSProperties = {
 		position: "absolute",
-		cursor: "grab",
-	},
-	variants: {
-		position: {
-			"top-left": {
-				top: 0,
-				left: 0,
-				transform: "translate3d(-50%, -50%, 0)",
-			},
-			"top-right": {
-				top: 0,
-				right: 0,
-				transform: "translate3d(50%, -50%, 0)",
-			},
-			"bottom-left": {
-				bottom: 0,
-				left: 0,
-				transform: "translate3d(-50%, 50%, 0)",
-			},
-			"bottom-right": {
-				bottom: 0,
-				right: 0,
-				transform: "translate3d(50%, 50%, 0)",
-			},
-		},
-	},
-});
+		width: `${HANDLE_SIZE}px`,
+		height: `${HANDLE_SIZE}px`,
+		"background-color": "var(--colors-purple-500)",
+		"border-radius": "50%",
+		cursor: cursorMap[handle],
+	};
 
-// const getHandleStyle = (y: "top" | "bottom", x: "left" | "right") => {
-//     let translatePosition = ""
-//     if (y === "top" && x === "left") translatePosition = "translate(-50%, -50%)";
-//     if (y === "top" && x === "right") translatePosition = "translate(50%, -50%)";
-//     if (y === "bottom" && x === "left") translatePosition = "translate(-50%, 50%)";
-//     if (y === "bottom" && x === "right") translatePosition = "translate(50%, 50%)";
+	switch (handle) {
+		case "top-left":
+			return { ...base, top: "-5px", left: "-5px" };
+		case "top":
+			return {
+				...base,
+				top: "-5px",
+				left: "50%",
+				transform: "translateX(-50%)",
+			};
+		case "top-right":
+			return { ...base, top: "-5px", right: "-5px" };
+		case "right":
+			return {
+				...base,
+				top: "50%",
+				right: "-5px",
+				transform: "translateY(-50%)",
+			};
+		case "bottom-right":
+			return { ...base, bottom: "-5px", right: "-5px" };
+		case "bottom":
+			return {
+				...base,
+				bottom: "-5px",
+				left: "50%",
+				transform: "translateX(-50%)",
+			};
+		case "bottom-left":
+			return { ...base, bottom: "-5px", left: "-5px" };
+		case "left":
+			return {
+				...base,
+				top: "50%",
+				left: "-5px",
+				transform: "translateY(-50%)",
+			};
+	}
+};
 
-//     return {
-//         ...resizeHandleBaseStyles,
-//         [y]: 0,
-//         [x]: 0,
-//         transform: translatePosition
-// }}
+interface DragState {
+	isDragging: boolean;
+	isResizing: boolean;
+	resizeHandle: ResizeHandle | null;
+	startX: number;
+	startY: number;
+	startLeft: number;
+	startTop: number;
+	startWidth: number;
+	startHeight: number;
+}
+
+const initialDragState: DragState = {
+	isDragging: false,
+	isResizing: false,
+	resizeHandle: null,
+	startX: 0,
+	startY: 0,
+	startLeft: 0,
+	startTop: 0,
+	startWidth: 0,
+	startHeight: 0,
+};
 
 export default function RenderEditor() {
 	const {
@@ -80,390 +133,296 @@ export default function RenderEditor() {
 		getters: { getNodeRenderComp, getSelectedNode },
 		connectors: { register },
 		setters: { setRootRef, setNodeStyle },
-		hooks: { useSelect, useNodeDrag, useResizeNode },
 		helpers: { selectNode },
 	} = useEditor();
-	const [store, setStore] = createStore({
-		indicatorPos: [0, 0],
-		dragHandlerCoords: {
-			topLeft: { x: 0, y: 0 },
-		},
-		scale: { x: 1, y: 1, z: 1 },
-		selectedNodeSize: { width: 0, height: 0 },
-	});
+
 	let editorRootRef!: HTMLDivElement;
-	let selectedIndicatorRef!: HTMLDivElement;
-	const { width: selectedNodeWidth, height: selectedNodeHeight } =
-		useElementSize(() => {
-			console.log("Getting selected item: ", getSelectedNode());
-			return getSelectedNode()?.el;
-		});
-	const selectedIndicatorPosition = createMemo(() => {
-		const translateX = getSelectedNode()?.style["--translate-x"];
-		const translateY = getSelectedNode()?.style["--translate-y"];
-		const translateZ = getSelectedNode()?.style["--translate-z"];
+
+	const [dragState, setDragState] = createStore<DragState>({
+		...initialDragState,
+	});
+	const [isDraggingOrResizing, setIsDraggingOrResizing] = createSignal(false);
+
+	// Get current node position/size as percentages
+	const getNodeBounds = (nodeId?: string | null) => {
+		const node = nodeId ? editor.nodes[nodeId] : getSelectedNode();
+		if (!node) return null;
+
+		const left = parseFloat(String(node.style.left).replace("%", "")) || 0;
+		const top = parseFloat(String(node.style.top).replace("%", "")) || 0;
+		const width = parseFloat(String(node.style.width).replace("%", "")) || 10;
+		const height = parseFloat(String(node.style.height).replace("%", "")) || 10;
+
+		return { left, top, width, height };
+	};
+
+	// Selection indicator position
+	const indicatorStyle = createMemo<JSX.CSSProperties>(() => {
+		const node = getSelectedNode();
+		if (!node) {
+			return { opacity: 0, visibility: "hidden" };
+		}
+
 		return {
-			width: getSelectedNode()?.style.width,
-			height: getSelectedNode()?.style.height,
-			transform: `translate3d(${translateX}, ${translateY}, ${translateZ})`,
-			left: `calc(${getSelectedNode()?.style.left} - ${demarcationBorderWidth}px)`,
-			top: `calc(${getSelectedNode()?.style.top} - ${demarcationBorderWidth}px)`,
-			opacity: getSelectedNode() ? 1 : 0,
-			visibility: getSelectedNode()
-				? "visible"
-				: ("hidden" as JSX.CSSProperties["visibility"]),
-			// top: store.indicatorPos[0] + "%",
-			// left: store.indicatorPos[1] + "%",
+			left: node.style.left,
+			top: node.style.top,
+			width: node.style.width,
+			height: node.style.height,
+			opacity: 1,
+			visibility: "visible",
 		};
 	});
-	// const { x, y, pressure, pointerType } = usePointer()
-	// createEffect(() => {console.log("Pointer: ", x(), y())})
-	// const handlePos = createMemo(() => ({
-	// 	topLeft: {
-	// 		transform: `translate3d(${store.dragHandlerCoords["topLeft"].x}px, ${store.dragHandlerCoords["topLeft"].y}px, 0)`,
-	// 	}
-	// }))
 
-	// useSelect(({ formerSelected, newSelected }) => {
-	// 	console.log("Item Selected: ", formerSelected?.id, newSelected?.id);
-	// 	if (newSelected) {
-	// 		const pos = calculateParentOffset(newSelected.el.getBoundingClientRect(), editorRootRef.getBoundingClientRect(), true);
-	// 		console.log("OFFSETS: ", pos);
-	// 		setStore("indicatorPos", pos);
-	// 	}
-	// });
+	// Handle mouse down on node for dragging
+	const handleNodeMouseDown = (e: MouseEvent, nodeId: string) => {
+		// Don't start drag if clicking a resize handle
+		if ((e.target as HTMLElement).closest("[data-resize-handle]")) return;
 
-	useNodeDrag(({ target, offset }) => {
-		console.log("Node is being dragged: ");
-		const newPos = calculateParentOffset(
-			(target as HTMLElement).getBoundingClientRect(),
-			editorRootRef.getBoundingClientRect(),
-		);
-		console.log(offset, newPos);
-		setStore(
-			"indicatorPos",
-			newPos.map((v) => v - demarcationBorderWidth),
-		);
-	});
-
-	const updateSize = ([left, top]: number[]) => {
-		const elRect = store.selectedNodeSize; // getSelectedNode()?.el.getBoundingClientRect();
-		const rootRefRect = editorRootRef.getBoundingClientRect();
-		if (rootRefRect && elRect && editor.selectedId) {
-			// console.log("scaling debug: ", initialLeft, left, initialTop, top);
-			const newWidth = ((elRect.width + left) / rootRefRect.width) * 100;
-			const newHeight = ((elRect.height + top) / rootRefRect.height) * 100;
-			console.log(
-				elRect.width,
-				elRect.height,
-				elRect.width + left,
-				elRect.height + top,
-			);
-			console.log(newWidth, newHeight);
-			setNodeStyle(editor.selectedId, { width: newWidth + "%" });
-			setNodeStyle(editor.selectedId, { height: newHeight + "%" });
-		}
-	};
-
-	onMount(() => {
-		editorRootRef.addEventListener("click", (e) => {
-			console.log(e.target, e.currentTarget);
-			if (e.target === editorRootRef) {
-				console.log("deselecting current selection");
-				selectNode(null);
-			}
-		});
-	});
-
-	const axesGestureMap: Record<string, any> = {};
-	axes.map((axis) => {
-		axesGestureMap[axis] = useGesture(
-			{
-				onDragStart: () => {
-					console.log(
-						"Preserved Size: ",
-						selectedNodeWidth(),
-						selectedNodeHeight(),
-					);
-					setStore("selectedNodeSize", {
-						width: selectedNodeWidth(),
-						height: selectedNodeHeight(),
-					});
-					// setNodeStyle(editor.selectedId, {"transform-origin": axis.replace("-", " ")})
-				},
-				onDrag: ({
-					xy,
-					active,
-					movement,
-					initial,
-					offset,
-					delta,
-					lastOffset,
-					distance,
-					target,
-				}: FullGestureState<"drag">) => {
-					// const boundaryStart = editorRootRef.getBoundingClientRect();
-					// const initialX = initial[0] - boundaryStart.x;
-					// const initialY = initial[1] - boundaryStart.y;
-					console.log(
-						"scaling debug: ",
-						initial,
-						movement,
-						delta,
-						offset,
-						lastOffset,
-						xy,
-						distance,
-					);
-					updateSize(movement);
-				},
-			},
-			{
-				drag: {
-					bounds: editorRootRef,
-					preventDefault: true,
-				},
-			},
-		);
-	});
-
-	// const element = getSelectedNode().el;
-	// const resizers = document.querySelectorAll(div + " .resizer");
-	const minimum_size = 20;
-	let original_width = 0;
-	let original_height = 0;
-	let original_x = 0;
-	let original_y = 0;
-	let original_mouse_x = 0;
-	let original_mouse_y = 0;
-	let currentResizer = "bottom-right";
-	let parentRect: DOMRect;
-
-	function resize(e: MouseEvent) {
-		const element = getSelectedNode()?.el;
-		if (!element) return;
-		const elRect = element.getBoundingClientRect();
-		const xScale = e.pageX - original_mouse_x;
-		const yScale = e.pageY - original_mouse_y;
-
-		// console.log("-------BEGIN CONFIRM LOGIC-------");
-		// console.log(elRect.top, parentRect.top);
-		// console.log(elRect.left, parentRect.left);
-		// console.log(elRect.bottom, parentRect.bottom);
-		// console.log(elRect.right, parentRect.right);
-		// console.log("-------END CONFIRM LOGIC-------");
-
-		// if (
-		// 	elRect.top < parentRect.top ||
-		// 	elRect.left < parentRect.left ||
-		// 	elRect.bottom > parentRect.bottom ||
-		// 	elRect.right > parentRect.right
-		// ) {
-		// 	return;
-		// }
-
-		// extended element is element that passes/stops at it's parent's boundaries
-		if (currentResizer === "bottom-right") {
-			const width = original_width + xScale;
-			const height = original_height + yScale;
-			const [widthPercent, heightPercent] = getSizePercent(
-				[width, height],
-				parentRect,
-			);
-
-			if (
-				xScale < 0 ||
-				(width > minimum_size && elRect.right < parentRect.right)
-			) {
-				setNodeStyle(editor.selectedId, { width: widthPercent + "%" });
-				// setNodeStyle(editor.selectedId, { "--scale-x": xScale + "px" });
-			}
-			if (
-				// allow adjusting height if it is a reduction of extended element
-				yScale < 0 ||
-				(height > minimum_size && elRect.bottom < parentRect.bottom)
-			) {
-				setNodeStyle(editor.selectedId, { height: heightPercent + "%" });
-				// setNodeStyle(editor.selectedId, { "--scale-y": yScale + "px" });
-			}
-		} else if (currentResizer === "bottom-left") {
-			const height = original_height + yScale;
-			const width = original_width - xScale;
-			const [widthPercent, heightPercent] = getSizePercent(
-				[width, height],
-				parentRect,
-			);
-			const [leftVal, _] = getPositionPercent(
-				{
-					x: original_x,
-					x_offset: e.pageX - original_mouse_x,
-				},
-				parentRect,
-			);
-
-			if (
-				yScale < 0 ||
-				(height > minimum_size && elRect.bottom < parentRect.bottom)
-			) {
-				setNodeStyle(editor.selectedId, { height: heightPercent + "%" });
-			}
-			if (
-				xScale > 0 ||
-				(width > minimum_size && elRect.left > parentRect.left)
-			) {
-				setNodeStyle(editor.selectedId, {
-					width: widthPercent + "%",
-					left: leftVal + "%",
-				});
-			}
-		} else if (currentResizer === "top-right") {
-			const width = original_width + xScale;
-			const height = original_height - yScale;
-			const [_, topVal] = getPositionPercent(
-				{ y: original_y, y_offset: e.pageY - original_mouse_y },
-				parentRect,
-			);
-			const [widthPercent, heightPercent] = getSizePercent(
-				[width, height],
-				parentRect,
-			);
-
-			if (
-				xScale < 0 ||
-				(width > minimum_size && elRect.right < parentRect.right)
-			) {
-				setNodeStyle(editor.selectedId, { width: widthPercent + "%" });
-			}
-			if (
-				yScale > 0 ||
-				(height > minimum_size && elRect.top > parentRect.top)
-			) {
-				setNodeStyle(editor.selectedId, {
-					height: heightPercent + "%",
-					top: topVal + "%",
-				});
-			}
-		} else {
-			const width = original_width - xScale;
-			const height = original_height - yScale;
-			const [widthPercent, heightPercent] = getSizePercent(
-				[width, height],
-				parentRect,
-			);
-			const [leftPercent, topPercent] = getPositionPercent(
-				{
-					x: original_x,
-					y: original_y,
-					x_offset: e.pageX - original_mouse_x,
-					y_offset: e.pageY - original_mouse_y,
-				},
-				parentRect,
-			);
-
-			if (
-				xScale > 0 ||
-				(width > minimum_size && elRect.left > parentRect.left)
-			) {
-				setNodeStyle(editor.selectedId, {
-					width: widthPercent + "%",
-					left: leftPercent + "%",
-				});
-			}
-			if (
-				yScale > 0 ||
-				(height > minimum_size && elRect.top > parentRect.top)
-			) {
-				setNodeStyle(editor.selectedId, {
-					height: heightPercent + "%",
-					top: topPercent + "%",
-				});
-			}
-		}
-	}
-
-	const updateSizes = (e: MouseEvent) => {
 		e.preventDefault();
+		e.stopPropagation();
 
-		const element = getSelectedNode()?.el;
-		if (!element) return;
+		// Blur any focused input/textarea so keyboard shortcuts work
+		if (document.activeElement instanceof HTMLElement) {
+			document.activeElement.blur();
+		}
 
-		original_width = parseFloat(
-			getComputedStyle(element, null)
-				.getPropertyValue("width")
-				.replace("%", ""),
-		);
-		original_height = parseFloat(
-			getComputedStyle(element, null)
-				.getPropertyValue("height")
-				.replace("%", ""),
-		);
-		original_x = element.getBoundingClientRect().x - parentRect.x;
-		original_y = element.getBoundingClientRect().y - parentRect.y;
-		original_mouse_x = e.pageX;
-		original_mouse_y = e.pageY;
+		selectNode(nodeId);
+
+		const bounds = getNodeBounds(nodeId);
+		if (!bounds) return;
+
+		setDragState({
+			isDragging: true,
+			isResizing: false,
+			resizeHandle: null,
+			startX: e.clientX,
+			startY: e.clientY,
+			startLeft: bounds.left,
+			startTop: bounds.top,
+			startWidth: bounds.width,
+			startHeight: bounds.height,
+		});
+		setIsDraggingOrResizing(true);
 	};
 
-	function stopResize() {
-		window.removeEventListener("mousemove", resize);
-	}
+	// Handle mouse down on resize handle
+	const handleResizeMouseDown = (e: MouseEvent, handle: ResizeHandle) => {
+		e.preventDefault();
+		e.stopPropagation();
 
-	const handleResizeMap: Record<string, any> = {};
-	axes.map((axis) => {
-		handleResizeMap[axis] = (e: MouseEvent) => {
-			currentResizer = axis;
-			parentRect = editorRootRef.getBoundingClientRect();
-			updateSizes(e);
-			window.addEventListener("mousemove", resize);
-			window.addEventListener("mouseup", stopResize);
-		};
+		const bounds = getNodeBounds();
+		if (!bounds) return;
+
+		setDragState({
+			isDragging: false,
+			isResizing: true,
+			resizeHandle: handle,
+			startX: e.clientX,
+			startY: e.clientY,
+			startLeft: bounds.left,
+			startTop: bounds.top,
+			startWidth: bounds.width,
+			startHeight: bounds.height,
+		});
+		setIsDraggingOrResizing(true);
+	};
+
+	// Handle mouse move for drag/resize
+	const handleMouseMove = (e: MouseEvent) => {
+		if (!dragState.isDragging && !dragState.isResizing) return;
+
+		const rootRect = editorRootRef.getBoundingClientRect();
+		const deltaX = ((e.clientX - dragState.startX) / rootRect.width) * 100;
+		const deltaY = ((e.clientY - dragState.startY) / rootRect.height) * 100;
+
+		const node = getSelectedNode();
+		if (!node) return;
+
+		if (dragState.isDragging) {
+			// Dragging - update position
+			let newLeft = dragState.startLeft + deltaX;
+			let newTop = dragState.startTop + deltaY;
+
+			// Clamp to container bounds
+			newLeft = Math.max(0, Math.min(100 - dragState.startWidth, newLeft));
+			newTop = Math.max(0, Math.min(100 - dragState.startHeight, newTop));
+
+			setNodeStyle(node.id, {
+				left: `${newLeft}%`,
+				top: `${newTop}%`,
+			});
+		} else if (dragState.isResizing && dragState.resizeHandle) {
+			// Resizing
+			const handle = dragState.resizeHandle;
+			let newLeft = dragState.startLeft;
+			let newTop = dragState.startTop;
+			let newWidth = dragState.startWidth;
+			let newHeight = dragState.startHeight;
+
+			const minWidthPct = (MIN_SIZE / rootRect.width) * 100;
+			const minHeightPct = (MIN_SIZE / rootRect.height) * 100;
+
+			// Handle horizontal resizing
+			if (handle.includes("left")) {
+				const potentialWidth = dragState.startWidth - deltaX;
+				if (potentialWidth >= minWidthPct) {
+					const potentialLeft = dragState.startLeft + deltaX;
+					if (potentialLeft >= 0) {
+						newLeft = potentialLeft;
+						newWidth = potentialWidth;
+					} else {
+						newLeft = 0;
+						newWidth = dragState.startLeft + dragState.startWidth;
+					}
+				} else {
+					newWidth = minWidthPct;
+					newLeft = dragState.startLeft + dragState.startWidth - minWidthPct;
+				}
+			} else if (handle.includes("right")) {
+				newWidth = Math.max(minWidthPct, dragState.startWidth + deltaX);
+				// Clamp to container right edge
+				if (newLeft + newWidth > 100) {
+					newWidth = 100 - newLeft;
+				}
+			}
+
+			// Handle vertical resizing
+			if (handle.includes("top")) {
+				const potentialHeight = dragState.startHeight - deltaY;
+				if (potentialHeight >= minHeightPct) {
+					const potentialTop = dragState.startTop + deltaY;
+					if (potentialTop >= 0) {
+						newTop = potentialTop;
+						newHeight = potentialHeight;
+					} else {
+						newTop = 0;
+						newHeight = dragState.startTop + dragState.startHeight;
+					}
+				} else {
+					newHeight = minHeightPct;
+					newTop = dragState.startTop + dragState.startHeight - minHeightPct;
+				}
+			} else if (handle.includes("bottom")) {
+				newHeight = Math.max(minHeightPct, dragState.startHeight + deltaY);
+				// Clamp to container bottom edge
+				if (newTop + newHeight > 100) {
+					newHeight = 100 - newTop;
+				}
+			}
+
+			setNodeStyle(node.id, {
+				left: `${newLeft}%`,
+				top: `${newTop}%`,
+				width: `${newWidth}%`,
+				height: `${newHeight}%`,
+			});
+		}
+	};
+
+	// Handle mouse up
+	const handleMouseUp = () => {
+		if (!dragState.isDragging && !dragState.isResizing) return;
+
+		setDragState({ ...initialDragState });
+		setIsDraggingOrResizing(false);
+	};
+
+	// Handle click on canvas to deselect
+	const handleCanvasClick = (e: MouseEvent) => {
+		if (e.target === editorRootRef) {
+			selectNode(null);
+		}
+	};
+
+	// Set up global mouse event listeners
+	onMount(() => {
+		if (typeof document === "undefined") return;
+		document.addEventListener("mousemove", handleMouseMove);
+		document.addEventListener("mouseup", handleMouseUp);
+	});
+
+	onCleanup(() => {
+		if (typeof document === "undefined") return;
+		document.removeEventListener("mousemove", handleMouseMove);
+		document.removeEventListener("mouseup", handleMouseUp);
+	});
+
+	// Dynamic cursor based on drag state
+	const canvasClass = createMemo(() => {
+		if (dragState.isDragging) return "cursor-grabbing";
+		if (dragState.isResizing && dragState.resizeHandle) {
+			return `cursor-${cursorMap[dragState.resizeHandle].replace("-resize", "")}`;
+		}
+		return "";
 	});
 
 	return (
 		<Box
 			pos="relative"
 			w="full"
-			h={96}
+			aspectRatio={16 / 9}
 			bgColor="bg.muted"
+			overflow="hidden"
 			ref={(ref) => {
 				editorRootRef = ref;
 				setRootRef(ref);
 			}}
+			onClick={handleCanvasClick}
+			class={css({
+				"& .editor-node": {
+					cursor: "grab",
+				},
+				"&.cursor-grabbing, &.cursor-grabbing .editor-node": {
+					cursor: "grabbing !important",
+				},
+			})}
+			classList={{ [canvasClass()]: true }}
 		>
-			<For each={Object.values(editor.nodes)}>
-				{(node) => (
-					<NodeProvider node={node} register={register}>
-						<Dynamic
-							component={getNodeRenderComp(node)}
-							{...getNodeRenderComp(node).config.defaultData}
-						/>
-					</NodeProvider>
-				)}
+			{/* Render all nodes */}
+			<For each={Object.keys(editor.nodes)}>
+				{(nodeId) => {
+					const node = () => editor.nodes[nodeId];
+					return (
+						<Show when={node()}>
+							<NodeProvider node={node()!} register={register}>
+								<Dynamic
+									component={getNodeRenderComp(node()!)}
+									{...getNodeRenderComp(node()!).config.defaultData}
+									onMouseDown={(e: MouseEvent) =>
+										handleNodeMouseDown(e, nodeId)
+									}
+								/>
+							</NodeProvider>
+						</Show>
+					);
+				}}
 			</For>
-			<Box
-				ref={selectedIndicatorRef}
-				pointerEvents="none"
-				width="fit-content"
-				borderWidth={demarcationBorderWidth}
-				borderStyle="dashed"
-				borderColor="red.400"
-				position="absolute"
-				boxSizing="content-box"
-				style={selectedIndicatorPosition()}
-				transformOrigin="top left"
-				touchAction="none"
-				zIndex={999}
-			>
-				<For each={axes}>
-					{(axis) => (
-						<Box
-							pointerEvents="auto"
-							class={resizeHandlerRecipe({ position: axis })}
-							// {...axesGestureMap[axis]()}
-							onmousedown={handleResizeMap[axis]}
-						/>
-					)}
-				</For>
-			</Box>
+
+			{/* Selection indicator with resize handles */}
+			<Show when={getSelectedNode()}>
+				<Box
+					position="absolute"
+					pointerEvents="none"
+					borderWidth={`${BORDER_WIDTH}px`}
+					borderStyle="dashed"
+					borderColor="purple.500"
+					boxSizing="border-box"
+					zIndex={999}
+					style={indicatorStyle()}
+				>
+					{/* Resize handles */}
+					<For each={resizeHandles}>
+						{(handle) => (
+							<Box
+								data-resize-handle={handle}
+								pointerEvents="auto"
+								style={getHandleStyle(handle)}
+								onMouseDown={(e) => handleResizeMouseDown(e, handle)}
+							/>
+						)}
+					</For>
+				</Box>
+			</Show>
 		</Box>
 	);
 }

@@ -1,4 +1,5 @@
 import type { Accessor, JSX, JSXElement, Setter } from "solid-js";
+import type { SetStoreFunction } from "solid-js/store";
 import type { FullGestureState } from "@use-gesture/core/types";
 import type { ScriptureVerse } from "~/types";
 import type { SongLyric } from "~/types/context";
@@ -110,7 +111,7 @@ export type ExportThemeFn = () => ExportedTheme;
 
 export interface EditorContextValue {
 	editor: EditorStore;
-	setEditor: Setter<EditorStore>;
+	setEditor: SetStoreFunction<EditorStore>;
 	createNode: CreateNodeFn;
 	connectors: EditorNodeConnectors;
 	getters: {
@@ -136,6 +137,8 @@ export interface EditorContextValue {
 		selectNode: SelectNodeFn;
 		exportTheme: ExportThemeFn;
 		loadTheme: LoadThemeFn;
+		deleteNode: (id: NodeId) => void;
+		duplicateNode: (id: NodeId) => NodeId;
 	};
 }
 

@@ -1,4 +1,4 @@
-import { Box, HStack, VStack, type BoxProps } from "styled-system/jsx";
+import { Box, Flex, HStack, VStack, type BoxProps } from "styled-system/jsx";
 import { useNode } from "../Node";
 import { useEditor } from "../Editor";
 import {
@@ -6,12 +6,17 @@ import {
 	createMemo,
 	createSignal,
 	Match,
-	onMount,
 	Show,
 	Switch,
 	type JSX,
 } from "solid-js";
-import { TbBorderRadius, TbPhoto, TbRadiusTopLeft } from "solid-icons/tb";
+import {
+	TbBorderRadius,
+	TbPhoto,
+	TbRadiusTopLeft,
+	TbVideo,
+	TbTrash,
+} from "solid-icons/tb";
 import { ControlIconBtn } from "./Buttons";
 import {
 	ColorUpdateInput,
@@ -33,6 +38,9 @@ import { HiSolidPhoto } from "solid-icons/hi";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { Tabs } from "~/components/ui/tabs";
+import { Slider } from "~/components/ui/slider";
+import { NumberInput } from "~/components/ui/number-input";
+import { IconButton } from "~/components/ui/icon-button";
 import MediaContentLibrary from "~/components/custom/MediaContentLibrary";
 import { useTabsContext } from "@ark-ui/solid";
 import type { MediaItem } from "~/types";
@@ -41,10 +49,12 @@ import Video from "../../Video";
 import { css } from "styled-system/css";
 import { CgDropOpacity } from "solid-icons/cg";
 
-interface EditorContainer extends BoxProps {}
+interface EditorContainerProps extends BoxProps {
+	onMouseDown?: (e: MouseEvent) => void;
+}
 
-export default function EditorContainer(props: EditorContainer) {
-	const { node, register, styles, bindDrag } = useNode();
+export default function EditorContainer(props: EditorContainerProps) {
+	const { node, register, styles } = useNode();
 
 	createEffect(() => {
 		console.log("Here is the node: ", node);
@@ -54,12 +64,12 @@ export default function EditorContainer(props: EditorContainer) {
 		<Box
 			position="absolute"
 			ref={register}
-			{...bindDrag()}
-			style={styles}
+			style={styles()}
 			transformOrigin="top left"
 			overflow="hidden"
+			onMouseDown={props.onMouseDown}
 			// disabling child clicks so that the drag (target) is not any of the child elements.
-			class="disable-child-clicks"
+			class="disable-child-clicks editor-node"
 		>
 			<Show when={node.data.overlayColor}>
 				<Box bg={node.data.overlayColor} position="absolute" inset={0} />
@@ -138,130 +148,310 @@ export function RenderEditorContainer(props: RenderEditorItemProps) {
 export interface EditorContainerSettings extends NodeSettings {}
 export function EditorContainerSettings(props: EditorContainerSettings) {
 	const {
-		editor,
-		// getters: { getSelectedNode },
 		setters: { setNodeStyle, setNodeData },
 	} = useEditor();
-	const styles = createMemo(() => {
-		console.log("Recalculating Styles");
-		return props.node?.style ?? {};
-	});
+	const styles = createMemo(() => props.node?.style ?? {});
 	const [background, setBackground] = createSignal<MediaItem>();
-
-	onMount(() => {
-		console.log("Settings are being Mounted: ", props.node);
-	});
-
-	createEffect(() => {
-		console.log("Here is the selected node: ", props.node);
-	});
 
 	createEffect(() => {
 		if (props.node) {
 			const bg = background();
-			setNodeData(props.node.id, { background: bg });
-			console.log("Background: ", bg);
-			console.log(props.node.data);
+			if (bg) {
+				setNodeData(props.node.id, { background: bg });
+			}
 		}
 	});
-	const setStyle = (styles: JSX.CSSProperties) =>
-		setNodeStyle(props.node?.id, styles);
+
+	const setStyle = (newStyles: JSX.CSSProperties) =>
+		setNodeStyle(props.node?.id, newStyles);
 	const setData = (data: Record<string, any>) =>
 		setNodeData(props.node?.id, data);
 
-	const handleChangeBackground = () => {};
+	// Helper for border radius
+	const getBorderRadius = (corner: string) => {
+		const value =
+			styles()[`border-${corner}-radius` as keyof JSX.CSSProperties];
+		return parseFloat(String(value)) || 0;
+	};
+
+	const setBorderRadius = (corner: string, value: number) => {
+		setStyle({
+			[`border-${corner}-radius`]: `${value}px`,
+		} as JSX.CSSProperties);
+	};
+
+	// Section wrapper
+	const SettingsSection = (sectionProps: { title: string; children: any }) => (
+		<Box>
+			<Text
+				fontSize="2xs"
+				color="gray.500"
+				textTransform="uppercase"
+				letterSpacing="wide"
+				mb={2}
+			>
+				{sectionProps.title}
+			</Text>
+			{sectionProps.children}
+		</Box>
+	);
+
+	// Row component
+	const SettingsRow = (rowProps: { label?: string; children: any }) => (
+		<Flex alignItems="center" justifyContent="space-between" gap={2} py={1}>
+			{rowProps.label && (
+				<Text fontSize="xs" color="gray.400" minW="70px">
+					{rowProps.label}
+				</Text>
+			)}
+			<Flex flex="1" gap={1} justifyContent="flex-end" alignItems="center">
+				{rowProps.children}
+			</Flex>
+		</Flex>
+	);
 
 	return (
 		<Show when={props.visible}>
-			<HStack w="full" gap={4} rounded="md">
-				<ColorUpdateInput
-					styleKey="background-color"
-					styles={styles()}
-					setStyle={setStyle}
-				/>
-
-				<PopoverButton
-					trigger={
-						<ControlIconBtn>
-							<TbBorderRadius />
-						</ControlIconBtn>
-					}
-				>
-					<VStack>
-						<SliderWithInput
-							styleKey="border-top-left-radius"
-							label={<AiOutlineRadiusUpleft size={24} />}
-							styles={styles()}
-							setStyle={setStyle}
-						/>
-						<SliderWithInput
-							styleKey="border-top-right-radius"
-							label={<AiOutlineRadiusUpright size={24} />}
-							styles={styles()}
-							setStyle={setStyle}
-						/>
-						<SliderWithInput
-							styleKey="border-bottom-left-radius"
-							label={<AiOutlineRadiusBottomleft size={24} />}
-							styles={styles()}
-							setStyle={setStyle}
-						/>
-						<SliderWithInput
-							styleKey="border-bottom-right-radius"
-							label={<AiOutlineRadiusBottomright size={24} />}
-							styles={styles()}
-							setStyle={setStyle}
-						/>
-					</VStack>
-				</PopoverButton>
-
-				<PopoverButton
-					trigger={
-						<ControlIconBtn onclick={handleChangeBackground}>
-							<HiSolidPhoto />
-						</ControlIconBtn>
-					}
-				>
-					<Tabs.Root defaultValue="images" w="md">
-						<Tabs.List>
-							<Tabs.Trigger value="images">Images</Tabs.Trigger>
-							<Tabs.Trigger value="videos">Videos</Tabs.Trigger>
-						</Tabs.List>
-						<Box minH={64}>
-							<Tabs.Content value="images">
-								<MediaContentLibrary
-									type="image"
-									selectedMedia={background()}
-									setSelectedMedia={setBackground}
-								/>
-							</Tabs.Content>
-							<Tabs.Content value="videos">
-								<MediaContentLibrary
-									type="video"
-									selectedMedia={background()}
-									setSelectedMedia={setBackground}
-								/>
-							</Tabs.Content>
-						</Box>
-					</Tabs.Root>
-					<VStack>
-						<PopoverButton
-							trigger={
-								<ControlIconBtn>
-									<CgDropOpacity />
-								</ControlIconBtn>
-							}
-						>
-							<SliderWithInputTwo
-								label={<CgDropOpacity size={16} />}
-								sliderValue={[props.node.data.bgOpacity]}
-								setValue={(v) => setData({ bgOpacity: v })}
-								rootProps={{ step: 0.1, min: 0, max: 1 }}
+			<VStack gap={4} alignItems="stretch" w="full">
+				{/* Background Section */}
+				<SettingsSection title="Background">
+					<VStack gap={2} alignItems="stretch">
+						<SettingsRow label="Color">
+							<ColorUpdateInput
+								styleKey="background-color"
+								styles={styles()}
+								setStyle={setStyle}
 							/>
-						</PopoverButton>
+						</SettingsRow>
+
+						<SettingsRow label="Opacity">
+							<Slider.Root
+								w="100px"
+								min={0}
+								max={1}
+								step={0.05}
+								value={[props.node.data.bgOpacity ?? 1]}
+								onValueChange={(v) => setData({ bgOpacity: v.value[0] })}
+							>
+								<Slider.Control cursor="pointer">
+									<Slider.Track>
+										<Slider.Range />
+									</Slider.Track>
+									<Slider.Thumb index={0}>
+										<Slider.HiddenInput />
+									</Slider.Thumb>
+								</Slider.Control>
+							</Slider.Root>
+							<Text
+								fontSize="xs"
+								color="gray.400"
+								minW="30px"
+								textAlign="right"
+							>
+								{((props.node.data.bgOpacity ?? 1) * 100).toFixed(0)}%
+							</Text>
+						</SettingsRow>
 					</VStack>
-				</PopoverButton>
-			</HStack>
+				</SettingsSection>
+
+				{/* Media Section */}
+				<SettingsSection title="Media">
+					<PopoverButton
+						trigger={
+							<Button
+								alignItems="center"
+								gap={2}
+								p={2}
+								bg="gray.800"
+								rounded="md"
+								cursor="pointer"
+								border="1px dashed"
+								borderColor="gray.700"
+								_hover={{ borderColor: "gray.600", bg: "gray.750" }}
+								w="full"
+								justifyContent="center"
+								fontSize="xs"
+								color="gray.400"
+							>
+								<HiSolidPhoto size={16} color="var(--colors-gray-400)" />
+								{props.node.data.background
+									? "Change Media"
+									: "Add Image/Video"}
+							</Button>
+						}
+					>
+						<Tabs.Root defaultValue="images" w="md">
+							<Tabs.List>
+								<Tabs.Trigger value="images">Images</Tabs.Trigger>
+								<Tabs.Trigger value="videos">Videos</Tabs.Trigger>
+							</Tabs.List>
+							<Box minH={64}>
+								<Tabs.Content value="images">
+									<MediaContentLibrary
+										type="image"
+										selectedMedia={background()}
+										setSelectedMedia={setBackground}
+									/>
+								</Tabs.Content>
+								<Tabs.Content value="videos">
+									<MediaContentLibrary
+										type="video"
+										selectedMedia={background()}
+										setSelectedMedia={setBackground}
+									/>
+								</Tabs.Content>
+							</Box>
+						</Tabs.Root>
+					</PopoverButton>
+
+					<Show when={props.node.data.background}>
+						<Flex
+							mt={2}
+							p={2}
+							bg="gray.800"
+							rounded="md"
+							alignItems="center"
+							gap={2}
+						>
+							<Box w={8} h={8} rounded="sm" overflow="hidden" bg="gray.700">
+								<Show when={props.node.data.background?.type === "image"}>
+									<Image
+										src={props.node.data.background?.path}
+										alt="Background"
+										class={css({ w: "full", h: "full", objectFit: "cover" })}
+									/>
+								</Show>
+								<Show when={props.node.data.background?.type === "video"}>
+									<Flex alignItems="center" justifyContent="center" h="full">
+										<TbVideo size={14} />
+									</Flex>
+								</Show>
+							</Box>
+							<Text fontSize="xs" color="gray.300" flex="1" truncate>
+								{props.node.data.background?.title || "Media"}
+							</Text>
+							<IconButton
+								size="2xs"
+								variant="ghost"
+								colorPalette="red"
+								onClick={() => setData({ background: undefined })}
+							>
+								<TbTrash size={12} />
+							</IconButton>
+						</Flex>
+					</Show>
+				</SettingsSection>
+
+				{/* Border Radius Section */}
+				<SettingsSection title="Border Radius">
+					<VStack gap={2} alignItems="stretch">
+						<HStack gap={2}>
+							<Flex flex="1" alignItems="center" gap={1}>
+								<AiOutlineRadiusUpleft
+									size={12}
+									color="var(--colors-gray-500)"
+								/>
+								<NumberInput.Root
+									size="xs"
+									maxW="full"
+									value={getBorderRadius("top-left").toString()}
+									onValueChange={(v) =>
+										setBorderRadius("top-left", v.valueAsNumber)
+									}
+									min={0}
+									max={100}
+								>
+									<NumberInput.Input
+										class={css({
+											bg: "gray.800",
+											borderColor: "gray.700",
+											fontSize: "xs",
+											h: "28px",
+										})}
+									/>
+								</NumberInput.Root>
+							</Flex>
+							<Flex flex="1" alignItems="center" gap={1}>
+								<AiOutlineRadiusUpright
+									size={12}
+									color="var(--colors-gray-500)"
+								/>
+								<NumberInput.Root
+									size="xs"
+									maxW="full"
+									value={getBorderRadius("top-right").toString()}
+									onValueChange={(v) =>
+										setBorderRadius("top-right", v.valueAsNumber)
+									}
+									min={0}
+									max={100}
+								>
+									<NumberInput.Input
+										class={css({
+											bg: "gray.800",
+											borderColor: "gray.700",
+											fontSize: "xs",
+											h: "28px",
+										})}
+									/>
+								</NumberInput.Root>
+							</Flex>
+						</HStack>
+						<HStack gap={2}>
+							<Flex flex="1" alignItems="center" gap={1}>
+								<AiOutlineRadiusBottomleft
+									size={12}
+									color="var(--colors-gray-500)"
+								/>
+								<NumberInput.Root
+									size="xs"
+									maxW="full"
+									value={getBorderRadius("bottom-left").toString()}
+									onValueChange={(v) =>
+										setBorderRadius("bottom-left", v.valueAsNumber)
+									}
+									min={0}
+									max={100}
+								>
+									<NumberInput.Input
+										class={css({
+											bg: "gray.800",
+											borderColor: "gray.700",
+											fontSize: "xs",
+											h: "28px",
+										})}
+									/>
+								</NumberInput.Root>
+							</Flex>
+							<Flex flex="1" alignItems="center" gap={1}>
+								<AiOutlineRadiusBottomright
+									size={12}
+									color="var(--colors-gray-500)"
+								/>
+								<NumberInput.Root
+									size="xs"
+									maxW="full"
+									value={getBorderRadius("bottom-right").toString()}
+									onValueChange={(v) =>
+										setBorderRadius("bottom-right", v.valueAsNumber)
+									}
+									min={0}
+									max={100}
+								>
+									<NumberInput.Input
+										class={css({
+											bg: "gray.800",
+											borderColor: "gray.700",
+											fontSize: "xs",
+											h: "28px",
+										})}
+									/>
+								</NumberInput.Root>
+							</Flex>
+						</HStack>
+					</VStack>
+				</SettingsSection>
+			</VStack>
 		</Show>
 	);
 }

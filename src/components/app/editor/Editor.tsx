@@ -61,10 +61,6 @@ export default function Editor(props: Props) {
 	const canRender = (compName: string) =>
 		Object.keys(props.renderMap).includes(compName);
 	const getSelectedNode = createMemo(() => {
-		console.log(
-			"SELECTED NODE: ",
-			unwrap(editor.nodes[editor.selectedId ?? ""]?.style),
-		);
 		return editor.selectedId ? editor.nodes[editor.selectedId] : null;
 	});
 	const getRenderMap = () => props.renderMap;
@@ -166,9 +162,10 @@ export default function Editor(props: Props) {
 	const getNodeRenderComp = (node: EditorNode) =>
 		props.renderMap[node.comp.name];
 
-	createEffect(() => {
-		console.log("App Editor: ", editor.nodes);
-	});
+	// Debug effect removed - was causing unnecessary re-renders
+	// createEffect(() => {
+	// 	console.log("App Editor: ", editor.nodes);
+	// });
 
 	const setRootRef = (ref: HTMLElement) => {
 		console.log("Setting Root Ref: ", ref);
@@ -194,22 +191,23 @@ export default function Editor(props: Props) {
 		}
 	};
 
-	createEffect(() => {
-		console.log(
-			"Something in this item changed: ",
-			editor.nodes?.[0],
-			editor.nodes?.[0]?.id,
-			editor.nodes?.[0]?.style,
-		);
-	});
+	// Debug effect removed - was causing unnecessary re-renders
+	// createEffect(() => {
+	// 	console.log(
+	// 		"Something in this item changed: ",
+	// 		editor.nodes?.[0],
+	// 		editor.nodes?.[0]?.id,
+	// 		editor.nodes?.[0]?.style,
+	// 	);
+	// });
 
 	const exportTheme: ExportThemeFn = () => {
-		selectNode(null);
-		const pickProperties = ["id", "compName", "data", "style"];
-		// const nodeData = Object.getOwnPropertyNames(editor.nodes).map(node => ({   }))
-		const nodeData = Object.entries(editor.nodes)
-			.filter(([key]) => !pickProperties.includes(key))
-			.map(([key, node]) => node);
+		const nodeData = Object.values(editor.nodes).map((node) => ({
+			id: node.id,
+			compName: node.compName,
+			data: node.data,
+			style: node.style,
+		}));
 		return {
 			nodes: nodeData,
 		};
@@ -235,6 +233,37 @@ export default function Editor(props: Props) {
 		console.log(unwrap(editor));
 	};
 
+	const deleteNode = (id: NodeId) => {
+		if (!id) return;
+		setEditor(
+			produce((store) => {
+				delete store.nodes[id];
+			}),
+		);
+	};
+
+	const duplicateNode = (id: NodeId) => {
+		if (!id) return null;
+		const node = editor.nodes[id];
+		if (!node) return null;
+
+		const newId = createId();
+		const offsetStyle = {
+			...node.style,
+			left: `calc(${node.style.left} + 2%)`,
+			top: `calc(${node.style.top} + 2%)`,
+		};
+
+		setEditor("nodes", newId, {
+			...JSON.parse(JSON.stringify(unwrap(node))),
+			id: newId,
+			style: offsetStyle,
+			comp: node.comp, // Keep the component reference
+		});
+
+		return newId;
+	};
+
 	const contextValue = {
 		editor,
 		setEditor,
@@ -251,7 +280,7 @@ export default function Editor(props: Props) {
 		},
 		setters: { setRootRef, setNodeStyle, setNodeData },
 		hooks: { useSelect: useNodeSelect, useNodeDrag, useResizeNode },
-		helpers: { selectNode, exportTheme, loadTheme },
+		helpers: { selectNode, exportTheme, loadTheme, deleteNode, duplicateNode },
 	};
 
 	return (
