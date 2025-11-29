@@ -1,10 +1,12 @@
 import { Box, HStack } from "styled-system/jsx";
 import { Accordion } from "../ui/accordion";
 import { For, Show, type JSXElement } from "solid-js";
-import { TbCheck, TbChevronDown, TbFolder } from "solid-icons/tb";
+import { Dynamic } from "solid-js/web";
+import { TbCheck, TbChevronDown, TbFolder, TbHash } from "solid-icons/tb";
 import { Text } from "../ui/text";
 import type { PanelGroup } from "~/types/app-context";
 import { AiOutlineFolderOpen } from "solid-icons/ai";
+import type { IconTypes } from "solid-icons";
 
 interface GroupMeta {
 	title: string;
@@ -18,6 +20,7 @@ interface Props<T extends GroupMeta[]> {
 	handleAccordionChange: (value: any) => void;
 	searchInput?: JSXElement;
 	actionMenus?: JSXElement;
+	subgroupIcon?: IconTypes;
 }
 
 export default function SelectionGroups<T extends GroupMeta[]>(
@@ -93,7 +96,7 @@ export default function SelectionGroups<T extends GroupMeta[]>(
 
 									<Show when={panelGroup.subGroups?.length}>
 										<Accordion.ItemContent borderRadius={0} p={0} role="group">
-											<Accordion.ItemBody py={1} pl={2}>
+											<Accordion.ItemBody py={1} px={2}>
 												<For each={panelGroup.subGroups}>
 													{(collection) => {
 														const isSelected = () =>
@@ -101,24 +104,21 @@ export default function SelectionGroups<T extends GroupMeta[]>(
 														return (
 															<HStack
 																justifyContent="space-between"
-																px={3}
+																px={2.5}
 																py={1.5}
-																ml={2}
 																fontSize="13px"
 																cursor="pointer"
-																color={isSelected() ? "gray.100" : "gray.400"}
+																color={isSelected() ? "white" : "gray.400"}
 																bg={
-																	isSelected() ? "purple.900/30" : "transparent"
+																	isSelected() ? "purple.900/40" : "transparent"
 																}
 																_hover={{
-																	background: "gray.800/50",
-																	color: "gray.200",
+																	background: isSelected()
+																		? "purple.900/40"
+																		: "gray.800/50",
+																	color: isSelected() ? "white" : "gray.200",
 																}}
-																borderRadius="sm"
-																borderLeft="2px solid"
-																borderColor={
-																	isSelected() ? "purple.500" : "gray.700"
-																}
+																borderRadius="md"
 																transition="all 0.15s ease"
 																data-subgroup={`song-${panel}-${collection.id}`}
 																role="treeitem"
@@ -129,7 +129,27 @@ export default function SelectionGroups<T extends GroupMeta[]>(
 																	])
 																}
 															>
-																<Text>{collection.name}</Text>
+																<HStack gap={2}>
+																	<Show when={props.subgroupIcon}>
+																		<Box
+																			color={
+																				isSelected() ? "purple.400" : "gray.600"
+																			}
+																		>
+																			<Dynamic
+																				component={props.subgroupIcon}
+																				size={13}
+																			/>
+																		</Box>
+																	</Show>
+																	<Text
+																		fontWeight={
+																			isSelected() ? "medium" : "normal"
+																		}
+																	>
+																		{collection.name}
+																	</Text>
+																</HStack>
 																<Show when={isSelected()}>
 																	<TbCheck
 																		size={14}

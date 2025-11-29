@@ -1,7 +1,7 @@
 import { Box, Flex, HStack, VStack } from "styled-system/jsx";
 import SelectionGroups from "../SelectionGroups";
 import { createStore, produce, unwrap } from "solid-js/store";
-import { For, Portal } from "solid-js/web";
+import { For, Portal, Show } from "solid-js/web";
 import { IconButton } from "../../ui/icon-button";
 import { InputGroup } from "../../ui/input-group";
 import ControlTabDisplay from "../ControlTabDisplay";
@@ -10,7 +10,6 @@ import {
 	createMemo,
 	Match,
 	on,
-	Show,
 	Switch,
 	type Accessor,
 	type JSX,
@@ -41,6 +40,7 @@ import ScriptureSelectionGroupDisplay from "./SelectionGroupDisplay";
 import { MainActionBarMenu, MainDisplayMenuContent } from "./MainPanelMenus";
 import { Kbd } from "../../ui/kbd";
 import { VsListTree, VsSearchFuzzy } from "solid-icons/vs";
+import { TbBook, TbBook2, TbBookOff, TbSearch, TbX } from "solid-icons/tb";
 import type { AvailableTranslation, ScriptureVerse } from "~/types";
 import bibleData from "~/utils/parser/osis.json";
 import bookInfo from "~/utils/parser/books.json";
@@ -709,6 +709,13 @@ export default function ScriptureSelection() {
 		console.log({ ...stageMarkData });
 	};
 
+	const tabCenterContent = (
+		<Text fontSize="11px" color="gray.500">
+			{filteredScriptures().length.toLocaleString()} verses
+			<Show when={scriptureControls.query}>{` matching search`}</Show>
+		</Text>
+	);
+
 	return (
 		<Flex h="full" pos="relative">
 			<SelectionGroups
@@ -733,12 +740,14 @@ export default function ScriptureSelection() {
 				groups={allGroups()}
 				handleAccordionChange={handleGroupAccordionChange}
 				actionMenus={<ScriptureSelectionGroupDisplay />}
+				subgroupIcon={TbBook}
 			/>
 			<ControlTabDisplay
 				open={scriptureControls.contextMenuOpen}
 				setOpen={(v) => setScriptureControls("contextMenuOpen", v)}
 				contextMenuContent={<MainDisplayMenuContent />}
 				actionBarMenu={<MainActionBarMenu />}
+				centerContent={tabCenterContent}
 				ref={virtualizerParentRef}
 			>
 				<Switch>
@@ -753,6 +762,8 @@ export default function ScriptureSelection() {
 							<For each={rowVirtualizer().getVirtualItems()}>
 								{(virtualItem) => {
 									const scripture = filteredScriptures()[virtualItem.index];
+									const isSelected = () => virtualItem.index === fluidFocusId();
+									const isCurrent = () => virtualItem.index === coreFocusId();
 									return (
 										<HStack
 											pos="absolute"
@@ -762,58 +773,121 @@ export default function ScriptureSelection() {
 											textAlign="left"
 											userSelect="none"
 											fontSize="14px"
-											pl={2}
+											px={3}
 											cursor="pointer"
-											py={1.5}
+											py={2}
+											gap={3}
 											css={{
 												"& *": {
 													pointerEvents: "none",
 												},
 												_hover: {
-													bgColor: "purple.800/40",
+													bgColor: "purple.900/30",
 												},
 											}}
 											style={{
 												height: `${virtualItem.size}px`,
 												transform: `translateY(${virtualItem.start}px)`,
-												...getBaseFocusStyles(SONGS_TAB_FOCUS_NAME),
+												...getBaseFocusStyles(SCRIPTURE_TAB_FOCUS_NAME),
 												...getFocusableStyles(
-													SONGS_TAB_FOCUS_NAME,
-													virtualItem.index === fluidFocusId(),
+													SCRIPTURE_TAB_FOCUS_NAME,
+													isSelected(),
 													isCurrentPanel(),
-													virtualItem.index === coreFocusId(),
+													isCurrent(),
 												),
-												// "background-color": virtualItem.index === fluidFocusId() ? token.var(`colors.${defaultPalette}.900`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
-												// color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
 											}}
 											data-panel={SCRIPTURE_TAB_FOCUS_NAME}
 											data-focusId={virtualItem.index}
 										>
-											<Box pl={2} textTransform="uppercase">
-												{scripture.version}
-											</Box>
+											{/* Scripture icon */}
 											<Box
-												pl={2}
-												textTransform="capitalize"
-												whiteSpace="nowrap"
+												color={
+													isSelected() && isCurrentPanel()
+														? "purple.300"
+														: "gray.500"
+												}
+												flexShrink={0}
+												alignSelf="flex-start"
+												mt="2px"
 											>
-												{scripture.book_name} {scripture.chapter}:
-												{scripture.verse}
+												<TbBook2 size={16} />
 											</Box>
-											<Box
-												pl={2}
-												pr={2}
-												whiteSpace="nowrap"
-												overflow="hidden"
-												textOverflow="ellipsis"
-											>
-												{scripture.text}
-											</Box>
+											{/* Scripture info - single row */}
+											<HStack gap={2} flex={1} minW={0} alignItems="center">
+												{/* Main scripture text */}
+												<Text
+													fontSize="15px"
+													color={
+														isSelected() && isCurrentPanel()
+															? "gray.100"
+															: "gray.400"
+													}
+													truncate
+													flex={1}
+													minW={0}
+												>
+													{scripture.text}
+												</Text>
+												{/* Reference */}
+												<Text
+													fontWeight="medium"
+													fontSize="14px"
+													color={
+														isSelected() && isCurrentPanel()
+															? "gray.300"
+															: "gray.500"
+													}
+													textTransform="capitalize"
+													whiteSpace="nowrap"
+													flexShrink={0}
+												>
+													{scripture.book_name} {scripture.chapter}:
+													{scripture.verse}
+												</Text>
+												{/* Version badge */}
+												<Box
+													fontSize="9px"
+													fontWeight="bold"
+													color={
+														isSelected() && isCurrentPanel()
+															? "purple.200"
+															: "gray.400"
+													}
+													textTransform="uppercase"
+													letterSpacing="wide"
+													flexShrink={0}
+													bg={
+														isSelected() && isCurrentPanel()
+															? "purple.800/60"
+															: "gray.800"
+													}
+													px={1.5}
+													py={0.5}
+													borderRadius="sm"
+												>
+													{scripture.version}
+												</Box>
+											</HStack>
 										</HStack>
 									);
 								}}
 							</For>
 						</Box>
+					</Match>
+					<Match when={!allScriptures().length}>
+						<VStack gap={3} w="full" h="full" justifyContent="center" px={6}>
+							<Box color="gray.600">
+								<TbBookOff size={48} />
+							</Box>
+							<VStack gap={1}>
+								<Text textStyle="lg" fontWeight="medium" color="gray.200">
+									No Scriptures Available
+								</Text>
+								<Text fontSize="13px" color="gray.500" textAlign="center">
+									Select a Bible version from the sidebar to load scriptures
+								</Text>
+							</VStack>
+						</VStack>
 					</Match>
 					<Match
 						when={
@@ -822,13 +896,18 @@ export default function ScriptureSelection() {
 							!filteredScriptures().length
 						}
 					>
-						<VStack gap={1} w="full" h="full" justifyContent="center">
-							<Text textStyle="lg" color="gray.200">
-								We didn't find that scripture
-							</Text>
-							<Text fontSize="13px" color="gray.500">
-								Try changing your query
-							</Text>
+						<VStack gap={3} w="full" h="full" justifyContent="center" px={6}>
+							<Box color="gray.600">
+								<TbSearch size={40} />
+							</Box>
+							<VStack gap={1}>
+								<Text textStyle="md" fontWeight="medium" color="gray.200">
+									No scriptures found
+								</Text>
+								<Text fontSize="13px" color="gray.500" textAlign="center">
+									No verses match your search query
+								</Text>
+							</VStack>
 						</VStack>
 					</Match>
 				</Switch>
@@ -854,51 +933,77 @@ const ScriptureSearchInput = (props: SearchInputProps) => {
 	return (
 		<InputGroup
 			w="full"
-			pr={2}
+			pr={1}
+			bg="gray.900/50"
+			borderBottom="1px solid"
+			borderBottomColor="gray.800"
+			_focusWithin={{
+				borderColor: "purple.700",
+				bg: "gray.900",
+			}}
+			transition="all 0.15s ease"
 			startElement={() => (
 				<IconButton
-					size="sm"
-					variant="plain"
+					size="xs"
+					variant="ghost"
 					cursor="pointer"
 					onClick={props.updateSearchMode}
+					color="gray.400"
+					_hover={{ color: "gray.200", bg: "gray.800" }}
 					aria-label={
 						props.searchMode === "special"
 							? "Switch to search mode"
-							: "Switch to title mode"
+							: "Switch to reference mode"
+					}
+					title={
+						props.searchMode === "special" ? "Reference search" : "Text search"
 					}
 				>
 					<Show
 						when={props.searchMode === "special"}
-						fallback={<VsSearchFuzzy />}
+						fallback={<VsSearchFuzzy size={14} />}
 					>
-						<VsListTree />
+						<VsListTree size={14} />
 					</Show>
 				</IconButton>
 			)}
-			startElementProps={{ padding: 0, pointerEvents: "auto" }}
-			endElement={() => <Kbd variant="plain">⌘A</Kbd>}
+			startElementProps={{ padding: 0, pointerEvents: "auto", pl: 1 }}
+			endElement={() => (
+				<Kbd
+					variant="outline"
+					size="sm"
+					color="gray.500"
+					borderColor="gray.700"
+				>
+					⌘B
+				</Kbd>
+			)}
+			endElementProps={{ pr: 1 }}
 		>
 			<Input
 				pos="relative"
-				fontSize={14}
+				fontSize={13}
 				zIndex={10}
 				variant="outline"
-				// borderWidth={2}
-				// borderColor="border.emphasized"
 				rounded="none"
 				border="unset"
 				px="2"
 				h="9"
 				outline="none"
 				w="full"
+				color="gray.100"
+				_placeholder={{ color: "gray.500" }}
 				_selection={{
-					bgColor: "blue.600",
+					bgColor: "purple.700",
 				}}
 				ref={props.setSearchInputRef}
 				value={
 					props.searchMode === "special" && props.markData.book
 						? `${props.markData.book} ${props.markData.chapter}:${props.markData.verse}`
 						: ""
+				}
+				placeholder={
+					props.searchMode === "special" ? "Genesis 1:1" : "Search verses..."
 				}
 				onclick={
 					props.searchMode === "special" ? props.onInputClick : undefined
@@ -913,7 +1018,6 @@ const ScriptureSearchInput = (props: SearchInputProps) => {
 				textTransform={
 					props.searchMode === "special" ? "capitalize" : "initial"
 				}
-				// onFocus={handleSearchInputFocus}
 				data-testid="scripture-search-input"
 				aria-label="Search scriptures"
 			/>

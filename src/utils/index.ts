@@ -3,6 +3,7 @@ import type { BookInfo, ChapterCountObj, ScriptureVerse } from "../types";
 import { token } from "styled-system/tokens";
 import {
 	defaultPalette,
+	SCRIPTURE_TAB_FOCUS_NAME,
 	SONGS_TAB_FOCUS_NAME,
 	syncFnPrefix,
 	THEMES_TAB_FOCUS_NAME,
@@ -206,6 +207,36 @@ const mappings: Record<
 				},
 			},
 			// false: { isCurrentPanel: { true: {}, false: {} } }
+		},
+	},
+	[SCRIPTURE_TAB_FOCUS_NAME]: {
+		base: {
+			border: "4px solid transparent",
+		},
+		isFluid: {
+			true: {
+				isCurrentPanel: {
+					true: {
+						"background-color": token.var(`colors.${defaultPalette}.900`),
+						color: token.var(`colors.white`),
+					},
+					false: {
+						"background-color": token.var(`colors.gray.800`),
+						color: token.var("colors.gray.100"),
+					},
+				},
+			},
+		},
+		isCore: {
+			true: {
+				isCurrentPanel: {
+					true: {
+						"border-left-color": token.var(`colors.${defaultPalette}.700`),
+						color: token.var(`colors.gray.100`),
+					},
+					false: {},
+				},
+			},
 		},
 	},
 	[THEMES_TAB_FOCUS_NAME]: {
