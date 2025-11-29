@@ -1,5 +1,8 @@
 # mkdocs.yml
 site_name: "Crater Bible Project"
+site_url: https://crater.voyagerlabs.tech/
+site_author: Eyetu Kingsley
+site_description: Open Source Scripture Projection Software for Churches
 theme:
   name: shadcn
   show_title: true
@@ -16,5 +19,3 @@ theme:
   show_datetime: false 
 repo_name: crater
 repo_url: https://github.com/CodeKing12/crater
-site_author: Eyetu Kingsley
-site_description: Open Source Scripture Projection Software for Churches
