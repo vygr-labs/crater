@@ -1,13 +1,23 @@
-import { HStack } from "styled-system/jsx";
+import { Box, Divider, HStack } from "styled-system/jsx";
 import { useAppContext } from "~/layouts/AppContext";
 import { Menu } from "../ui/menu";
 import { Button } from "../ui/button";
 import { Icon } from "../ui/icon";
 import { FaSolidChevronDown } from "solid-icons/fa";
 import { IconButton } from "../ui/icon-button";
-import { ArkSwitch } from "../ui/switch";
 import { Text } from "../ui/text";
-import { TbArrowsRightDown, TbChevronRight, TbClearAll } from "solid-icons/tb";
+import {
+	TbArrowsRightDown,
+	TbChevronRight,
+	TbClearAll,
+	TbDeviceFloppy,
+	TbFile,
+	TbFileExport,
+	TbHistory,
+	TbPlus,
+	TbScreenShare,
+	TbScreenShareOff,
+} from "solid-icons/tb";
 import { TiSortNumerically } from "solid-icons/ti";
 import {
 	defaultPalette,
@@ -22,20 +32,28 @@ import {
 	toggleLive,
 	toggleLogo,
 } from "~/utils/store-helpers";
-import type { SwitchCheckedChangeDetails } from "@ark-ui/solid";
 import { BsDisplayFill } from "solid-icons/bs";
 import { createStore, unwrap } from "solid-js/store";
-import { batch, createEffect, createSignal, For, Show } from "solid-js";
+import {
+	batch,
+	createEffect,
+	createMemo,
+	createSignal,
+	For,
+	Show,
+} from "solid-js";
 import { getToastType, logger, toaster } from "~/utils";
 import GenericModal from "../modals/GenericModal";
 import { GenericField } from "../ui/field";
 import { Input } from "../ui/input";
-import { createAsyncMemo } from "solidjs-use";
 import type { SavedSchedule } from "~/backend/types";
 import {
 	useFocusContext,
 	type FocusEventHandlerFn,
 } from "~/layouts/FocusContext";
+import { Tooltip } from "../ui/tooltip";
+import { Kbd } from "../ui/kbd";
+import { AiOutlineFolderOpen } from "solid-icons/ai";
 
 export type Props = {
 	// openAppSettings: () => void
@@ -167,155 +185,276 @@ export default function MenuBar(props: Props) {
 		});
 	};
 
+	const hasScheduleItems = createMemo(() => appStore.scheduleItems.length > 0);
+	const hasLoadedSchedule = createMemo(() => menuStore.loadedSchedule !== null);
+
+	// Tooltip wrapper component for cleaner code
+	const TooltipButton = (props: {
+		children: any;
+		tooltip: string;
+		shortcut?: string;
+		onClick?: () => void;
+		disabled?: boolean;
+		colorPalette?: string;
+		variant?: "solid" | "outline" | "ghost" | "surface";
+		size?: "xs" | "sm" | "md" | "lg";
+	}) => (
+		<Tooltip.Root openDelay={400} closeDelay={0}>
+			<Tooltip.Trigger
+				asChild={(triggerProps) => (
+					<Button
+						{...triggerProps()}
+						onClick={props.onClick}
+						disabled={props.disabled}
+						colorPalette={props.colorPalette}
+						variant={props.variant ?? "surface"}
+						size={props.size ?? "sm"}
+					>
+						{props.children}
+					</Button>
+				)}
+			/>
+			<Tooltip.Positioner>
+				<Tooltip.Content>
+					<Tooltip.Arrow>
+						<Tooltip.ArrowTip />
+					</Tooltip.Arrow>
+					<HStack gap={2}>
+						<Text>{props.tooltip}</Text>
+						<Show when={props.shortcut}>
+							<Kbd size="sm">{props.shortcut}</Kbd>
+						</Show>
+					</HStack>
+				</Tooltip.Content>
+			</Tooltip.Positioner>
+		</Tooltip.Root>
+	);
+
 	return (
 		<HStack
 			w="full"
 			h="1/12"
-			px="4"
+			px={4}
 			pos="absolute"
-			top="0"
+			top={0}
 			justify="space-between"
+			bg="gray.950/80"
+			backdropFilter="blur(8px)"
+			borderBottom="1px solid"
+			borderBottomColor="gray.800"
+			zIndex={100}
 		>
-			<HStack gap={3}>
+			{/* Left Section: Schedule & Settings */}
+			<HStack gap={2}>
+				{/* Schedule Menu */}
 				<Menu.Root>
 					<Menu.Trigger
 						asChild={(parentProps) => (
-							<Button variant="outline" size="sm" {...parentProps}>
-								Schedule
-								<Icon fontSize="sm">
-									<FaSolidChevronDown />
-								</Icon>
+							<Button
+								variant="ghost"
+								size="sm"
+								{...parentProps()}
+								px={3}
+								_hover={{ bg: "gray.800" }}
+							>
+								<TbFile size={16} />
+								<Text fontSize="sm" fontWeight="medium">
+									Schedule
+								</Text>
+								<Show when={hasLoadedSchedule()}>
+									<Text
+										fontSize="xs"
+										color="gray.400"
+										maxW="120px"
+										truncate
+										ml={1}
+									>
+										({menuStore.scheduleName})
+									</Text>
+								</Show>
+								<FaSolidChevronDown size={10} />
 							</Button>
 						)}
-					></Menu.Trigger>
+					/>
 					<Portal>
 						<Menu.Positioner>
-							<Menu.Content>
-								<Menu.Item
-									value="new"
-									onClick={emptySchedule}
-									disabled={appStore.scheduleItems.length === 0}
-								>
-									New
-								</Menu.Item>
-								<Menu.Item
-									value="save-schedule"
-									disabled={appStore.scheduleItems.length === 0}
-								>
-									Save
-								</Menu.Item>
-								<Menu.Item
-									value="save-schedule-as"
-									onClick={() => setMenuStore("openSchedModal", true)}
-									disabled={appStore.scheduleItems.length === 0}
-								>
-									Save as...
-								</Menu.Item>
-								<Menu.Item value="open-schedule">Open</Menu.Item>
-								<Show
-									when={appStore.recentSchedules.length}
-									fallback={
-										<Menu.Item value="disabled-recent" disabled>
-											Recent
-										</Menu.Item>
-									}
-								>
-									<Menu.Root>
-										<Menu.TriggerItem justifyContent="space-between">
-											Recents <TbChevronRight />
-										</Menu.TriggerItem>
-										<Portal>
-											<Menu.Positioner>
-												<Menu.Content>
-													<For each={appStore.recentSchedules}>
-														{(item) => (
-															<Menu.Item
-																value={item.path}
-																onClick={() => loadSchedule(item)}
-															>
-																{item.path}
-															</Menu.Item>
-														)}
-													</For>
-												</Menu.Content>
-											</Menu.Positioner>
-										</Portal>
-									</Menu.Root>
-								</Show>
+							<Menu.Content minW="220px">
+								<Menu.ItemGroup>
+									<Menu.ItemGroupLabel>Schedule</Menu.ItemGroupLabel>
+									<Menu.Item
+										value="new"
+										onClick={emptySchedule}
+										disabled={!hasScheduleItems()}
+									>
+										<HStack justify="space-between" w="full">
+											<HStack gap={2}>
+												<TbPlus size={16} />
+												<Text>New Schedule</Text>
+											</HStack>
+											<Kbd size="sm">Ctrl+N</Kbd>
+										</HStack>
+									</Menu.Item>
+									<Menu.Item
+										value="save-schedule"
+										onClick={() => {
+											if (hasLoadedSchedule()) {
+												onSaveSchedule();
+											} else {
+												setMenuStore("openSchedModal", true);
+											}
+										}}
+										disabled={!hasScheduleItems()}
+									>
+										<HStack justify="space-between" w="full">
+											<HStack gap={2}>
+												<TbDeviceFloppy size={16} />
+												<Text>Save</Text>
+											</HStack>
+											<Kbd size="sm">Ctrl+S</Kbd>
+										</HStack>
+									</Menu.Item>
+									<Menu.Item
+										value="save-schedule-as"
+										onClick={() => setMenuStore("openSchedModal", true)}
+										disabled={!hasScheduleItems()}
+									>
+										<HStack justify="space-between" w="full">
+											<HStack gap={2}>
+												<TbFileExport size={16} />
+												<Text>Save as...</Text>
+											</HStack>
+											<Kbd size="sm">Ctrl+Shift+S</Kbd>
+										</HStack>
+									</Menu.Item>
+									<Menu.Item value="open-schedule">
+										<HStack justify="space-between" w="full">
+											<HStack gap={2}>
+												<AiOutlineFolderOpen size={16} />
+												<Text>Open</Text>
+											</HStack>
+											<Kbd size="sm">Ctrl+O</Kbd>
+										</HStack>
+									</Menu.Item>
+								</Menu.ItemGroup>
+
+								<Menu.Separator />
+
+								<Menu.ItemGroup>
+									<Menu.ItemGroupLabel>
+										<HStack gap={1}>
+											<TbHistory size={14} />
+											<Text>Recent</Text>
+										</HStack>
+									</Menu.ItemGroupLabel>
+									<Show
+										when={appStore.recentSchedules.length}
+										fallback={
+											<Menu.Item value="no-recent" disabled>
+												<Text fontSize="xs" color="gray.500">
+													No recent schedules
+												</Text>
+											</Menu.Item>
+										}
+									>
+										<For each={appStore.recentSchedules.slice(0, 5)}>
+											{(item) => (
+												<Menu.Item
+													value={item.path}
+													onClick={() => loadSchedule(item)}
+												>
+													<Text fontSize="sm" truncate maxW="180px">
+														{item.name || item.path.split(/[/\\]/).pop()}
+													</Text>
+												</Menu.Item>
+											)}
+										</For>
+									</Show>
+								</Menu.ItemGroup>
 							</Menu.Content>
 						</Menu.Positioner>
 					</Portal>
 				</Menu.Root>
 
-				<IconButton
-					bgColor="gray.800"
-					color="white"
-					size="sm"
-					onClick={() => {
-						setAppStore("openSettings", true);
-					}}
-				>
-					<IoSettings />
-				</IconButton>
+				{/* Settings Button */}
+				<Tooltip.Root openDelay={400} closeDelay={0}>
+					<Tooltip.Trigger
+						asChild={(triggerProps) => (
+							<IconButton
+								{...triggerProps()}
+								variant="ghost"
+								size="sm"
+								onClick={() => setAppStore("openSettings", true)}
+								_hover={{ bg: "gray.800" }}
+							>
+								<IoSettings size={18} />
+							</IconButton>
+						)}
+					/>
+					<Tooltip.Positioner>
+						<Tooltip.Content>
+							<Tooltip.Arrow>
+								<Tooltip.ArrowTip />
+							</Tooltip.Arrow>
+							Settings
+						</Tooltip.Content>
+					</Tooltip.Positioner>
+				</Tooltip.Root>
 
-				<Button
-					colorPalette="black"
-					variant="outline"
+				<Divider orientation="vertical" h={6} />
+
+				{/* Import Button */}
+				<TooltipButton
+					tooltip="Import EasyWorship Songs"
 					onClick={openImportDialog}
+					variant="ghost"
 				>
-					<TbArrowsRightDown /> Import
-				</Button>
+					<TbArrowsRightDown size={16} />
+					<Text fontSize="sm">Import</Text>
+				</TooltipButton>
 			</HStack>
-			<HStack gap={6}>
-				<HStack gap={3}>
-					<Button
-						onClick={() => toggleLogo(setAppStore)}
-						variant="surface"
-						colorPalette={
-							appStore.showLogo ? defaultPalette : defaultAbsenteePalette
-						}
-					>
-						<Icon fontSize="2xl" aria-label="Show Logo">
-							<TiSortNumerically />
-						</Icon>
-						<Text textStyle="xs">Logo</Text>
-					</Button>
 
-					<Button
-						onClick={() => toggleClearDisplay(setAppStore)}
-						variant="surface"
-						colorPalette={
-							appStore.hideLive ? defaultPalette : defaultAbsenteePalette
-						}
-					>
-						<Icon fontSize="2xl" aria-label="Clear Display">
-							<TbClearAll />
-						</Icon>
-						<Text textStyle="xs">Clear</Text>
-					</Button>
-				</HStack>
+			{/* Right Section: Display Controls */}
+			<HStack gap={2}>
+				{/* Logo Toggle */}
+				<TooltipButton
+					tooltip={appStore.showLogo ? "Hide Logo" : "Show Logo"}
+					shortcut="L"
+					onClick={() => toggleLogo(setAppStore)}
+					colorPalette={appStore.showLogo ? "purple" : "gray"}
+					variant={appStore.showLogo ? "solid" : "outline"}
+				>
+					<TiSortNumerically size={18} />
+					<Text fontSize="sm">Logo</Text>
+				</TooltipButton>
 
+				{/* Clear Display Toggle */}
+				<TooltipButton
+					tooltip={appStore.hideLive ? "Show Display" : "Clear Display"}
+					shortcut="C"
+					onClick={() => toggleClearDisplay(setAppStore)}
+					colorPalette={appStore.hideLive ? "red" : "gray"}
+					variant={appStore.hideLive ? "solid" : "outline"}
+				>
+					<TbClearAll size={18} />
+					<Text fontSize="sm">Clear</Text>
+				</TooltipButton>
+
+				<Divider orientation="vertical" h={6} />
+
+				{/* Go Live Button */}
 				<Button
-					variant="surface"
-					colorPalette={
-						appStore.isLive ? defaultPalette : defaultAbsenteePalette
-					}
-					onclick={handleLiveToggle}
+					size="sm"
+					colorPalette={appStore.isLive ? "red" : "green"}
+					variant="solid"
+					onClick={handleLiveToggle}
+					px={4}
+					fontWeight="semibold"
 				>
-					<BsDisplayFill /> Go Live
+					<Show when={appStore.isLive} fallback={<TbScreenShare size={18} />}>
+						<TbScreenShareOff size={18} />
+					</Show>
+					<Text fontSize="sm">{appStore.isLive ? "End Live" : "Go Live"}</Text>
 				</Button>
-				{/* <ArkSwitch.Root
-					size="lg"
-					checked={appStore.isLive}
-					onCheckedChange={handleLiveToggle}
-					flexDir="column"
-				>
-					<ArkSwitch.HiddenInput />
-					<ArkSwitch.Control>
-						<ArkSwitch.Thumb />
-					</ArkSwitch.Control>
-					<ArkSwitch.Label fontSize="xs">Go Live</ArkSwitch.Label>
-				</ArkSwitch.Root> */}
 			</HStack>
 
 			<GenericModal

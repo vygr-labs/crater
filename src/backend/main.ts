@@ -206,18 +206,25 @@ const spawnAppWindow = async () => {
 		});
 		if (electronIsDev) appWindow.webContents.openDevTools({ mode: "right" });
 
-		// Bring projection window to top when main window is focused
+		// Bring projection window to top when main window is focused (only if on different screens)
 		appWindow.on("focus", () => {
-			if (projectionWindow && !projectionWindow.isDestroyed()) {
-				projectionWindow.moveTop();
-				// projectionWindow.setAlwaysOnTop(true);
-				// projectionWindow.showInactive();
-				// Reset alwaysOnTop after bringing to front to allow other apps to overlay when needed
-				// setTimeout(() => {
-				// 	if (projectionWindow && !projectionWindow.isDestroyed()) {
-				// 		projectionWindow.setAlwaysOnTop(false);
-				// 	}
-				// }, 100);
+			if (projectionWindow && !projectionWindow.isDestroyed() && appWindow) {
+				// Get the display for each window
+				const appBounds = appWindow.getBounds();
+				const projBounds = projectionWindow.getBounds();
+				const appDisplay = screen.getDisplayNearestPoint({
+					x: appBounds.x + appBounds.width / 2,
+					y: appBounds.y + appBounds.height / 2,
+				});
+				const projDisplay = screen.getDisplayNearestPoint({
+					x: projBounds.x + projBounds.width / 2,
+					y: projBounds.y + projBounds.height / 2,
+				});
+
+				// Only bring projection to top if on different displays
+				if (appDisplay.id !== projDisplay.id) {
+					projectionWindow.moveTop();
+				}
 			}
 		});
 
