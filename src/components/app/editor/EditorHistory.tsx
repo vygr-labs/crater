@@ -5,6 +5,7 @@ import {
 	type Accessor,
 } from "solid-js";
 import type { ExportedTheme } from "./editor-types";
+import { appLogger } from "~/utils/logger";
 
 export interface HistoryState {
 	nodes: ExportedTheme["nodes"];
@@ -29,7 +30,7 @@ function deepClone<T>(obj: T): T {
 	try {
 		return JSON.parse(JSON.stringify(obj));
 	} catch {
-		console.warn("Failed to clone state, returning empty");
+		appLogger.warn("Failed to clone editor state, returning empty");
 		return { nodes: [], selectedId: null } as T;
 	}
 }

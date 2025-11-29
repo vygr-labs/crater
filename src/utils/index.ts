@@ -297,7 +297,7 @@ const mappings: Record<
 						"background-color": token.var(`colors.${defaultPalette}.900`),
 					},
 					false: {
-						"background-color": token.var("colors.gray.600"),
+						"background-color": token.var("colors.gray.700"),
 					},
 				},
 			},

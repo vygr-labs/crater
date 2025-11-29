@@ -46,6 +46,7 @@ import bibleData from "~/utils/parser/osis.json";
 import bookInfo from "~/utils/parser/books.json";
 import { Input } from "~/components/ui/input";
 import Fuse from "fuse.js";
+import { appLogger } from "~/utils/logger";
 
 type ScripturePanelGroupValues = "all" | "collections" | "favorites";
 type ScriptureListData = {
@@ -529,7 +530,7 @@ export default function ScriptureSelection() {
 				newVal = `${book} ${chapter}:${extractedVerse || ""}`;
 			}
 		} catch (err) {
-			console.error("An error occured in regex searching");
+			appLogger.error("Error in regex scripture search", err);
 			invalidFilter = true;
 		}
 

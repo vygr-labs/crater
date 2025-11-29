@@ -1,6 +1,7 @@
 import path from "node:path";
 import appDB from "./app-db.js";
 import fs from "node:fs";
+import logger from "../logger.js";
 
 export type ThemeType = "song" | "scripture" | "presentation";
 
@@ -65,7 +66,7 @@ const addTheme = ({
 
 		return { success: true, message: "Theme added successfully." };
 	} catch (error) {
-		console.log("Error occurred while adding theme", error);
+		logger.error("Error adding theme", { title, error });
 		return { success: false, message: "Failed to add theme." };
 	}
 };
@@ -103,7 +104,7 @@ const updateTheme = (
 			updatedTheme,
 		};
 	} catch (error) {
-		console.log("Error occured while updating theme", error);
+		logger.error("Error updating theme", { id, error });
 		return {
 			success: false,
 			message: "Failed to update theme",
@@ -125,7 +126,7 @@ const deleteTheme = (id: number): { success: boolean; message: string } => {
 
 		return { success: true, message: "Theme deleted successfully." };
 	} catch (error) {
-		console.log("Error occured while deleting theme", error);
+		logger.error("Error deleting theme", { id, error });
 		return {
 			success: false,
 			message: "Failed to delete theme",

@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import { join as pathJoin } from "path";
 import { DB_PATH } from "../constants.js";
+import logger from "../logger.js";
 
 const dbPath = pathJoin(DB_PATH, "app.sqlite");
 const db = new Database(dbPath);
@@ -32,6 +33,6 @@ db.prepare(
 //   value TEXT
 // )
 
-console.log("App & Themes database initialized successfully!");
+logger.info("App & Themes database initialized", { dbPath });
 
 export default db;

@@ -10,10 +10,12 @@ import {
 	net,
 	protocol,
 	session,
+	shell,
 } from "electron";
 import log from "electron-log";
 import electronUpdater from "electron-updater";
 import fs from "node:fs";
+import logger from "./logger.js";
 import {
 	fetchScripture,
 	fetchChapter,
@@ -93,7 +95,11 @@ const getAppIcon = () => {
 let appReady = false;
 
 const checkAndQuit = () => {
-	console.log("Quitting?: ", process.platform, appWindow, projectionWindow);
+	logger.debug("Checking quit conditions", {
+		platform: process.platform,
+		appWindow: !!appWindow,
+		projectionWindow: !!projectionWindow,
+	});
 	if (process.platform !== "darwin" && !appWindow && !projectionWindow) {
 		app.quit();
 	}
@@ -192,7 +198,7 @@ const spawnAppWindow = async () => {
 
 		appWindow.setMenu(null);
 		ipcMain.on("controls-window-loaded", () => {
-			console.log("DOM IS NOW READY");
+			logger.info("Controls window DOM ready");
 			appWindow?.maximize();
 			appWindow?.show();
 			loadingWindow.hide();
@@ -280,12 +286,7 @@ app.on("ready", async () => {
 
 	protocol.handle("image", (request) => {
 		const filePath = pathToFileURL(new URL(request.url).pathname).toString();
-		console.log(
-			"IMAGE Path: ",
-			filePath,
-			new URL(request.url),
-			pathToFileURL(new URL(request.url).pathname).toString(),
-		);
+		logger.debug("Serving image", { filePath });
 		return net.fetch(filePath);
 	});
 	// handleCustomProtocols();
@@ -295,8 +296,7 @@ app.on("ready", async () => {
 			const url = new URL(request.url);
 			const fileUrl = pathToFileURL(decodeURI(url.pathname));
 			let filePath = decodeURI(fileUrl.pathname).slice(1); // .replace("\\", "");
-			console.log(filePath);
-			log.info("Serving file from video://", filePath);
+			logger.debug("Serving video file", { filePath });
 			if (!fs.existsSync(filePath)) {
 				log.error(`File not found: ${filePath}`);
 				return new Response("File not found", { status: 404 });
@@ -356,13 +356,12 @@ ipcMain.handle("fetch-chapter-counts", () => {
 });
 
 ipcMain.handle("fetch-chapter", (_, chapterInfo) => {
-	console.log("Code - Fetching Scripture Chapter Data", chapterInfo);
-	// console.log(fetchChapter(chapterInfo));
+	logger.debug("Fetching chapter data", chapterInfo);
 	return fetchChapter(chapterInfo);
 });
 
 ipcMain.handle("fetch-scripture", (_, scriptureInfo) => {
-	console.log("Fetch Scripture Arguments: ", scriptureInfo);
+	logger.debug("Fetching scripture", scriptureInfo);
 	return fetchScripture(scriptureInfo);
 });
 ipcMain.handle("fetch-all-scripture", (_, version) =>
@@ -402,14 +401,17 @@ ipcMain.on("dark-mode:system", () => {
 
 ipcMain.on("open-projection", (_, { x, y }: { x: number; y: number }) => {
 	const coords = { x, y };
-	console.log("Triggered open Projection Window: ", x, y);
+	logger.info("Opening projection window", { x, y });
 	if (!projectionWindow) {
 		const display = screen.getDisplayNearestPoint({ x, y });
 		if (!display) {
 			coords.x = 0;
 			coords.y = 0;
 		}
-		console.log(coords, display, screen.getAllDisplays());
+		logger.debug("Projection window display info", {
+			coords,
+			displayCount: screen.getAllDisplays().length,
+		});
 		spawnProjectionWindow(coords);
 	}
 });
@@ -418,8 +420,9 @@ ipcMain.on("close-projection", () => {
 	if (projectionWindow) {
 		projectionWindow.close();
 		projectionWindow = null;
+		logger.info("Projection window closed");
 	} else {
-		console.warn("Projection window is already closed or does not exist.");
+		logger.warn("Projection window is already closed or does not exist");
 	}
 });
 
@@ -432,21 +435,85 @@ ipcMain.handle("fetch-themes-meta", () => fetchAllThemes());
 ipcMain.handle("fetch-theme", (_, id) => fetchThemeById(id));
 ipcMain.handle("filter-themes", (_, type) => filterThemes(type));
 
-console.log("TEMPORARY DIRECTORY: ", app.getPath("temp"));
+/*
+ * ======================================================================================
+ *                                Logging IPC Handlers
+ * ======================================================================================
+ */
+
+// Log from renderer process
+ipcMain.on("log", (_, level: string, message: string, ...args: unknown[]) => {
+	logger.renderer(level, message, ...args);
+});
+
+// Export logs to desktop
+ipcMain.handle("export-logs", async () => {
+	try {
+		const exportPath = await logger.exportLogs();
+		logger.info(`Logs exported to: ${exportPath}`);
+		return { success: true, path: exportPath };
+	} catch (error) {
+		logger.error("Failed to export logs:", error);
+		return { success: false, error: String(error) };
+	}
+});
+
+// Open log folder
+ipcMain.handle("open-log-folder", () => {
+	logger.openLogFolder();
+	return true;
+});
+
+// Get log contents
+ipcMain.handle("get-logs", () => {
+	return logger.getLogContents();
+});
+
+// Get system info
+ipcMain.handle("get-system-info", () => {
+	return logger.getSystemInfo();
+});
+
+// Clear logs
+ipcMain.handle("clear-logs", () => {
+	logger.clearLogs();
+	return true;
+});
+
+// Send logs via email
+ipcMain.handle("send-logs-email", async (_, userMessage: string) => {
+	try {
+		// First export logs to desktop
+		const exportPath = await logger.exportLogs();
+		// Generate mailto link
+		const mailtoLink = logger.generateSupportEmail(userMessage);
+		// Open default email client
+		shell.openExternal(mailtoLink);
+		logger.info("Opened email client for log submission");
+		return { success: true, logPath: exportPath };
+	} catch (error) {
+		logger.error("Failed to prepare logs for email:", error);
+		return { success: false, error: String(error) };
+	}
+});
+
+logger.debug("Temporary directory", { path: app.getPath("temp") });
 
 const processSongs = (songsPaths: SONG_DB_PATHS) => {
 	const songImportWorkerPath = path.join(
 		__dirname,
 		"scripts/handle-imports.js",
 	);
-	console.log(songImportWorkerPath);
+	logger.debug("Starting song import worker", {
+		workerPath: songImportWorkerPath,
+	});
 	return new Promise((resolve, reject) => {
 		const worker = new Worker(songImportWorkerPath, {
 			workerData: { paths: songsPaths, songsDbPath: SONGS_DB_PATH },
 		});
 
 		worker.on("message", (m) => {
-			console.log("DONE: ", m);
+			logger.info("Song import completed", m);
 			if (m.isComplete) {
 				resolve({
 					success: true,
@@ -455,7 +522,7 @@ const processSongs = (songsPaths: SONG_DB_PATHS) => {
 			}
 		});
 		worker.on("error", (err) => {
-			console.log("Worker Error: ", err);
+			logger.error("Song import worker error", err);
 			resolve({
 				success: false,
 				message: "Failed to import songs",
@@ -465,7 +532,7 @@ const processSongs = (songsPaths: SONG_DB_PATHS) => {
 };
 
 ipcMain.handle("import-easyworship-songs", async () => {
-	console.log(app.getPath("temp"));
+	logger.debug("Opening EasyWorship song import dialog");
 	if (appWindow) {
 		const result = await dialog.showOpenDialog(appWindow, {
 			properties: ["openFile", "multiSelections"],
@@ -488,8 +555,8 @@ ipcMain.handle("import-easyworship-songs", async () => {
 		const DB_NAMES = ["Songs.db", "SongWords.db"].filter(
 			(basepath) => !baseNameArr.includes(basepath),
 		);
-		console.log("Selected does not include: ", DB_NAMES);
 		if (DB_NAMES.length) {
+			logger.warn("Missing required database files", { missing: DB_NAMES });
 			return {
 				type: "error",
 				message: `You did not select a ${DB_NAMES.join(" and ")} file`,
@@ -556,7 +623,9 @@ ipcMain.handle(
 						: [filterObj[filters[0]]],
 				// filters: filters.map((filter) => filterObj[filter]), // electron on linux doesn't allow both filters for some reason
 			});
-			console.log("Dialog Result: ", result);
+			logger.debug("Media import dialog result", {
+				fileCount: result.filePaths.length,
+			});
 
 			if (!result.filePaths.length) {
 				// No files selected, do nothing
@@ -570,14 +639,18 @@ ipcMain.handle(
 			const destinations: string[] = [];
 			for (const filePath of result.filePaths) {
 				const destination = getMediaDestination(filePath);
-				console.log(filePath, destination);
+				logger.debug("Copying media file", { source: filePath, destination });
 				if (!destination) continue;
 
 				destinations.push(destination);
 				try {
 					await fs.promises.copyFile(filePath, destination);
 				} catch (err) {
-					console.error("An error occurred while copying the file:", err);
+					logger.error("Failed to copy media file", {
+						filePath,
+						destination,
+						error: err,
+					});
 				}
 			}
 
@@ -603,7 +676,7 @@ ipcMain.handle("get-images", async () => {
 			path: path.join(MEDIA_IMAGES, name),
 		}));
 	} catch (err) {
-		console.error("Error reading directory:", err);
+		logger.error("Error reading images directory", err);
 		return [];
 	}
 });
@@ -611,7 +684,7 @@ ipcMain.handle("get-images", async () => {
 ipcMain.handle("get-videos", async () => {
 	try {
 		const files = await fs.promises.readdir(MEDIA_VIDEOS);
-		console.log("GETTING VIDEOS: ", files);
+		logger.debug("Retrieved videos", { count: files.length });
 		return files.map((name, index) => ({
 			id: index,
 			title: name,
@@ -619,7 +692,7 @@ ipcMain.handle("get-videos", async () => {
 			path: path.join(MEDIA_VIDEOS, name),
 		}));
 	} catch (err) {
-		console.error("Error reading directory:", err);
+		logger.error("Error reading videos directory", err);
 		return [];
 	}
 });
@@ -631,8 +704,8 @@ ipcMain.handle("delete-media", async (_, path) => {
 			type: "success",
 			message: "Deleted successfully",
 		};
-	} catch {
-		console.error("Failed to delete media");
+	} catch (err) {
+		logger.error("Failed to delete media", { path, error: err });
 	}
 });
 
@@ -642,7 +715,7 @@ ipcMain.handle(
 		_,
 		{ schedule, overwrite }: { schedule: ScheduleSaveItem; overwrite: boolean },
 	) => {
-		console.log("SENT DATA: ", _, schedule);
+		logger.debug("Saving schedule", { name: schedule.name, overwrite });
 		const filePath = path.join(SCHEDULE_ITEMS_PATH, `${schedule.name}.json`);
 		if (!overwrite && fs.existsSync(filePath)) {
 			return {

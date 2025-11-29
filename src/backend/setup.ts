@@ -17,6 +17,7 @@ import electronIsDev from "electron-is-dev";
 import ElectronStore from "electron-store";
 import path from "node:path";
 import fs from "node:fs";
+import logger from "./logger.js";
 
 type CraterStoreType = {
 	setupCompleted: boolean;
@@ -45,12 +46,14 @@ const setupFiles = electronIsDev
 const destination = electronIsDev
 	? path.join(RESOURCES_PATH, "store")
 	: userData;
-console.log("STARTING SETUP: ", fs.existsSync(setupFiles));
+logger.info("Checking setup status", {
+	setupFilesExist: fs.existsSync(setupFiles),
+});
 let completedSetup = !fs.existsSync(setupFiles);
 
 if (!electronIsDev && !completedSetup) {
 	setupApplication(setupFiles, destination);
-	console.log("SETUP APPLICATION SUCCESSFUL: ");
+	logger.info("Setup application completed");
 	completedSetup = !fs.existsSync(setupFiles);
 }
 

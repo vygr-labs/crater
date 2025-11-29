@@ -3,22 +3,20 @@ import { MEDIA_IMAGES, MEDIA_VIDEOS } from "./constants.js";
 import mime from "mime";
 import fs from "node:fs";
 import fsExtra from "fs-extra";
-import pino from "pino";
-
-export const logger = pino();
+import logger from "./logger.js";
 
 export function getMediaDestination(filePath: string) {
 	let destination = "";
 	const fileName = path.basename(filePath);
 	const fileType = mime.getType(filePath) ?? "";
-	console.log("File Type: ", fileType);
+	logger.debug("Getting media destination", { filePath, fileType });
 
 	if (fileType.startsWith("image/")) {
 		destination = path.join(MEDIA_IMAGES, fileName);
 	} else if (fileType.startsWith("video/")) {
 		destination = path.join(MEDIA_VIDEOS, fileName);
 	} else {
-		console.warn("Unsupported file type:", filePath);
+		logger.warn("Unsupported file type", { filePath, fileType });
 		return;
 	}
 
@@ -35,25 +33,25 @@ export function moveFiles(sourceDir: string, targetDir: string): boolean {
 			const stat = fs.lstatSync(oldPath);
 
 			if (stat.isDirectory()) {
-				console.log("RECURSING DIRECTORY: ", oldPath, newPath, stat);
+				logger.debug("Recursing into directory", { oldPath, newPath });
 				fs.mkdirSync(newPath, { recursive: true });
 				moveFiles(oldPath, newPath);
 				fs.rmdirSync(oldPath);
 			} else if (stat.isFile()) {
-				console.log("RENAMING FILE: ", oldPath, newPath, stat);
+				logger.debug("Moving file", { oldPath, newPath });
 				fs.renameSync(oldPath, newPath);
 			}
 		});
 		return true;
 	} catch (err) {
-		console.error("An error occured while moving files: ", err);
+		logger.error("Error moving files", { sourceDir, targetDir, error: err });
 		return false;
 	}
 }
 
 export const handleErr: fs.NoParamCallback = (err) => {
 	if (err) {
-		console.error("Error Occured: ", err);
+		logger.error("File operation error", err);
 	}
 };
 
@@ -81,15 +79,17 @@ export function getMimeType(filePath: string) {
 }
 
 export const setupApplication = (resources: string, userData: string) => {
-	console.log("Setting up application");
+	logger.info("Setting up application", { resources, userData });
 
 	try {
 		const initialized = moveFiles(resources, userData);
-		console.log("Finished Migrating Files", initialized);
+		logger.info("Finished migrating files", { success: initialized });
 		if (initialized) {
 			const files = fs.readdirSync(resources);
 			if (files.length) {
-				console.error("Failed to initialize application", files);
+				logger.error("Failed to initialize application - files remaining", {
+					files,
+				});
 			} else {
 				fs.rmdirSync(resources);
 				return true;
@@ -97,7 +97,7 @@ export const setupApplication = (resources: string, userData: string) => {
 		}
 		return false;
 	} catch (err) {
-		console.error("An Error Occured during setup: ", err);
+		logger.error("Setup application error", err);
 		return false;
 	}
 };

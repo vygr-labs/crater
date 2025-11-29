@@ -82,4 +82,23 @@ contextBridge.exposeInMainWorld("electronAPI", {
 	deleteMedia: (path: string) => ipcRenderer.invoke("delete-media", path),
 	openMediaSelector: (params: ImportOptions) =>
 		ipcRenderer.invoke("import-media", params),
+
+	// Logging API
+	log: {
+		info: (message: string, ...args: unknown[]) =>
+			ipcRenderer.send("log", "info", message, ...args),
+		warn: (message: string, ...args: unknown[]) =>
+			ipcRenderer.send("log", "warn", message, ...args),
+		error: (message: string, ...args: unknown[]) =>
+			ipcRenderer.send("log", "error", message, ...args),
+		debug: (message: string, ...args: unknown[]) =>
+			ipcRenderer.send("log", "debug", message, ...args),
+	},
+	exportLogs: () => ipcRenderer.invoke("export-logs"),
+	openLogFolder: () => ipcRenderer.invoke("open-log-folder"),
+	getLogs: () => ipcRenderer.invoke("get-logs"),
+	getSystemInfo: () => ipcRenderer.invoke("get-system-info"),
+	clearLogs: () => ipcRenderer.invoke("clear-logs"),
+	sendLogsEmail: (userMessage: string) =>
+		ipcRenderer.invoke("send-logs-email", userMessage),
 });

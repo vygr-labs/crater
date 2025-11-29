@@ -127,6 +127,28 @@ export interface IElectronAPI {
 	getVideos: () => Promise<MediaItem[]>;
 	deleteMedia: (path: string) => Promise<BridgeResponse>;
 	openMediaSelector: (params: ImportOptions) => Promise<MediaImportResponse>;
+
+	// Logging API
+	log: {
+		info: (message: string, ...args: unknown[]) => void;
+		warn: (message: string, ...args: unknown[]) => void;
+		error: (message: string, ...args: unknown[]) => void;
+		debug: (message: string, ...args: unknown[]) => void;
+	};
+	exportLogs: () => Promise<{
+		success: boolean;
+		path?: string;
+		error?: string;
+	}>;
+	openLogFolder: () => Promise<boolean>;
+	getLogs: () => Promise<string>;
+	getSystemInfo: () => Promise<string>;
+	clearLogs: () => Promise<boolean>;
+	sendLogsEmail: (userMessage: string) => Promise<{
+		success: boolean;
+		logPath?: string;
+		error?: string;
+	}>;
 }
 
 declare global {

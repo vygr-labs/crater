@@ -1,6 +1,7 @@
 import { app } from "electron";
 import path from "node:path";
 import fs from "node:fs";
+import logger from "./logger.js";
 
 export class Store {
 	data: Record<string, any> = {};
@@ -10,14 +11,16 @@ export class Store {
 		if (fs.existsSync(file)) {
 			fs.readFile(file, (err, contents) => {
 				if (err) {
-					console.error("Error while getting config: ", err);
+					logger.error("Error reading store config", err);
 					return;
 				}
 				this.data = contents.toJSON();
 			});
 		} else {
 			fs.writeFile(file, JSON.stringify(this.data), (err) => {
-				console.error("Failed to create file: ", err);
+				if (err) {
+					logger.error("Failed to create store file", err);
+				}
 			});
 		}
 	}
