@@ -18,6 +18,7 @@ import {
 const BORDER_WIDTH = 2;
 const MIN_SIZE = 20;
 const HANDLE_SIZE = 10;
+const SNAP_THRESHOLD = 1; // Percentage threshold for snapping to 100% bounds
 
 type ResizeHandle =
 	| "top-left"
@@ -173,6 +174,69 @@ export default function RenderEditor() {
 		};
 	});
 
+	// Calculate overflow regions for selected node
+	const overflowRegions = createMemo(() => {
+		const node = getSelectedNode();
+		if (!node) return null;
+
+		const left = parseFloat(String(node.style.left).replace("%", "")) || 0;
+		const top = parseFloat(String(node.style.top).replace("%", "")) || 0;
+		const width = parseFloat(String(node.style.width).replace("%", "")) || 10;
+		const height = parseFloat(String(node.style.height).replace("%", "")) || 10;
+
+		const right = left + width;
+		const bottom = top + height;
+
+		const regions: {
+			left?: { x: number; y: number; w: number; h: number };
+			right?: { x: number; y: number; w: number; h: number };
+			top?: { x: number; y: number; w: number; h: number };
+			bottom?: { x: number; y: number; w: number; h: number };
+		} = {};
+
+		// Left overflow (node extends beyond left edge)
+		if (left < 0) {
+			regions.left = {
+				x: left,
+				y: top,
+				w: Math.abs(left),
+				h: height,
+			};
+		}
+
+		// Right overflow (node extends beyond right edge)
+		if (right > 100) {
+			regions.right = {
+				x: 100,
+				y: top,
+				w: right - 100,
+				h: height,
+			};
+		}
+
+		// Top overflow (node extends beyond top edge)
+		if (top < 0) {
+			regions.top = {
+				x: Math.max(0, left),
+				y: top,
+				w: Math.min(width, right) - Math.max(0, left),
+				h: Math.abs(top),
+			};
+		}
+
+		// Bottom overflow (node extends beyond bottom edge)
+		if (bottom > 100) {
+			regions.bottom = {
+				x: Math.max(0, left),
+				y: 100,
+				w: Math.min(width, right) - Math.max(0, left),
+				h: bottom - 100,
+			};
+		}
+
+		return Object.keys(regions).length > 0 ? regions : null;
+	});
+
 	// Handle mouse down on node for dragging
 	const handleNodeMouseDown = (e: MouseEvent, nodeId: string) => {
 		// Don't start drag if clicking a resize handle
@@ -243,9 +307,31 @@ export default function RenderEditor() {
 			let newLeft = dragState.startLeft + deltaX;
 			let newTop = dragState.startTop + deltaY;
 
-			// Clamp to container bounds
-			newLeft = Math.max(0, Math.min(100 - dragState.startWidth, newLeft));
-			newTop = Math.max(0, Math.min(100 - dragState.startHeight, newTop));
+			// Snap to canvas bounds when close to 0 or 100% edges
+			// Left edge snap
+			if (newLeft > -SNAP_THRESHOLD && newLeft < SNAP_THRESHOLD) {
+				newLeft = 0;
+			}
+			// Top edge snap
+			if (newTop > -SNAP_THRESHOLD && newTop < SNAP_THRESHOLD) {
+				newTop = 0;
+			}
+			// Right edge snap (when right side of node aligns with canvas right)
+			const rightEdge = newLeft + dragState.startWidth;
+			if (
+				rightEdge > 100 - SNAP_THRESHOLD &&
+				rightEdge < 100 + SNAP_THRESHOLD
+			) {
+				newLeft = 100 - dragState.startWidth;
+			}
+			// Bottom edge snap (when bottom of node aligns with canvas bottom)
+			const bottomEdge = newTop + dragState.startHeight;
+			if (
+				bottomEdge > 100 - SNAP_THRESHOLD &&
+				bottomEdge < 100 + SNAP_THRESHOLD
+			) {
+				newTop = 100 - dragState.startHeight;
+			}
 
 			setNodeStyle(node.id, {
 				left: `${newLeft}%`,
@@ -266,13 +352,12 @@ export default function RenderEditor() {
 			if (handle.includes("left")) {
 				const potentialWidth = dragState.startWidth - deltaX;
 				if (potentialWidth >= minWidthPct) {
-					const potentialLeft = dragState.startLeft + deltaX;
-					if (potentialLeft >= 0) {
-						newLeft = potentialLeft;
-						newWidth = potentialWidth;
-					} else {
+					newLeft = dragState.startLeft + deltaX;
+					newWidth = potentialWidth;
+					// Snap to left edge
+					if (newLeft > -SNAP_THRESHOLD && newLeft < SNAP_THRESHOLD) {
+						newWidth = newWidth + newLeft;
 						newLeft = 0;
-						newWidth = dragState.startLeft + dragState.startWidth;
 					}
 				} else {
 					newWidth = minWidthPct;
@@ -280,8 +365,12 @@ export default function RenderEditor() {
 				}
 			} else if (handle.includes("right")) {
 				newWidth = Math.max(minWidthPct, dragState.startWidth + deltaX);
-				// Clamp to container right edge
-				if (newLeft + newWidth > 100) {
+				// Snap to right edge when close to 100%
+				const rightEdge = newLeft + newWidth;
+				if (
+					rightEdge > 100 - SNAP_THRESHOLD &&
+					rightEdge < 100 + SNAP_THRESHOLD
+				) {
 					newWidth = 100 - newLeft;
 				}
 			}
@@ -290,13 +379,12 @@ export default function RenderEditor() {
 			if (handle.includes("top")) {
 				const potentialHeight = dragState.startHeight - deltaY;
 				if (potentialHeight >= minHeightPct) {
-					const potentialTop = dragState.startTop + deltaY;
-					if (potentialTop >= 0) {
-						newTop = potentialTop;
-						newHeight = potentialHeight;
-					} else {
+					newTop = dragState.startTop + deltaY;
+					newHeight = potentialHeight;
+					// Snap to top edge
+					if (newTop > -SNAP_THRESHOLD && newTop < SNAP_THRESHOLD) {
+						newHeight = newHeight + newTop;
 						newTop = 0;
-						newHeight = dragState.startTop + dragState.startHeight;
 					}
 				} else {
 					newHeight = minHeightPct;
@@ -304,8 +392,12 @@ export default function RenderEditor() {
 				}
 			} else if (handle.includes("bottom")) {
 				newHeight = Math.max(minHeightPct, dragState.startHeight + deltaY);
-				// Clamp to container bottom edge
-				if (newTop + newHeight > 100) {
+				// Snap to bottom edge when close to 100%
+				const bottomEdge = newTop + newHeight;
+				if (
+					bottomEdge > 100 - SNAP_THRESHOLD &&
+					bottomEdge < 100 + SNAP_THRESHOLD
+				) {
 					newHeight = 100 - newTop;
 				}
 			}
@@ -357,48 +449,50 @@ export default function RenderEditor() {
 	});
 
 	return (
-		<Box
-			pos="relative"
-			w="full"
-			aspectRatio={16 / 9}
-			bgColor="bg.muted"
-			overflow="hidden"
-			ref={(ref) => {
-				editorRootRef = ref;
-				setRootRef(ref);
-			}}
-			onClick={handleCanvasClick}
-			class={css({
-				"& .editor-node": {
-					cursor: "grab",
-				},
-				"&.cursor-grabbing, &.cursor-grabbing .editor-node": {
-					cursor: "grabbing !important",
-				},
-			})}
-			classList={{ [canvasClass()]: true }}
-		>
-			{/* Render all nodes */}
-			<For each={Object.keys(editor.nodes)}>
-				{(nodeId) => {
-					const node = () => editor.nodes[nodeId];
-					return (
-						<Show when={node()}>
-							<NodeProvider node={node()!} register={register}>
-								<Dynamic
-									component={getNodeRenderComp(node()!)}
-									{...getNodeRenderComp(node()!).config.defaultData}
-									onMouseDown={(e: MouseEvent) =>
-										handleNodeMouseDown(e, nodeId)
-									}
-								/>
-							</NodeProvider>
-						</Show>
-					);
+		<Box pos="relative" w="full" aspectRatio={16 / 9}>
+			{/* Main canvas - clips node content */}
+			<Box
+				pos="absolute"
+				inset="0"
+				bgColor="bg.muted"
+				overflow="hidden"
+				ref={(ref) => {
+					editorRootRef = ref;
+					setRootRef(ref);
 				}}
-			</For>
+				onClick={handleCanvasClick}
+				class={css({
+					"& .editor-node": {
+						cursor: "grab",
+					},
+					"&.cursor-grabbing, &.cursor-grabbing .editor-node": {
+						cursor: "grabbing !important",
+					},
+				})}
+				classList={{ [canvasClass()]: true }}
+			>
+				{/* Render all nodes */}
+				<For each={Object.keys(editor.nodes)}>
+					{(nodeId) => {
+						const node = () => editor.nodes[nodeId];
+						return (
+							<Show when={node()}>
+								<NodeProvider node={node()!} register={register}>
+									<Dynamic
+										component={getNodeRenderComp(node()!)}
+										{...getNodeRenderComp(node()!).config.defaultData}
+										onMouseDown={(e: MouseEvent) =>
+											handleNodeMouseDown(e, nodeId)
+										}
+									/>
+								</NodeProvider>
+							</Show>
+						);
+					}}
+				</For>
+			</Box>
 
-			{/* Selection indicator with resize handles */}
+			{/* Selection indicator with resize handles - outside overflow:hidden */}
 			<Show when={getSelectedNode()}>
 				<Box
 					position="absolute"
@@ -422,6 +516,98 @@ export default function RenderEditor() {
 						)}
 					</For>
 				</Box>
+			</Show>
+
+			{/* Overflow indicators for selected node */}
+			<Show when={overflowRegions()}>
+				{(regions) => (
+					<>
+						<Show when={regions().left}>
+							{(r) => (
+								<Box
+									position="absolute"
+									pointerEvents="none"
+									zIndex={998}
+									style={{
+										left: `${r().x}%`,
+										top: `${r().y}%`,
+										width: `${r().w}%`,
+										height: `${r().h}%`,
+									}}
+									class={css({
+										background:
+											"repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(239, 68, 68, 0.3) 4px, rgba(239, 68, 68, 0.3) 8px)",
+										borderRight: "2px dashed",
+										borderRightColor: "red.600",
+									})}
+								/>
+							)}
+						</Show>
+						<Show when={regions().right}>
+							{(r) => (
+								<Box
+									position="absolute"
+									pointerEvents="none"
+									zIndex={998}
+									style={{
+										left: `${r().x}%`,
+										top: `${r().y}%`,
+										width: `${r().w}%`,
+										height: `${r().h}%`,
+									}}
+									class={css({
+										background:
+											"repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(239, 68, 68, 0.3) 4px, rgba(239, 68, 68, 0.3) 8px)",
+										borderLeft: "2px dashed",
+										borderLeftColor: "red.600",
+									})}
+								/>
+							)}
+						</Show>
+						<Show when={regions().top}>
+							{(r) => (
+								<Box
+									position="absolute"
+									pointerEvents="none"
+									zIndex={998}
+									style={{
+										left: `${r().x}%`,
+										top: `${r().y}%`,
+										width: `${r().w}%`,
+										height: `${r().h}%`,
+									}}
+									class={css({
+										background:
+											"repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(239, 68, 68, 0.3) 4px, rgba(239, 68, 68, 0.3) 8px)",
+										borderBottom: "2px dashed",
+										borderBottomColor: "red.600",
+									})}
+								/>
+							)}
+						</Show>
+						<Show when={regions().bottom}>
+							{(r) => (
+								<Box
+									position="absolute"
+									pointerEvents="none"
+									zIndex={998}
+									style={{
+										left: `${r().x}%`,
+										top: `${r().y}%`,
+										width: `${r().w}%`,
+										height: `${r().h}%`,
+									}}
+									class={css({
+										background:
+											"repeating-linear-gradient(-45deg, transparent, transparent 4px, rgba(239, 68, 68, 0.3) 4px, rgba(239, 68, 68, 0.3) 8px)",
+										borderTop: "2px dashed",
+										borderTopColor: "red.600",
+									})}
+								/>
+							)}
+						</Show>
+					</>
+				)}
 			</Show>
 		</Box>
 	);
