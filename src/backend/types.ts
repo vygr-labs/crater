@@ -33,6 +33,7 @@ export type DisplayType =
 	| "video"
 	| "message"
 	| "presentation"
+	| "strongs"
 	| "none";
 
 export interface SONG_DB_PATHS {

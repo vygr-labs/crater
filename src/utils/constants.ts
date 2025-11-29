@@ -182,6 +182,7 @@ export const CLOSE_SONG_EDIT: OpenEditData = { open: false, song: null };
 export const GLOBAL_FOCUS_NAME = "GLOBAL_CONTEXT";
 export const SONGS_TAB_FOCUS_NAME = "SONGS";
 export const SCRIPTURE_TAB_FOCUS_NAME = "SCRIPTURE";
+export const STRONGS_TAB_FOCUS_NAME = "STRONGS";
 export const MEDIA_TAB_FOCUS_NAME = "MEDIA";
 export const THEMES_TAB_FOCUS_NAME = "THEMES";
 export const PRESENTATIONS_TAB_FOCUS_NAME = "PRESENTATIONS";

@@ -13,6 +13,7 @@ import {
 	TbSortAscending,
 	TbRefresh,
 	TbSettings,
+	TbLanguageHiragana,
 } from "solid-icons/tb";
 import { CgDisplayGrid } from "solid-icons/cg";
 import { useAppContext } from "~/layouts/AppContext";
@@ -32,6 +33,7 @@ const typeIcons = {
 	scripture: TbBook2,
 	image: TbPhoto,
 	video: TbVideo,
+	strongs: TbLanguageHiragana,
 };
 
 export default function PreviewPanel() {

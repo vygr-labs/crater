@@ -47,6 +47,35 @@ export interface MediaImportResponse extends BridgeResponse {
 	paths: string[];
 }
 
+export interface StrongsEntry {
+	id: number;
+	relativeOrder: number;
+	word: string;
+	data: string;
+}
+
+// A section of a Strong's definition for display in preview/live panels
+export interface StrongsSection {
+	word: string; // e.g., "H1961"
+	sectionIndex: number;
+	totalSections: number;
+	label: string; // e.g., "Original", "Transliteration", "Definition 1a"
+	content: string; // HTML content for this section
+}
+
+export interface StrongsBibleVerse {
+	id?: number;
+	book: number;
+	chapter: number;
+	verse: number;
+	text: string; // Contains <WH####>/<WG####> tags
+}
+
+export interface StrongsDataStatus {
+	hasBible: boolean;
+	hasDictionary: boolean;
+}
+
 export interface IElectronAPI {
 	// Events
 	onDisplaysUpdate: (c: (allDisplays: Display[]) => void) => void;
@@ -85,6 +114,32 @@ export interface IElectronAPI {
 	}) => Promise<{ text: string }>;
 	sendVerseUpdate: (verseData: any) => void;
 	onScriptureUpdate: (callback: () => void) => void;
+
+	// Strong's Concordance - Dictionary operations
+	fetchStrongs: (reference: string) => Promise<StrongsEntry | null>;
+	fetchMultipleStrongs: (references: string[]) => Promise<StrongsEntry[]>;
+	searchStrongs: (keyword: string) => Promise<StrongsEntry[]>;
+	getAllStrongs: (limit?: number, offset?: number) => Promise<StrongsEntry[]>;
+
+	// Strong's Concordance - Bible with tags operations
+	fetchStrongsBibleVerse: (params: {
+		book: number;
+		chapter: number;
+		verse?: number;
+	}) => Promise<StrongsBibleVerse | null>;
+	fetchStrongsBibleChapter: (params: {
+		book: number;
+		chapter: number;
+	}) => Promise<StrongsBibleVerse[]>;
+	fetchVerseWithDefinitions: (params: {
+		book: number;
+		chapter: number;
+		verse: number;
+	}) => Promise<{
+		verse: StrongsBibleVerse | null;
+		definitions: StrongsEntry[];
+	}>;
+	checkStrongsData: () => Promise<StrongsDataStatus>;
 
 	// Song operations
 	fetchAllSongs: () => Promise<SongData[]>;

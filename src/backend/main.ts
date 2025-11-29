@@ -24,6 +24,18 @@ import {
 	fetchTranslations,
 } from "./database/bible-operations.js";
 import {
+	fetchStrongsDefinition,
+	fetchMultipleStrongsDefinitions,
+	searchStrongsDefinitions,
+	fetchStrongsBibleVerse,
+	fetchStrongsBibleChapter,
+	fetchVerseWithDefinitions,
+	hasStrongsBibleData,
+	hasStrongsDictData,
+	getAllStrongsEntries,
+	type FetchStrongsBibleParams,
+} from "./database/strongs-operations.js";
+import {
 	fetchAllSongs,
 	fetchSongLyrics,
 	updateSong,
@@ -223,13 +235,13 @@ const spawnAppWindow = async () => {
 		appWindow.loadURL(controlsUrl);
 
 		appWindow.setMenu(null);
-		ipcMain.on("controls-window-loaded", () => {
-			logger.info("Controls window DOM ready");
-			appWindow?.maximize();
-			appWindow?.show();
-			loadingWindow.hide();
-			loadingWindow.close();
-		});
+		// ipcMain.on("controls-window-loaded", () => {
+		logger.info("Controls window DOM ready");
+		appWindow?.maximize();
+		appWindow?.show();
+		loadingWindow.hide();
+		loadingWindow.close();
+		// });
 		if (electronIsDev) appWindow.webContents.openDevTools({ mode: "right" });
 
 		// Add keyboard shortcut to open devtools in production (Ctrl+Shift+I)
@@ -416,6 +428,55 @@ ipcMain.handle("fetch-all-scripture", (_, version) =>
 	fetchAllScripture(version),
 );
 ipcMain.handle("fetch-scripture-translations", fetchTranslations);
+
+// Strong's Concordance handlers - Dictionary
+ipcMain.handle("fetch-strongs", (_, reference: string) => {
+	logger.debug("Fetching Strong's definition", { reference });
+	return fetchStrongsDefinition(reference);
+});
+ipcMain.handle("fetch-multiple-strongs", (_, references: string[]) => {
+	logger.debug("Fetching multiple Strong's definitions", {
+		count: references.length,
+	});
+	return fetchMultipleStrongsDefinitions(references);
+});
+ipcMain.handle("search-strongs", (_, keyword: string) => {
+	logger.debug("Searching Strong's definitions", { keyword });
+	return searchStrongsDefinitions(keyword);
+});
+ipcMain.handle("get-all-strongs", (_, limit?: number, offset?: number) => {
+	logger.debug("Getting all Strong's entries", { limit, offset });
+	return getAllStrongsEntries(limit ?? 100, offset ?? 0);
+});
+
+// Strong's Concordance handlers - Bible with tags
+ipcMain.handle(
+	"fetch-strongs-bible-verse",
+	(_, params: FetchStrongsBibleParams) => {
+		logger.debug("Fetching Strong's Bible verse", params);
+		return fetchStrongsBibleVerse(params);
+	},
+);
+ipcMain.handle(
+	"fetch-strongs-bible-chapter",
+	(_, params: FetchStrongsBibleParams) => {
+		logger.debug("Fetching Strong's Bible chapter", params);
+		return fetchStrongsBibleChapter(params);
+	},
+);
+ipcMain.handle(
+	"fetch-verse-with-definitions",
+	(_, params: FetchStrongsBibleParams) => {
+		logger.debug("Fetching verse with Strong's definitions", params);
+		return fetchVerseWithDefinitions(params);
+	},
+);
+ipcMain.handle("check-strongs-data", () => {
+	return {
+		hasBible: hasStrongsBibleData(),
+		hasDictionary: hasStrongsDictData(),
+	};
+});
 
 ipcMain.handle("fetch-songs", fetchAllSongs);
 ipcMain.handle("fetch-lyrics", (_, songId) => fetchSongLyrics(songId));

@@ -116,6 +116,7 @@ export type DisplayType =
 	| "video"
 	| "message"
 	| "presentation"
+	| "strongs"
 	| "none";
 
 export interface MediaItem {

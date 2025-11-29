@@ -3,8 +3,9 @@ import LyricDisplay from "./song/LyricDisplay";
 import ScriptureDisplay, {
 	type DisplayScripture,
 } from "./scripture/ScriptureDisplay";
+import StrongsDisplay from "./strongs/StrongsDisplay";
 import type { DisplayType, MediaItem, ScriptureVerse } from "~/types";
-import type { SongLyric } from "~/types/context";
+import type { SongLyric, StrongsSection } from "~/types/context";
 import ImageDisplay from "./media/ImageDisplay";
 import VideoDisplay from "./media/VideoDisplay";
 
@@ -51,6 +52,15 @@ export default function ItemDisplay(props: Props) {
 				<VideoDisplay
 					index={props.index}
 					video={props.item as MediaItem}
+					isFocusItem={props.isFocusItem}
+					panelName={props.panelName}
+					isCurrentPanel={props.isCurrentPanel}
+				/>
+			</Match>
+			<Match when={props.type === "strongs"}>
+				<StrongsDisplay
+					index={props.index}
+					entry={props.item as StrongsSection}
 					isFocusItem={props.isFocusItem}
 					panelName={props.panelName}
 					isCurrentPanel={props.isCurrentPanel}

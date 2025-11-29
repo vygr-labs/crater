@@ -3,6 +3,7 @@ import { Tabs } from "../ui/tabs";
 import { IconButton } from "../ui/icon-button";
 import {
 	TbBible,
+	TbBook2,
 	TbMusic,
 	TbPalette,
 	TbPlus,
@@ -11,6 +12,7 @@ import {
 } from "solid-icons/tb";
 import SongSelection from "./song/SongSelection";
 import ScriptureSelection from "./scripture/ScriptureSelection";
+import StrongsSelection from "./strongs/StrongsSelection";
 import {
 	useFocusContext,
 	type FocusEventHandlerFn,
@@ -23,6 +25,7 @@ import {
 	PRESENTATIONS_TAB_FOCUS_NAME,
 	SCRIPTURE_TAB_FOCUS_NAME,
 	SONGS_TAB_FOCUS_NAME,
+	STRONGS_TAB_FOCUS_NAME,
 	THEMES_TAB_FOCUS_NAME,
 } from "~/utils/constants";
 import ThemeSelection from "./theme/ThemeSelection";
@@ -120,6 +123,10 @@ export default function ControlsMain() {
 							<TbBible />
 							Scripture
 						</Tabs.Trigger>
+						<Tabs.Trigger value={STRONGS_TAB_FOCUS_NAME} px={4}>
+							<TbBook2 />
+							Strong's
+						</Tabs.Trigger>
 						<Tabs.Trigger value={MEDIA_TAB_FOCUS_NAME} px={4}>
 							<TbVideo />
 							Media
@@ -156,6 +163,9 @@ export default function ControlsMain() {
 					</Tabs.Content>
 					<Tabs.Content h="full" value={SCRIPTURE_TAB_FOCUS_NAME} py={0}>
 						<ScriptureSelection />
+					</Tabs.Content>
+					<Tabs.Content h="full" value={STRONGS_TAB_FOCUS_NAME} py={0}>
+						<StrongsSelection />
 					</Tabs.Content>
 					<Tabs.Content value={MEDIA_TAB_FOCUS_NAME} h="full" py={0}>
 						<MediaSelection />

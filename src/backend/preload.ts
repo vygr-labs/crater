@@ -40,6 +40,31 @@ contextBridge.exposeInMainWorld("electronAPI", {
 	fetchAllScripture: (version: string) =>
 		ipcRenderer.invoke("fetch-all-scripture", version),
 
+	// Strong's Concordance functions - Dictionary
+	fetchStrongs: (reference: string) =>
+		ipcRenderer.invoke("fetch-strongs", reference),
+	fetchMultipleStrongs: (references: string[]) =>
+		ipcRenderer.invoke("fetch-multiple-strongs", references),
+	searchStrongs: (keyword: string) =>
+		ipcRenderer.invoke("search-strongs", keyword),
+	getAllStrongs: (limit?: number, offset?: number) =>
+		ipcRenderer.invoke("get-all-strongs", limit, offset),
+
+	// Strong's Concordance functions - Bible with tags
+	fetchStrongsBibleVerse: (params: {
+		book: number;
+		chapter: number;
+		verse?: number;
+	}) => ipcRenderer.invoke("fetch-strongs-bible-verse", params),
+	fetchStrongsBibleChapter: (params: { book: number; chapter: number }) =>
+		ipcRenderer.invoke("fetch-strongs-bible-chapter", params),
+	fetchVerseWithDefinitions: (params: {
+		book: number;
+		chapter: number;
+		verse: number;
+	}) => ipcRenderer.invoke("fetch-verse-with-definitions", params),
+	checkStrongsData: () => ipcRenderer.invoke("check-strongs-data"),
+
 	// Songs Functions
 	fetchAllSongs: () => ipcRenderer.invoke("fetch-songs"),
 	fetchSongLyrics: (songId: number) =>
