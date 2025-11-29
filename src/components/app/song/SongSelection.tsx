@@ -6,9 +6,13 @@ import { For, Portal } from "solid-js/web";
 import {
 	TbChevronDown,
 	TbChevronRight,
+	TbMusic,
+	TbMusicOff,
 	TbPlus,
+	TbSearch,
 	TbSettings,
 	TbTree,
+	TbX,
 } from "solid-icons/tb";
 import { IconButton } from "../../ui/icon-button";
 import { InputGroup } from "../../ui/input-group";
@@ -289,6 +293,7 @@ export default function SongSelection() {
 						updateSearchMode={updateSearchMode}
 						query={songControls.query}
 						onFilter={handleFilter}
+						onClear={() => setSongControls("query", "")}
 					/>
 				}
 				currentGroup={[songControls.group]}
@@ -313,6 +318,13 @@ export default function SongSelection() {
 						onDeleteSong={handleSongDelete}
 					/>
 				}
+				centerContent={
+					<Text fontSize="11px" color="gray.500">
+						{filteredSongs().length}{" "}
+						{filteredSongs().length === 1 ? "song" : "songs"}
+						{songControls.query && ` matching "${songControls.query}"`}
+					</Text>
+				}
 				ref={virtualizerParentRef}
 			>
 				<Switch>
@@ -327,6 +339,8 @@ export default function SongSelection() {
 							<For each={rowVirtualizer().getVirtualItems()}>
 								{(virtualItem) => {
 									const song = filteredSongs()[virtualItem.index];
+									const isSelected = () => virtualItem.index === fluidFocusId();
+									const isCurrent = () => virtualItem.index === coreFocusId();
 									return (
 										<HStack
 											pos="absolute"
@@ -336,36 +350,72 @@ export default function SongSelection() {
 											textAlign="left"
 											userSelect="none"
 											fontSize="14px"
-											pl={2}
+											px={3}
 											cursor="pointer"
-											py={1.5}
+											py={2}
+											gap={3}
 											css={{
 												"& *": {
 													pointerEvents: "none",
 												},
 												_hover: {
-													bgColor: "purple.800/40",
+													bgColor: "purple.900/30",
 												},
 											}}
 											style={{
 												height: `${virtualItem.size}px`,
 												transform: `translateY(${virtualItem.start}px)`,
-												// "background-color": virtualItem.index === fluidFocusId() ? isCurrentPanel() ? token.var(`colors.${defaultPalette}.900`) : token.var(`colors.gray.800`) : virtualItem.index === coreFocusId() ? token.var(`colors.gray.800`) : "",
-												// color: virtualItem.index === fluidFocusId() ? token.var(`colors.white`) : token.var(`colors.gray.100`),
 												...getBaseFocusStyles(SONGS_TAB_FOCUS_NAME),
 												...getFocusableStyles(
 													SONGS_TAB_FOCUS_NAME,
-													virtualItem.index === fluidFocusId(),
+													isSelected(),
 													isCurrentPanel(),
-													virtualItem.index === coreFocusId(),
+													isCurrent(),
 												),
 											}}
 											data-panel={SONGS_TAB_FOCUS_NAME}
 											data-focusId={virtualItem.index}
 										>
-											<Text>{song.title}</Text>
-											<Text>{song.author}</Text>
-											<Text>{song.copyright}</Text>
+											{/* Song icon */}
+											<Box
+												color={
+													isSelected() && isCurrentPanel()
+														? "purple.300"
+														: "gray.500"
+												}
+												flexShrink={0}
+											>
+												<TbMusic size={16} />
+											</Box>
+											{/* Song info */}
+											<VStack gap={0} alignItems="flex-start" flex={1} minW={0}>
+												<Text
+													fontWeight={isSelected() ? "medium" : "normal"}
+													color={
+														isSelected() && isCurrentPanel()
+															? "white"
+															: "gray.100"
+													}
+													truncate
+													w="full"
+												>
+													{song.title}
+												</Text>
+												<Show when={song.author}>
+													<Text
+														fontSize="12px"
+														color={
+															isSelected() && isCurrentPanel()
+																? "purple.200"
+																: "gray.500"
+														}
+														truncate
+														w="full"
+													>
+														{song.author}
+													</Text>
+												</Show>
+											</VStack>
 										</HStack>
 									);
 								}}
@@ -373,25 +423,66 @@ export default function SongSelection() {
 						</Box>
 					</Match>
 					<Match when={!allSongs().length}>
-						<VStack gap={1} w="full" h="full" justifyContent="center">
-							<Text textStyle="xl" color="gray.100">
-								No Songs in your Database
-							</Text>
-							<Text fontSize="sm" color="gray.400">
-								You can import or manually add songs yourself
-							</Text>
+						<VStack gap={3} w="full" h="full" justifyContent="center" px={6}>
+							<Box color="gray.600">
+								<TbMusicOff size={48} />
+							</Box>
+							<VStack gap={1}>
+								<Text textStyle="lg" fontWeight="medium" color="gray.200">
+									No Songs Yet
+								</Text>
+								<Text fontSize="13px" color="gray.500" textAlign="center">
+									Import songs from a file or create them manually to get
+									started
+								</Text>
+							</VStack>
+							<HStack
+								mt={2}
+								px={4}
+								py={2}
+								bg="purple.900/50"
+								rounded="md"
+								cursor="pointer"
+								_hover={{ bg: "purple.800/50" }}
+								onClick={() =>
+									updateSongEdit(setAppStore, { open: true, song: null })
+								}
+							>
+								<TbPlus size={16} />
+								<Text fontSize="13px" fontWeight="medium">
+									Add Your First Song
+								</Text>
+							</HStack>
 						</VStack>
 					</Match>
 					<Match
 						when={allSongs() && songControls.query && !filteredSongs().length}
 					>
-						<VStack gap={1} w="full" h="full" justifyContent="center">
-							<Text textStyle="lg" color="gray.200">
-								We didn't find that song
-							</Text>
-							<Text fontSize="13px" color="gray.500">
-								Try changing your query
-							</Text>
+						<VStack gap={3} w="full" h="full" justifyContent="center" px={6}>
+							<Box color="gray.600">
+								<TbSearch size={40} />
+							</Box>
+							<VStack gap={1}>
+								<Text textStyle="md" fontWeight="medium" color="gray.200">
+									No songs found
+								</Text>
+								<Text fontSize="13px" color="gray.500" textAlign="center">
+									No songs match "{songControls.query}"
+								</Text>
+							</VStack>
+							<HStack
+								mt={1}
+								px={3}
+								py={1.5}
+								bg="gray.800"
+								rounded="md"
+								cursor="pointer"
+								_hover={{ bg: "gray.700" }}
+								onClick={() => setSongControls("query", "")}
+							>
+								<TbX size={14} />
+								<Text fontSize="12px">Clear search</Text>
+							</HStack>
 						</VStack>
 					</Match>
 				</Switch>
@@ -403,6 +494,7 @@ export default function SongSelection() {
 interface SearchInputProps {
 	query: string;
 	onFilter: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
+	onClear: () => void;
 	searchMode: SongSearchMode;
 	updateSearchMode: () => void;
 }
@@ -411,48 +503,84 @@ const SongSearchInput = (props: SearchInputProps) => {
 	return (
 		<InputGroup
 			w="full"
-			pr={2}
+			pr={1}
+			bg="gray.900/50"
+			borderBottom="1px solid"
+			borderBottomColor="gray.800"
+			_focusWithin={{
+				borderColor: "purple.700",
+				bg: "gray.900",
+			}}
+			transition="all 0.15s ease"
 			startElement={() => (
 				<IconButton
-					size="sm"
-					variant="plain"
+					size="xs"
+					variant="ghost"
 					cursor="pointer"
 					onClick={props.updateSearchMode}
+					color="gray.400"
+					_hover={{ color: "gray.200", bg: "gray.800" }}
 					aria-label={
 						props.searchMode === "title"
-							? "Switch to search mode"
-							: "Switch to title mode"
+							? "Switch to fuzzy search mode"
+							: "Switch to title search mode"
 					}
+					title={props.searchMode === "title" ? "Title search" : "Fuzzy search"}
 				>
 					<Show
 						when={props.searchMode === "title"}
-						fallback={<VsSearchFuzzy />}
+						fallback={<VsSearchFuzzy size={14} />}
 					>
-						<VsListTree />
+						<TbSearch size={14} />
 					</Show>
 				</IconButton>
 			)}
-			startElementProps={{ padding: 0, pointerEvents: "auto" }}
-			endElement={() => <Kbd variant="plain">⌘A</Kbd>}
+			startElementProps={{ padding: 0, pointerEvents: "auto", pl: 1 }}
+			endElement={() => (
+				<HStack gap={1}>
+					<Show when={props.query}>
+						<IconButton
+							size="xs"
+							variant="ghost"
+							cursor="pointer"
+							onClick={props.onClear}
+							color="gray.500"
+							_hover={{ color: "gray.200", bg: "gray.800" }}
+							aria-label="Clear search"
+						>
+							<TbX size={14} />
+						</IconButton>
+					</Show>
+					<Kbd
+						variant="outline"
+						size="sm"
+						color="gray.500"
+						borderColor="gray.700"
+					>
+						⌘A
+					</Kbd>
+				</HStack>
+			)}
+			endElementProps={{ pr: 1 }}
 		>
 			<Input
 				pos="relative"
-				fontSize={14}
+				fontSize={13}
 				zIndex={10}
 				variant="outline"
-				// borderWidth={2}
-				// borderColor="border.emphasized"
 				rounded="none"
 				border="unset"
 				px="2"
 				h="9"
 				outline="none"
 				w="full"
+				color="gray.100"
+				_placeholder={{ color: "gray.500" }}
 				_selection={{
-					bgColor: "blue.600",
+					bgColor: "purple.600",
 				}}
 				value={props.query}
-				placeholder="Search songs"
+				placeholder="Search songs..."
 				onInput={props.onFilter}
 				data-testid="song-search-input"
 				aria-label="Search songs"
