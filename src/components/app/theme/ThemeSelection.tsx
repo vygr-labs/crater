@@ -4,11 +4,23 @@ import { createStore, produce } from "solid-js/store";
 import { Menu } from "../../ui/menu";
 import { For, Portal } from "solid-js/web";
 import {
+	TbBook,
 	TbChevronDown,
 	TbChevronRight,
+	TbEdit,
+	TbEye,
+	TbFolder,
+	TbMusic,
+	TbPalette,
+	TbPaletteOff,
 	TbPlus,
+	TbPresentation,
+	TbSearch,
 	TbSettings,
+	TbStar,
+	TbStarFilled,
 	TbTree,
+	TbX,
 } from "solid-icons/tb";
 import { IconButton } from "../../ui/icon-button";
 import { InputGroup } from "../../ui/input-group";
@@ -75,6 +87,15 @@ type ThemeControlsData = {
 
 const NUM_OF_DISPLAY_LANES = 8;
 const laneItemSize = 100 / NUM_OF_DISPLAY_LANES;
+
+const themeTypeConfig: Record<
+	ThemeType,
+	{ icon: typeof TbMusic; label: string; color: string }
+> = {
+	song: { icon: TbMusic, label: "Song", color: "purple" },
+	scripture: { icon: TbBook, label: "Scripture", color: "blue" },
+	presentation: { icon: TbPresentation, label: "Presentation", color: "green" },
+};
 
 export default function ThemeSelection() {
 	const { appStore, setAppStore } = useAppContext();
@@ -341,6 +362,13 @@ export default function ThemeSelection() {
 		console.log(appStore.displayData.songTheme);
 	};
 
+	const themeCountDisplay = (
+		<Text fontSize="11px" color="gray.500">
+			{filteredThemes().length.toLocaleString()} themes
+			<Show when={themeControls.query}>{` matching search`}</Show>
+		</Text>
+	);
+
 	return (
 		<Flex h="full" pos="relative">
 			<SelectionGroups
@@ -356,6 +384,7 @@ export default function ThemeSelection() {
 				groups={appStore.displayGroups.theme}
 				handleAccordionChange={handleGroupAccordionChange}
 				actionMenus={<ThemeSelectionGroupDisplay />}
+				subgroupIcon={TbFolder}
 			/>
 			<ControlTabDisplay
 				open={themeControls.contextMenuOpen}
@@ -369,6 +398,7 @@ export default function ThemeSelection() {
 					/>
 				}
 				actionBarMenu={<MainActionBarMenu onCreateTheme={handleCreateTheme} />}
+				centerContent={themeCountDisplay}
 				ref={virtualizerParentRef}
 			>
 				<Switch>
@@ -385,98 +415,244 @@ export default function ThemeSelection() {
 								<For each={rowVirtualizer().getVirtualItems()}>
 									{(virtualItem) => {
 										const theme = filteredThemes()[virtualItem.index];
+										const isSelected = () =>
+											virtualItem.index === fluidFocusId();
+										const isCurrent = () => virtualItem.index === coreFocusId();
+										const isDefault = () =>
+											appStore.displayData.songTheme?.id === theme.id ||
+											appStore.displayData.scriptureTheme?.id === theme.id;
 										return (
-											<Box
-												px={1}
+											<HStack
 												pos="absolute"
 												top={0}
 												left={0}
-												pl={2}
+												px={3}
 												py={2}
 												w="full"
-												h="full"
-												display="flex"
-												justifyContent="space-between"
+												gap={3}
+												alignItems="center"
 												class="disable-child-clicks"
+												cursor="pointer"
+												css={{
+													"& *": {
+														pointerEvents: "none",
+													},
+													_hover: {
+														bgColor: "purple.900/30",
+													},
+												}}
 												style={{
 													height: `${virtualItem.size}px`,
 													transform: `translateY(${virtualItem.start}px)`,
 													...getBaseFocusStyles(THEMES_TAB_FOCUS_NAME),
 													...getFocusableStyles(
 														THEMES_TAB_FOCUS_NAME,
-														virtualItem.index === fluidFocusId(),
+														isSelected(),
 														isCurrentPanel(),
-														virtualItem.index === coreFocusId(),
+														isCurrent(),
 													),
 												}}
 												data-panel={THEMES_TAB_FOCUS_NAME}
 												data-focusId={virtualItem.index}
 											>
-												<Text maxW="full" textStyle="sm" truncate>
-													{theme.title}
-												</Text>
-												<Show
-													when={
-														appStore.displayData.songTheme?.id === theme.id ||
-														appStore.displayData.scriptureTheme?.id === theme.id
+												{/* Theme icon */}
+												<Box
+													color={
+														isSelected() && isCurrentPanel()
+															? "purple.300"
+															: "gray.500"
+													}
+													flexShrink={0}
+												>
+													<TbPalette size={16} />
+												</Box>
+												{/* Theme title */}
+												<Text
+													flex={1}
+													minW={0}
+													fontSize="14px"
+													truncate
+													color={
+														isSelected() && isCurrentPanel()
+															? "white"
+															: "gray.200"
 													}
 												>
-													<Badge
-														variant="subtle"
-														colorPalette={
-															virtualItem.index === fluidFocusId()
-																? defaultSupportingPalette
-																: defaultPalette
+													{theme.title}
+												</Text>
+												{/* Theme type badge */}
+												<Box
+													fontSize="9px"
+													fontWeight="bold"
+													color={
+														isSelected() && isCurrentPanel()
+															? `${themeTypeConfig[theme.type]?.color || "purple"}.200`
+															: "gray.500"
+													}
+													textTransform="uppercase"
+													letterSpacing="wide"
+													flexShrink={0}
+													bg={
+														isSelected() && isCurrentPanel()
+															? `${themeTypeConfig[theme.type]?.color || "purple"}.800/60`
+															: "gray.800"
+													}
+													px={1.5}
+													py={0.5}
+													borderRadius="sm"
+												>
+													{themeTypeConfig[theme.type]?.label || theme.type}
+												</Box>
+												{/* Default badge with star */}
+												<Show when={isDefault()}>
+													<HStack
+														gap={1}
+														bg={
+															isSelected() ? "yellow.800/60" : "yellow.900/40"
 														}
+														color={isSelected() ? "yellow.300" : "yellow.500"}
+														px={1.5}
+														py={0.5}
+														borderRadius="sm"
+														fontSize="9px"
+														fontWeight="bold"
+														textTransform="uppercase"
+														letterSpacing="wide"
 													>
-														Default
-													</Badge>
+														<TbStarFilled size={10} />
+														<Text>Default</Text>
+													</HStack>
 												</Show>
-											</Box>
+											</HStack>
 										);
 									}}
 								</For>
 							</Box>
-							<Box w="5/12" h="full" pointerEvents="none" p={5}>
+							{/* Preview Panel */}
+							<VStack
+								w="5/12"
+								h="full"
+								pointerEvents="none"
+								p={4}
+								gap={3}
+								bg="gray.950/50"
+								borderLeft="1px solid"
+								borderColor="gray.800"
+							>
+								{/* Preview header */}
+								<HStack
+									w="full"
+									justifyContent="space-between"
+									alignItems="center"
+								>
+									<HStack gap={2} color="gray.400">
+										<TbEye size={14} />
+										<Text
+											fontSize="11px"
+											fontWeight="medium"
+											textTransform="uppercase"
+											letterSpacing="wide"
+										>
+											Theme Preview
+										</Text>
+									</HStack>
+									<Show when={filteredThemes()[fluidFocusId() ?? 0]}>
+										<Text
+											fontSize="10px"
+											color="gray.500"
+											truncate
+											maxW="120px"
+										>
+											{filteredThemes()[fluidFocusId() ?? 0]?.title}
+										</Text>
+									</Show>
+								</HStack>
+								{/* Preview content */}
 								<Box
 									aspectRatio={16 / 9}
-									border="4px solid"
+									border="2px solid"
 									borderColor="purple.700"
+									borderRadius="md"
+									overflow="hidden"
 									maxH="full"
 									mx="auto"
+									w="full"
+									boxShadow="0 0 0 1px rgba(147, 51, 234, 0.2)"
 								>
-									<Box w="fulll" h="full">
+									<Box w="full" h="full">
 										<RenderTheme
 											data={currentSelectedTheme()}
 											renderMap={defaultThemeRenderMap}
 										/>
 									</Box>
 								</Box>
-							</Box>
+								{/* Quick actions hint */}
+								<HStack w="full" justifyContent="center" gap={4}>
+									<HStack gap={1} color="gray.600" fontSize="10px">
+										<Kbd variant="plain" fontSize="9px">
+											Enter
+										</Kbd>
+										<Text>to select</Text>
+									</HStack>
+									<HStack gap={1} color="gray.600" fontSize="10px">
+										<Kbd variant="plain" fontSize="9px">
+											Right-click
+										</Kbd>
+										<Text>for options</Text>
+									</HStack>
+								</HStack>
+							</VStack>
 						</Flex>
 					</Match>
-					<Match when={!filteredThemes().length}>
-						<VStack gap={1} w="full" h="full" justifyContent="center">
-							<Text textStyle="xl" color="gray.100">
-								No Themes in your Database
-							</Text>
-							<Text fontSize="sm" color="gray.400">
-								Express your creativity by creating one yourself
-							</Text>
+					<Match when={!allThemes().length}>
+						<VStack gap={3} w="full" h="full" justifyContent="center" px={6}>
+							<Box color="gray.600">
+								<TbPaletteOff size={48} />
+							</Box>
+							<VStack gap={1}>
+								<Text textStyle="lg" fontWeight="medium" color="gray.200">
+									No Themes Available
+								</Text>
+								<Text fontSize="13px" color="gray.500" textAlign="center">
+									Express your creativity by creating one using the "+" button
+								</Text>
+							</VStack>
 						</VStack>
 					</Match>
 					<Match
 						when={
-							allThemes() && themeControls.query && !filteredThemes().length
+							allThemes().length &&
+							themeControls.query &&
+							!filteredThemes().length
 						}
 					>
-						<VStack gap={1} w="full" h="full" justifyContent="center">
-							<Text textStyle="lg" color="gray.200">
-								We didn't find that theme
-							</Text>
-							<Text fontSize="13px" color="gray.500">
-								Try changing your query
-							</Text>
+						<VStack gap={3} w="full" h="full" justifyContent="center" px={6}>
+							<Box color="gray.600">
+								<TbSearch size={40} />
+							</Box>
+							<VStack gap={1}>
+								<Text textStyle="md" fontWeight="medium" color="gray.200">
+									No themes found
+								</Text>
+								<Text fontSize="13px" color="gray.500" textAlign="center">
+									No themes match your search query
+								</Text>
+							</VStack>
+						</VStack>
+					</Match>
+					<Match when={allThemes().length && !filteredThemes().length}>
+						<VStack gap={3} w="full" h="full" justifyContent="center" px={6}>
+							<Box color="gray.600">
+								<TbPalette size={48} />
+							</Box>
+							<VStack gap={1}>
+								<Text textStyle="md" fontWeight="medium" color="gray.200">
+									No Themes in This Category
+								</Text>
+								<Text fontSize="13px" color="gray.500" textAlign="center">
+									Create a new theme using the "+" button below
+								</Text>
+							</VStack>
 						</VStack>
 					</Match>
 				</Switch>
@@ -487,62 +663,66 @@ export default function ThemeSelection() {
 
 interface SearchInputProps {
 	query: string;
-	onFilter: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
+	onFilter: (e: InputEvent) => void;
 	searchMode: ThemeSearchMode;
 	updateSearchMode: () => void;
 }
 
 const ThemeSearchInput = (props: SearchInputProps) => {
 	return (
-		<InputGroup
-			w="full"
-			pr={2}
-			startElement={() => (
-				<IconButton
-					size="sm"
-					variant="plain"
-					cursor="pointer"
-					onClick={props.updateSearchMode}
-					aria-label={
-						props.searchMode === "title"
-							? "Switch to search mode"
-							: "Switch to title mode"
-					}
-				>
-					<Show
-						when={props.searchMode === "title"}
-						fallback={<VsSearchFuzzy />}
-					>
-						<VsListTree />
-					</Show>
-				</IconButton>
-			)}
-			startElementProps={{ padding: 0, pointerEvents: "auto" }}
-			endElement={() => <Kbd variant="plain">⌘A</Kbd>}
-		>
+		<HStack w="full" gap={0} bg="gray.900" borderRadius="md" overflow="hidden">
+			{/* Search icon */}
+			<Box pl={2.5} pr={1} color="gray.500">
+				<TbSearch size={16} />
+			</Box>
+			{/* Search input */}
 			<Input
 				pos="relative"
 				zIndex={10}
 				variant="outline"
-				// borderWidth={2}
-				// borderColor="border.emphasized"
 				rounded="none"
 				border="unset"
 				px="2"
 				h="9"
 				outline="none"
 				w="full"
+				bg="transparent"
+				fontSize="13px"
+				_placeholder={{ color: "gray.500" }}
 				_selection={{
-					bgColor: "blue.600",
+					bgColor: "purple.600",
 				}}
-				// ref={props.setSearchRef}
 				value={props.query}
 				placeholder="Search themes"
 				onInput={props.onFilter}
-				// onFocus={handleSearchInputFocus}
 				data-testid="theme-search-input"
 				aria-label="Search themes"
 			/>
-		</InputGroup>
+			{/* Clear button */}
+			<Show when={props.query}>
+				<IconButton
+					size="xs"
+					variant="ghost"
+					mr={1}
+					color="gray.500"
+					_hover={{ color: "gray.300" }}
+					onClick={() => {
+						const event = { target: { value: "" } } as unknown as InputEvent;
+						props.onFilter(event);
+					}}
+					aria-label="Clear search"
+				>
+					<TbX size={14} />
+				</IconButton>
+			</Show>
+			{/* Keyboard shortcut */}
+			<Show when={!props.query}>
+				<Box pr={2}>
+					<Kbd variant="plain" fontSize="10px" color="gray.600">
+						⌘A
+					</Kbd>
+				</Box>
+			</Show>
+		</HStack>
 	);
 };
