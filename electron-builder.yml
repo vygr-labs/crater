@@ -27,8 +27,9 @@ linux:
   description: Open Source Scripture Projection Software for Churches
   category: Office
   desktop:
-    Name: Crater Bible Project
-    Comment: Scripture & Song Projection for Churches
+    entry: |
+      Name=Crater Bible Project
+      Comment=Scripture & Song Projection for Churches
 
 # macOS Configuration
 mac:
