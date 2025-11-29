@@ -72,6 +72,19 @@ import url from "url";
 // import grandiose from 'grandiose'
 // const { GrandioseFinder } = grandiose
 
+// Global error handlers to catch uncaught exceptions in production
+process.on("uncaughtException", (error) => {
+	logger.error("Uncaught Exception:", error.message, error.stack);
+	dialog.showErrorBox(
+		"Unexpected Error",
+		`An unexpected error occurred:\n\n${error.message}\n\nCheck logs at: ${logger.getLogDir()}`,
+	);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+	logger.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
 // const finder = new GrandioseFinder()
 // setTimeout(() => {
 // 	// Log the discovered sources after 1000ms wait
@@ -196,7 +209,7 @@ const spawnAppWindow = async () => {
 			webPreferences: {
 				backgroundThrottling: false,
 				preload: PRELOAD_PATH,
-				devTools: electronIsDev,
+				devTools: true, // Always enable for debugging
 			},
 		});
 
@@ -218,6 +231,14 @@ const spawnAppWindow = async () => {
 			loadingWindow.close();
 		});
 		if (electronIsDev) appWindow.webContents.openDevTools({ mode: "right" });
+
+		// Add keyboard shortcut to open devtools in production (Ctrl+Shift+I)
+		appWindow.webContents.on("before-input-event", (event, input) => {
+			if (input.control && input.shift && input.key.toLowerCase() === "i") {
+				appWindow?.webContents.toggleDevTools();
+				event.preventDefault();
+			}
+		});
 
 		// Bring projection window to top when main window is focused (only if on different screens)
 		appWindow.on("focus", () => {
