@@ -67,6 +67,7 @@ import {
 	getSavedSchedules,
 	saveScheduleToDB,
 } from "./database/app-operations.js";
+import url from "url";
 // import processSongs from './scripts/songs-importer/index.js'
 // import grandiose from 'grandiose'
 // const { GrandioseFinder } = grandiose
@@ -101,9 +102,18 @@ const checkAndQuit = () => {
 		projectionWindow: !!projectionWindow,
 	});
 	if (process.platform !== "darwin" && !appWindow && !projectionWindow) {
+		logger.debug("Quitting Now");
 		app.quit();
 	}
 };
+
+// Quit when all windows are closed (except on macOS)
+app.on("window-all-closed", () => {
+	logger.debug("All windows closed");
+	if (process.platform !== "darwin") {
+		app.quit();
+	}
+});
 
 class AppUpdater {
 	constructor() {
@@ -190,11 +200,14 @@ const spawnAppWindow = async () => {
 			},
 		});
 
-		if (electronIsDev) {
-			appWindow.loadURL("http://localhost:7241/controls");
-		} else {
-			appWindow.loadFile("dist/controls.html");
-		}
+		const controlsUrl = electronIsDev
+			? "http://localhost:7241/controls"
+			: url.format({
+					slashes: true,
+					protocol: "file:",
+					pathname: path.resolve(app.getAppPath(), "dist/controls.html"),
+				});
+		appWindow.loadURL(controlsUrl);
 
 		appWindow.setMenu(null);
 		ipcMain.on("controls-window-loaded", () => {
@@ -230,17 +243,21 @@ const spawnAppWindow = async () => {
 
 		appWindow.on("closed", () => {
 			appWindow = null;
+			if (projectionWindow && !projectionWindow.isDestroyed()) {
+				projectionWindow.close();
+			}
 			checkAndQuit();
-			projectionWindow?.hide();
-			projectionWindow?.close();
 		});
 	});
 
-	if (electronIsDev) {
-		loadingWindow.loadURL("http://localhost:7241/loader");
-	} else {
-		loadingWindow.loadFile("dist/loader.html");
-	}
+	const loaderUrl = electronIsDev
+		? "http://localhost:7241/loader"
+		: url.format({
+				slashes: true,
+				protocol: "file:",
+				pathname: path.resolve(app.getAppPath(), "dist/loader.html"),
+			});
+	loadingWindow.loadURL(loaderUrl);
 
 	loadingWindow.webContents.once("dom-ready", () => {
 		loadingWindow.show();
@@ -268,11 +285,14 @@ function spawnProjectionWindow({ x, y }: { x: number; y: number }) {
 		y,
 	});
 
-	if (electronIsDev) {
-		projectionWindow.loadURL("http://localhost:7241");
-	} else {
-		projectionWindow.loadFile("dist/index.html");
-	}
+	const projectionUrl = electronIsDev
+		? "http://localhost:7241"
+		: url.format({
+				slashes: true,
+				protocol: "file:",
+				pathname: path.resolve(app.getAppPath(), "dist/index.html"),
+			});
+	projectionWindow.loadURL(projectionUrl);
 	projectionWindow.show();
 	appWindow?.focus();
 

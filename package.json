@@ -1,7 +1,7 @@
 {
 	"name": "crater",
 	"type": "module",
-	"version": "0.3.0",
+	"version": "0.3.1",
 	"description": "Professional Scripture Projection Software",
 	"author": {
 		"name": "Eyetu Kingsley",
@@ -34,6 +34,7 @@
 		"@solid-primitives/storage": "^4.3.3",
 		"@tanstack/solid-virtual": "^3.13.12",
 		"astro": "^5.14.1",
+		"astro-relative-links": "^0.4.2",
 		"better-sqlite3": "^12.4.1",
 		"copy-to-clipboard": "^3.3.3",
 		"electron-is-dev": "^3.0.1",
