@@ -1,5 +1,6 @@
 import { completedSetup, electronIsDev, __dirname } from "./setup.js";
 import path from "node:path";
+import { platform } from "node:os";
 import {
 	app,
 	BrowserWindow,
@@ -80,6 +81,14 @@ import {
 const { autoUpdater } = electronUpdater;
 let appWindow: BrowserWindow | null = null;
 let projectionWindow: BrowserWindow | null = null;
+
+// Get platform-specific app icon (Windows requires .ico)
+const getAppIcon = () => {
+	if (platform() === "win32") {
+		return getAssetPath("favicon.ico");
+	}
+	return getAssetPath("logo.png");
+};
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 let appReady = false;
 
@@ -142,7 +151,7 @@ const spawnAppWindow = async () => {
 		width: 500,
 		height: 340,
 		center: true,
-		icon: getAssetPath("logo.png"),
+		icon: getAppIcon(),
 		title: "Crater Bible Project",
 		frame: false,
 		show: false,
@@ -161,7 +170,7 @@ const spawnAppWindow = async () => {
 		appWindow = new BrowserWindow({
 			width: awWidth,
 			height: awHeight,
-			icon: getAssetPath("logo.png"),
+			icon: getAppIcon(),
 			title: electronIsDev
 				? "Controls Window - Development"
 				: "Crater Bible Project",
@@ -232,7 +241,7 @@ function spawnProjectionWindow({ x, y }: { x: number; y: number }) {
 		title: electronIsDev
 			? "Projection Window - Development"
 			: "Crater Projection Window",
-		icon: getAssetPath("logo.png"),
+		icon: getAppIcon(),
 		show: false,
 		fullscreen: true,
 		frame: false,

@@ -1,16 +1,55 @@
 productName: Crater Bible Project
 artifactName: ${productName}-${os}-${arch}.${ext}
 appId: "voyager.applications.crater-bible-project"
+
+# Windows Configuration
 win:
   target: nsis
+  icon: "src/assets/media/favicon.ico"
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  installerIcon: "src/assets/media/favicon.ico"
+  uninstallerIcon: "src/assets/media/favicon.ico"
+  installerHeaderIcon: "src/assets/media/favicon.ico"
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: "Crater Bible Project"
+  license: "LICENSE.md"
+
+# Linux Configuration
 linux:
-  target: AppImage
+  target: [AppImage, deb]
+  icon: "src/assets/media/logo.png"
   synopsis: Free Alternative to Easyworship
-  category: Presentation
+  description: Open Source Scripture Projection Software for Churches
+  category: Office
+  desktop:
+    Name: Crater Bible Project
+    Comment: Scripture & Song Projection for Churches
+
+# macOS Configuration
 mac:
   target: dmg
-  category: public.app-category.social-networking
+  icon: "src/assets/icon-former.icns"
+  category: public.app-category.productivity
+
+dmg:
+  title: "Crater Bible Project"
+  icon: "src/assets/icon-former.icns"
+  window:
+    width: 540
+    height: 380
+
+# Publishing to GitHub Releases
+publish:
+  provider: github
+  owner: CodeKing12
+  repo: crater
+
 files: ["src/backend/build/**/*", "dist/**/*"]
-extraResources: [{from: "src/assets/default", to: "store"}, {from: "src/assets/media", to: "application-assets"}]
+extraResources: [{from: "src/assets/default", to: "store"}, {from: "src/assets/media", to: "media"}]
 directories:
   output: "build"
