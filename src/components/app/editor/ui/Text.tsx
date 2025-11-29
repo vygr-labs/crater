@@ -482,7 +482,7 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 						{/* Font Weight */}
 						<SettingsRow label="Weight">
 							<HStack gap={0.5}>
-								<For each={[300, 400, 500, 600, 700, 800]}>
+								<For each={[300, 400, 500, 600, 700, 800, 900]}>
 									{(weight) => (
 										<IconButton
 											size="2xs"
@@ -495,7 +495,7 @@ export function EditorTextSettings(props: EditorTextSettingsProps) {
 											onClick={() => setStyle({ "font-weight": weight })}
 											title={`Weight ${weight}`}
 										>
-											<Text fontSize="2xs" style={{ "font-weight": weight }}>
+											<Text fontSize="xs" style={{ "font-weight": weight }}>
 												A
 											</Text>
 										</IconButton>
@@ -748,3 +748,7 @@ EditorText.config = {
 	},
 	settings: EditorTextSettings,
 };
+// defaults: boldest, horizontally centered, vertically centered
+// if theme type is lyric, default linkage is lyric
+// if theme type is scripture, default linkage is scripture text.
+// if theme type is scripture, 2 text nodes should be auto-created

@@ -140,7 +140,7 @@ const spawnAppWindow = async () => {
 
 	const loadingWindow = new BrowserWindow({
 		width: 500,
-		height: 300,
+		height: 340,
 		center: true,
 		icon: getAssetPath("logo.png"),
 		title: "Crater Bible Project",
@@ -190,6 +190,21 @@ const spawnAppWindow = async () => {
 			loadingWindow.close();
 		});
 		if (electronIsDev) appWindow.webContents.openDevTools({ mode: "right" });
+
+		// Bring projection window to top when main window is focused
+		appWindow.on("focus", () => {
+			if (projectionWindow && !projectionWindow.isDestroyed()) {
+				projectionWindow.moveTop();
+				// projectionWindow.setAlwaysOnTop(true);
+				// projectionWindow.showInactive();
+				// Reset alwaysOnTop after bringing to front to allow other apps to overlay when needed
+				// setTimeout(() => {
+				// 	if (projectionWindow && !projectionWindow.isDestroyed()) {
+				// 		projectionWindow.setAlwaysOnTop(false);
+				// 	}
+				// }, 100);
+			}
+		});
 
 		appWindow.on("closed", () => {
 			appWindow = null;

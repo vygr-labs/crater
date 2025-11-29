@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS themes (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
   )`,
-);
+).run();
 
 db.prepare(
 	`
