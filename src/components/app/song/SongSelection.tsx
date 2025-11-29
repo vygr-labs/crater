@@ -284,6 +284,17 @@ export default function SongSelection() {
 		);
 	};
 
+	const songCountDisplay = (
+		// () => (
+		<Text fontSize="11px" color="gray.500">
+			{filteredSongs().length} {filteredSongs().length === 1 ? "song" : "songs"}
+			<Show when={songControls.query}>
+				{` matching "${songControls.query}"`}
+			</Show>
+		</Text>
+	);
+	// );
+
 	return (
 		<Flex h="full" pos="relative" data-panel={SONGS_TAB_FOCUS_NAME}>
 			<SelectionGroups
@@ -318,13 +329,7 @@ export default function SongSelection() {
 						onDeleteSong={handleSongDelete}
 					/>
 				}
-				centerContent={
-					<Text fontSize="11px" color="gray.500">
-						{filteredSongs().length}{" "}
-						{filteredSongs().length === 1 ? "song" : "songs"}
-						{songControls.query && ` matching "${songControls.query}"`}
-					</Text>
-				}
+				centerContent={songCountDisplay}
 				ref={virtualizerParentRef}
 			>
 				<Switch>

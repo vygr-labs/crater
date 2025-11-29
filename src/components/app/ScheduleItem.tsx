@@ -5,6 +5,9 @@ import type { DisplayProps, Theme } from "~/types";
 import { getFocusableStyles } from "~/utils";
 import Image from "./Image";
 import { defaultPalette } from "~/utils/constants";
+import { TbGripVertical, TbList } from "solid-icons/tb";
+import type { IconTypes } from "solid-icons";
+import { Dynamic } from "solid-js/web";
 
 interface Props {
 	index: number;
@@ -13,6 +16,7 @@ interface Props {
 	panelName: string;
 	isCurrentPanel: boolean;
 	theme: Theme | null | undefined;
+	icon?: IconTypes;
 }
 
 export default function ScheduleItem(props: Props) {
@@ -20,10 +24,8 @@ export default function ScheduleItem(props: Props) {
 		<HStack
 			class="disable-child-clicks"
 			userSelect="none"
-			gap={2}
+			gap={0}
 			h="full"
-			px={4.5}
-			py={2.5}
 			data-focusId={props.index}
 			data-panel={props.panelName}
 			style={getFocusableStyles(
@@ -32,26 +34,43 @@ export default function ScheduleItem(props: Props) {
 				props.isCurrentPanel,
 			)}
 			_hover={{
-				bgColor: `purple.800/40`,
+				bgColor: `purple.900/30`,
 			}}
-			// bgColor={
-			// 	renderIndex === navigatedItem
-			// 		? `${defaultPalette}.800`
-			// 		: isHovered
-			// 			? `${defaultSupportingPalette}.700`
-			// 			: 'initial'
-			// }
-			// color={
-			// 	renderIndex === navigatedItem
-			// 		? 'white'
-			// 		: isHovered
-			// 			? 'gray.100'
-			// 			: 'initial'
-			// }
 			cursor="pointer"
+			transition="all 0.1s ease"
 		>
-			{/* <Square bg="teal" h="full" w={24}></Square> */}
-			<Text textTransform="capitalize" fontSize="14px">
+			{/* Drag handle */}
+			<Box
+				px={2}
+				py={2.5}
+				color="gray.600"
+				_hover={{ color: "gray.400" }}
+				cursor="grab"
+				flexShrink={0}
+			>
+				<TbGripVertical size={14} />
+			</Box>
+
+			{/* Icon */}
+			<Box
+				color={
+					props.isFocusItem && props.isCurrentPanel ? "purple.300" : "gray.500"
+				}
+				flexShrink={0}
+				mr={2}
+			>
+				<Dynamic component={props.icon || TbList} size={14} />
+			</Box>
+
+			{/* Title */}
+			<Text
+				fontSize="13px"
+				fontWeight={props.isFocusItem ? "medium" : "normal"}
+				color={props.isFocusItem && props.isCurrentPanel ? "white" : "gray.200"}
+				flex={1}
+				truncate
+				pr={3}
+			>
 				{props.item.metadata?.title}
 			</Text>
 		</HStack>
