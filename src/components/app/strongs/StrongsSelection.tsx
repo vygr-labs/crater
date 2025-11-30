@@ -58,7 +58,7 @@ function parseStrongsIntoSections(entry: StrongsEntry): StrongsSection[] {
 	}
 
 	// Maximum characters per section for projection
-	const MAX_CHARS = 250;
+	const MAX_CHARS = 50;
 
 	// Collect all sections
 	const rawSections: { type: string; content: string }[] = [];
@@ -143,155 +143,191 @@ function parseStrongsIntoSections(entry: StrongsEntry): StrongsSection[] {
 		}
 	}
 
-	// Process BDB Definition with smart list splitting
+	// Process BDB Definition - split long content into manageable sections
 	if (bdbListElement) {
-		const tagName = bdbListElement.tagName.toLowerCase();
-		const topLevelItems = Array.from(
-			bdbListElement.querySelectorAll(":scope > li"),
-		);
+		// For deeply nested structures, we need a different approach:
+		// Find the deepest level where items are small enough to be sections
 
-		// Helper to extract splittable items from a list
-		// Returns items that can each become their own section
-		const extractSplittableItems = (
-			listEl: Element,
-		): { prefix: string; items: { html: string; text: string }[] } => {
-			const items: { html: string; text: string }[] = [];
-			const listTag = listEl.tagName.toLowerCase();
-			const listType = listEl.getAttribute("type") || "";
+		type ListItem = {
+			text: string;
+			directText: string; // Text without nested list content
+			element: Element;
+			nestedList: Element | null;
+			depth: number;
+		};
+
+		// Recursively find all items at each depth level
+		const getAllItems = (listEl: Element, depth: number = 0): ListItem[] => {
+			const items: ListItem[] = [];
 			const directItems = Array.from(listEl.querySelectorAll(":scope > li"));
 
 			for (const li of directItems) {
+				const nestedList = li.querySelector(":scope > ol, :scope > ul");
+
+				// Get direct text (without nested list)
+				const clone = li.cloneNode(true) as Element;
+				const nestedInClone = clone.querySelector("ol, ul");
+				if (nestedInClone) nestedInClone.remove();
+				const directText = clone.textContent || "";
+
 				items.push({
-					html: li.outerHTML,
 					text: li.textContent || "",
+					directText: directText.trim(),
+					element: li,
+					nestedList: nestedList,
+					depth: depth,
 				});
-			}
 
-			return { prefix: "", items };
-		};
-
-		// Check if we need to split at a deeper level
-		// If there's only 1 top-level item but it's huge, split its nested list
-		let itemsToSplit: { html: string; text: string; startIndex: number }[] = [];
-		let wrapperPrefix = ""; // The text before the nested list in a single top-level item
-		let wrapperSuffix = ""; // Closing tags
-		let nestedListTag = tagName;
-		let nestedListType = "";
-
-		if (topLevelItems.length === 1) {
-			const singleItem = topLevelItems[0];
-			const itemText = singleItem.textContent || "";
-
-			// If this single item is too long, look for nested list to split
-			if (itemText.length > MAX_CHARS) {
-				const nestedList = singleItem.querySelector(":scope > ol, :scope > ul");
-
+				// Recursively get nested items
 				if (nestedList) {
-					nestedListTag = nestedList.tagName.toLowerCase();
-					nestedListType = nestedList.getAttribute("type") || "";
-
-					// Get the text before the nested list (the main definition text)
-					const clone = singleItem.cloneNode(true) as Element;
-					const nestedInClone = clone.querySelector("ol, ul");
-					if (nestedInClone) nestedInClone.remove();
-					const directText = clone.innerHTML.trim();
-
-					// Prefix: wrap in parent structure
-					wrapperPrefix = `<${tagName}><li>${directText}<${nestedListTag}${nestedListType ? ` type="${nestedListType}"` : ""}>`;
-					wrapperSuffix = `</${nestedListTag}></li></${tagName}>`;
-
-					// Get items from nested list
-					const nestedItems = Array.from(
-						nestedList.querySelectorAll(":scope > li"),
-					);
-					nestedItems.forEach((li, idx) => {
-						itemsToSplit.push({
-							html: li.outerHTML,
-							text: li.textContent || "",
-							startIndex: idx + 1,
-						});
-					});
+					items.push(...getAllItems(nestedList, depth + 1));
 				}
 			}
+			return items;
+		};
+
+		// Get all items flattened
+		const allItems = getAllItems(bdbListElement);
+
+		// Find items that are good section boundaries (have nested lists and direct text)
+		// These are items like "a. (Qal)", "b. (Niphal)", or "i. to happen..."
+		const sectionBoundaries: { item: ListItem; index: number }[] = [];
+
+		for (let i = 0; i < allItems.length; i++) {
+			const item = allItems[i];
+			// Good boundary: has nested content OR is a leaf with reasonable size
+			if (item.nestedList || item.text.length <= MAX_CHARS) {
+				sectionBoundaries.push({ item, index: i });
+			}
 		}
 
-		// If we didn't find nested items to split, use top-level items
-		if (itemsToSplit.length === 0) {
-			topLevelItems.forEach((li, idx) => {
-				itemsToSplit.push({
-					html: li.outerHTML,
-					text: li.textContent || "",
-					startIndex: idx + 1,
-				});
-			});
-			wrapperPrefix = `<${tagName}>`;
-			wrapperSuffix = `</${tagName}>`;
-		}
+		// Build sections by grouping content
+		// Strategy: Each section should include an item and all its descendants until the next same-level item
+		const definitionSections: { content: string }[] = [];
 
-		// Now split items into sections based on character limit
-		let currentItems: string[] = [];
-		let currentCharCount = 0;
-		let startIndex = 1;
-		let definitionSections: {
-			content: string;
-			startIndex: number;
-			useWrapper: boolean;
-		}[] = [];
+		// Recursive function to split lists - returns sections with proper start indices
+		// Each section is { html: string, itemIndices: number[] } where itemIndices tracks the index at each depth
+		const serializeListWithSplits = (
+			listEl: Element,
+			parentContext: {
+				directHtml: string;
+				tagName: string;
+				typeAttr: string;
+				itemIndex: number;
+			}[] = [],
+		): string[] => {
+			const sections: string[] = [];
+			const tagName = listEl.tagName.toLowerCase();
+			const listType = listEl.getAttribute("type");
+			const typeAttr = listType ? ` type="${listType}"` : "";
 
-		for (let i = 0; i < itemsToSplit.length; i++) {
-			const item = itemsToSplit[i];
+			const topItems = Array.from(listEl.querySelectorAll(":scope > li"));
+			let currentItems: { html: string; index: number }[] = [];
+			let currentCharCount = 0;
 
-			if (
-				currentCharCount + item.text.length > MAX_CHARS &&
-				currentItems.length > 0
-			) {
-				definitionSections.push({
-					content: currentItems.join(""),
-					startIndex: startIndex,
-					useWrapper: wrapperPrefix !== "",
-				});
-				startIndex = startIndex + currentItems.length;
+			// Helper to wrap content with parent context
+			const wrapWithParents = (innerHtml: string, itemIdx: number): string => {
+				let result = innerHtml;
+				// Wrap from innermost to outermost
+				const reversedContext = [...parentContext].reverse();
+				for (const ctx of reversedContext) {
+					const startAttr =
+						ctx.itemIndex > 1 ? ` start="${ctx.itemIndex}"` : "";
+					result = `<${ctx.tagName}${ctx.typeAttr}${startAttr}><li>${ctx.directHtml}${result}</li></${ctx.tagName}>`;
+				}
+				// Wrap with current list
+				const startAttr = itemIdx > 1 ? ` start="${itemIdx}"` : "";
+				return `<${tagName}${typeAttr}${startAttr}>${result}</${tagName}>`;
+			};
+
+			// Helper to flush current items as a section
+			const flushCurrentItems = () => {
+				if (currentItems.length === 0) return;
+
+				const firstIdx = currentItems[0].index;
+				const itemsHtml = currentItems.map((item) => item.html).join("");
+
+				if (parentContext.length === 0) {
+					// Top level - just wrap with list
+					const startAttr = firstIdx > 1 ? ` start="${firstIdx}"` : "";
+					sections.push(
+						`<${tagName}${typeAttr}${startAttr}>${itemsHtml}</${tagName}>`,
+					);
+				} else {
+					// Nested - wrap with parent context
+					let result = itemsHtml;
+					const startAttr = firstIdx > 1 ? ` start="${firstIdx}"` : "";
+					result = `<${tagName}${typeAttr}${startAttr}>${result}</${tagName}>`;
+
+					// Wrap with parents from innermost to outermost
+					const reversedContext = [...parentContext].reverse();
+					for (const ctx of reversedContext) {
+						const ctxStartAttr =
+							ctx.itemIndex > 1 ? ` start="${ctx.itemIndex}"` : "";
+						result = `<${ctx.tagName}${ctx.typeAttr}${ctxStartAttr}><li>${ctx.directHtml}${result}</li></${ctx.tagName}>`;
+					}
+					sections.push(result);
+				}
+
 				currentItems = [];
 				currentCharCount = 0;
+			};
+
+			for (let i = 0; i < topItems.length; i++) {
+				const li = topItems[i];
+				const itemIndex = i + 1; // 1-based index
+				const itemText = li.textContent || "";
+				const nestedList = li.querySelector(":scope > ol, :scope > ul");
+
+				// If this item alone is too big AND has nested list, split the nested list
+				if (itemText.length > MAX_CHARS && nestedList) {
+					// First, flush current items if any
+					flushCurrentItems();
+
+					// Get the item's direct content (before nested list)
+					const clone = li.cloneNode(true) as Element;
+					const nestedInClone = clone.querySelector("ol, ul");
+					if (nestedInClone) nestedInClone.remove();
+					const directHtml = clone.innerHTML;
+
+					// Build new parent context for recursive call
+					const newContext = [
+						...parentContext,
+						{ directHtml, tagName, typeAttr, itemIndex },
+					];
+
+					// Recursively split the nested list
+					const nestedSections = serializeListWithSplits(
+						nestedList,
+						newContext,
+					);
+					sections.push(...nestedSections);
+				} else {
+					// Item fits or is a leaf - add to current batch
+					if (
+						currentCharCount + itemText.length > MAX_CHARS &&
+						currentItems.length > 0
+					) {
+						flushCurrentItems();
+					}
+
+					currentItems.push({ html: li.outerHTML, index: itemIndex });
+					currentCharCount += itemText.length;
+				}
 			}
 
-			currentItems.push(item.html);
-			currentCharCount += item.text.length;
-		}
+			// Flush remaining items
+			flushCurrentItems();
 
-		if (currentItems.length > 0) {
-			definitionSections.push({
-				content: currentItems.join(""),
-				startIndex: startIndex,
-				useWrapper: wrapperPrefix !== "",
-			});
-		}
+			return sections;
+		};
+
+		const listSections = serializeListWithSplits(bdbListElement);
 
 		// Create BDB Definition sections
-		const totalDefSections = definitionSections.length;
+		const totalDefSections = listSections.length;
 
-		for (let i = 0; i < definitionSections.length; i++) {
-			const section = definitionSections[i];
-
-			let listHtml: string;
-			if (wrapperPrefix && wrapperSuffix) {
-				// Using nested structure with start attribute for continuation
-				const startAttr =
-					section.startIndex > 1 ? ` start="${section.startIndex}"` : "";
-				listHtml =
-					wrapperPrefix.replace(
-						new RegExp(`<${nestedListTag}([^>]*)>`),
-						`<${nestedListTag}$1${startAttr}>`,
-					) +
-					section.content +
-					wrapperSuffix;
-			} else {
-				listHtml =
-					section.startIndex > 1
-						? `<${tagName} start="${section.startIndex}">${section.content}</${tagName}>`
-						: `<${tagName}>${section.content}</${tagName}>`;
-			}
-
+		for (let i = 0; i < listSections.length; i++) {
 			const label =
 				totalDefSections === 1
 					? "BDB Definition"
@@ -299,7 +335,7 @@ function parseStrongsIntoSections(entry: StrongsEntry): StrongsSection[] {
 
 			rawSections.push({
 				type: label,
-				content: (i === 0 ? bdbHeader : "") + listHtml,
+				content: (i === 0 ? bdbHeader : "") + listSections[i],
 			});
 		}
 	} else if (bdbHeader) {

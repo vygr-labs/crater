@@ -107,33 +107,46 @@ export default function StrongsDisplay(props: Props) {
 								color: "var(--colors-gray-100)",
 								fontWeight: 600,
 							},
-							"& ol": {
+							// Base list styles
+							"& ol, & ul": {
 								paddingLeft: "1.5rem",
 								marginBottom: "0.5rem",
-								listStyleType: "decimal",
-							},
-							"& ul": {
-								paddingLeft: "1.5rem",
-								marginBottom: "0.5rem",
-								listStyleType: "disc",
 							},
 							"& li": {
 								marginBottom: "0.35rem",
 								lineHeight: 1.5,
 								display: "list-item",
 							},
-							"& ol[type='a'], & ol[type='A']": {
-								listStyleType: "lower-alpha",
+							// Alternating pattern: 1 > a > 1 > a > 1 > a...
+							// Level 1: decimal (1, 2, 3)
+							"& ol": {
+								listStyleType: "decimal",
 							},
-							"& ol[type='i'], & ol[type='I']": {
-								listStyleType: "lower-roman",
-							},
-							"& ol ol, & ul ol": {
+							// Level 2: lower-alpha (a, b, c)
+							"& ol ol, & ol ul, & ul ol": {
 								listStyleType: "lower-alpha",
 								marginTop: "0.25rem",
 							},
-							"& ol ol ol, & ul ol ol": {
-								listStyleType: "lower-roman",
+							// Level 3: decimal (1, 2, 3)
+							"& ol ol ol, & ol ol ul, & ol ul ol, & ul ol ol": {
+								listStyleType: "decimal",
+							},
+							// Level 4: lower-alpha (a, b, c)
+							"& ol ol ol ol, & ol ol ol ul, & ol ol ul ol, & ol ul ol ol, & ul ol ol ol":
+								{
+									listStyleType: "lower-alpha",
+								},
+							// Level 5: decimal (1, 2, 3)
+							"& ol ol ol ol ol, & ol ol ol ol ul, & ol ol ol ul ol, & ol ol ul ol ol, & ol ul ol ol ol, & ul ol ol ol ol":
+								{
+									listStyleType: "decimal",
+								},
+							// Level 6: lower-alpha (a, b, c)
+							"& ol ol ol ol ol ol": {
+								listStyleType: "lower-alpha",
+							},
+							"& ul": {
+								listStyleType: "disc",
 							},
 							"& a.dict": {
 								color: "var(--colors-purple-400)",
