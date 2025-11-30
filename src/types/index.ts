@@ -138,6 +138,7 @@ export interface DisplayInfo {
 	song?: SongLyric;
 	image?: MediaItem;
 	video?: MediaItem;
+	strongs?: import("./context").StrongsSection;
 }
 
 export interface ExtraRenderProps {

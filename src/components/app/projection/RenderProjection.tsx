@@ -9,6 +9,7 @@ import RenderImage from "./RenderImage";
 import { parseThemeData } from "~/utils";
 import RenderVideo from "./RenderVideo";
 import { Text } from "~/components/ui/text";
+import RenderStrongs from "./RenderStrongs";
 
 export const defaultThemeRenderMap = {
 	EditorContainer: RenderEditorContainer,
@@ -98,6 +99,11 @@ export default function RenderProjection() {
 					<Match when={appStore.displayData.displayContent?.type === "video"}>
 						<RenderVideo
 							videoData={appStore.displayData.displayContent?.video}
+						/>
+					</Match>
+					<Match when={appStore.displayData.displayContent?.type === "strongs"}>
+						<RenderStrongs
+							strongsData={appStore.displayData.displayContent?.strongs}
 						/>
 					</Match>
 				</Switch>
