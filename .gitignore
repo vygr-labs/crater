@@ -32,3 +32,4 @@ src/assets/store/media
 build/
 *backup.sqlite
 site/site
+src/assets/store/databases/*.sqlite
