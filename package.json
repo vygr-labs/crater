@@ -47,7 +47,6 @@
 		"fs": "^0.0.1-security",
 		"fuse.js": "^7.1.0",
 		"fuzzysort": "^3.1.0",
-		"grandiose": "patch:grandiose@npm%3A0.0.4#~/.yarn/patches/grandiose-npm-0.0.4-79ca4973b0.patch",
 		"html2canvas": "^1.4.1",
 		"lodash": "^4.17.21",
 		"mime": "^4.1.0",
