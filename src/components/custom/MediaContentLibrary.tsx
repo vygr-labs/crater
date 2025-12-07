@@ -1,9 +1,9 @@
 import { createVirtualizer } from "@tanstack/solid-virtual";
 import { createMemo, For, Match, Switch, type Setter } from "solid-js";
 import { createAsyncMemo } from "solidjs-use";
-import { Box, VStack } from "styled-system/jsx";
+import { Box, HStack, VStack } from "styled-system/jsx";
 import { useAppContext } from "~/layouts/AppContext";
-import { getBaseFocusStyles, getFocusableStyles } from "~/utils";
+import { getBaseFocusStyles, getFocusableStyles, getToastType, toaster } from "~/utils";
 import {
 	THEME_EDITOR_FOCUS_NAME,
 	THEMES_TAB_FOCUS_NAME,
@@ -11,6 +11,8 @@ import {
 import Image from "../app/Image";
 import Video from "../app/Video";
 import { Text } from "../ui/text";
+import { Button } from "../ui/button";
+import { TbPlus } from "solid-icons/tb";
 import type { MediaItem } from "~/types";
 
 interface Props {
@@ -52,92 +54,118 @@ export default function MediaContentLibrary(props: Props) {
 		props.setSelectedMedia(item);
 	};
 
+	const handleImportMedia = () => {
+		const filterType = props.type === "image" ? "images" : "videos";
+		window.electronAPI
+			.openMediaSelector({ filters: [filterType], multiSelect: true })
+			.then(({ success, message, paths }) => {
+				console.log(success, message, paths);
+				toaster.create({
+					type: getToastType(success),
+					title: message,
+				});
+				setAppStore("mediaUpdateTrigger", (former) => ++former);
+			});
+	};
+
 	return (
-		<Box ref={virtualizerParentRef}>
-			<Switch>
-				<Match when={filteredMedia().length}>
-					<Box
-						style={{
-							height: `${rowVirtualizer().getTotalSize()}px`,
-							width: "100%",
-							position: "relative",
-						}}
-					>
-						<For each={rowVirtualizer().getVirtualItems()}>
-							{(virtualItem) => {
-								const media = filteredMedia()[virtualItem.index];
-								return (
-									<Box
-										px={1}
-										py={2}
-										w="full"
-										h="full"
-										class="disable-child-clicks"
-										style={{
-											position: "absolute",
-											top: 0,
-											height: `${virtualItem.size}px`,
-											transform: `translateY(${virtualItem.start}px)`,
-											left: `${virtualItem.lane * laneItemSize}%`,
-											width: laneItemSize + "%",
-											...getBaseFocusStyles(THEMES_TAB_FOCUS_NAME),
-											...getFocusableStyles(
-												THEMES_TAB_FOCUS_NAME,
-												virtualItem.index === props.selectedMedia?.id &&
-													props.selectedMedia.type === media.type,
-												true,
-												virtualItem.index === props.selectedMedia?.id &&
-													props.selectedMedia.type === media.type,
-											),
-										}}
-										data-panel={THEME_EDITOR_FOCUS_NAME}
-										data-focusId={virtualItem.index}
-										onclick={() => selectMediaId(media)}
-									>
-										{/* width: "full", height: "auto", aspectRatio: 16 / 9 */}
-										<Switch>
-											<Match when={media.type === "image"}>
-												<Image src={media.path} alt={media.title} />
-											</Match>
-											<Match when={media.type === "video"}>
-												<Video
-													id={
-														THEME_EDITOR_FOCUS_NAME +
-														"-vid-" +
-														virtualItem.index
-													}
-													src={media.path}
-													about={media.title}
-													preload="metadata"
-												/>
-											</Match>
-										</Switch>
-										<Text
-											mt={1.5}
-											textAlign="center"
-											maxW="full"
-											textStyle="sm"
-											truncate
-										>
-											{media.title}
-										</Text>
-									</Box>
-								);
+		<VStack gap={2} h="full">
+			<HStack w="full" justifyContent="flex-end" px={1}>
+				<Button
+					size="xs"
+					variant="subtle"
+					onClick={handleImportMedia}
+				>
+					<TbPlus size={14} />
+					Import {props.type === "image" ? "Images" : "Videos"}
+				</Button>
+			</HStack>
+			<Box ref={virtualizerParentRef} flex={1} w="full" overflow="auto">
+				<Switch>
+					<Match when={filteredMedia().length}>
+						<Box
+							style={{
+								height: `${rowVirtualizer().getTotalSize()}px`,
+								width: "100%",
+								position: "relative",
 							}}
-						</For>
-					</Box>
-				</Match>
-				<Match when={!filteredMedia().length}>
-					<VStack gap={1} w="full" h="full" justifyContent="center">
-						<Text textStyle="xl" color="gray.100">
-							No Media in your Database
-						</Text>
-						<Text fontSize="sm" color="gray.400">
-							Import one from your device by clicking the "+" button below
-						</Text>
-					</VStack>
-				</Match>
-			</Switch>
-		</Box>
+						>
+							<For each={rowVirtualizer().getVirtualItems()}>
+								{(virtualItem) => {
+									const media = filteredMedia()[virtualItem.index];
+									return (
+										<Box
+											px={1}
+											py={2}
+											w="full"
+											h="full"
+											class="disable-child-clicks"
+											style={{
+												position: "absolute",
+												top: 0,
+												height: `${virtualItem.size}px`,
+												transform: `translateY(${virtualItem.start}px)`,
+												left: `${virtualItem.lane * laneItemSize}%`,
+												width: laneItemSize + "%",
+												...getBaseFocusStyles(THEMES_TAB_FOCUS_NAME),
+												...getFocusableStyles(
+													THEMES_TAB_FOCUS_NAME,
+													virtualItem.index === props.selectedMedia?.id &&
+														props.selectedMedia.type === media.type,
+													true,
+													virtualItem.index === props.selectedMedia?.id &&
+														props.selectedMedia.type === media.type,
+												),
+											}}
+											data-panel={THEME_EDITOR_FOCUS_NAME}
+											data-focusId={virtualItem.index}
+											onclick={() => selectMediaId(media)}
+										>
+											{/* width: "full", height: "auto", aspectRatio: 16 / 9 */}
+											<Switch>
+												<Match when={media.type === "image"}>
+													<Image src={media.path} alt={media.title} />
+												</Match>
+												<Match when={media.type === "video"}>
+													<Video
+														id={
+															THEME_EDITOR_FOCUS_NAME +
+															"-vid-" +
+															virtualItem.index
+														}
+														src={media.path}
+														about={media.title}
+														preload="metadata"
+													/>
+												</Match>
+											</Switch>
+											<Text
+												mt={1.5}
+												textAlign="center"
+												maxW="full"
+												textStyle="sm"
+												truncate
+											>
+												{media.title}
+											</Text>
+										</Box>
+									);
+								}}
+							</For>
+						</Box>
+					</Match>
+					<Match when={!filteredMedia().length}>
+						<VStack gap={1} w="full" h="full" justifyContent="center">
+							<Text textStyle="xl" color="gray.100">
+								No Media in your Database
+							</Text>
+							<Text fontSize="sm" color="gray.400">
+								Import one from your device by clicking the button above
+							</Text>
+						</VStack>
+					</Match>
+				</Switch>
+			</Box>
+		</VStack>
 	);
 }

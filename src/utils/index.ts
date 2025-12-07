@@ -14,6 +14,7 @@ import { createToaster } from "@ark-ui/solid";
 import type { JSXElement } from "solid-js";
 import type { EditorRenderComponent } from "~/components/app/editor/editor-types";
 import pino from "pino";
+import { colors } from "~/theme/tokens/colors";
 
 export const createId = () => {
 	return window.crypto.randomUUID();

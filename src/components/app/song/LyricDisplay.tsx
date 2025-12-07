@@ -2,6 +2,7 @@ import { For, Show } from "solid-js";
 import { Box, Flex, Stack, VStack } from "styled-system/jsx";
 import { token } from "styled-system/tokens";
 import { Text } from "~/components/ui/text";
+import { Badge } from "~/components/ui/badge";
 import type { SongLyric } from "~/types/context";
 import { getFocusableStyles } from "~/utils";
 import {
@@ -65,17 +66,13 @@ export default function LyricDisplay(props: Props) {
 				<Stack gap={0}>
 					<Show when={props.lyric.label}>
 						<Box px={2} pt={2}>
-							<Text
-								textTransform="capitalize"
-								style={getFocusableStyles(
-									"LYRICS_LABEL_TEXT",
-									props.isFocusItem,
-									props.isCurrentPanel,
-								)}
-								fontWeight={600}
+							<Badge
+								size="sm"
+								variant={props.isFocusItem && props.isCurrentPanel ? "subtle" : "outline"}
+								colorPalette={props.isFocusItem && props.isCurrentPanel ? "gray" : defaultSupportingPalette}
 							>
 								{props.lyric.label}
-							</Text>
+							</Badge>
 						</Box>
 					</Show>
 

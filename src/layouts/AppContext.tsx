@@ -112,6 +112,29 @@ export default function AppContextProvider(props: ParentProps) {
 			}
 		}
 
+		// If there's a liveItem but no displayContent, compute it
+		// This handles the case when the projection window opens and needs to show the current live item
+		// We need to read from raw localStorage since liveItem is excluded from restored state
+		const rawSavedState = localStorage.getItem(storageKey);
+		const parsedRawState = rawSavedState ? JSON.parse(rawSavedState) : null;
+		const liveItem = parsedRawState?.liveItem;
+		console.log("Checking liveItem for projection:", {
+			liveItem,
+			displayContent: appStore.displayData?.displayContent,
+			hasType: liveItem?.type,
+			hasIndex: typeof liveItem?.index === "number",
+		});
+		if (liveItem && liveItem.type && typeof liveItem.index === "number") {
+			const itemData = liveItem.data[liveItem.index];
+			console.log("Setting displayContent from liveItem:", { type: liveItem.type, itemData });
+			if (itemData) {
+				setStore("displayData", "displayContent", {
+					type: liveItem.type,
+					[liveItem.type]: itemData,
+				});
+			}
+		}
+
 		broadcast.onmessage = syncStore;
 		onCleanup(() => {
 			broadcast.close();

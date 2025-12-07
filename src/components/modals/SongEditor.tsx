@@ -154,16 +154,12 @@ function SongEditor() {
 				changeFluidFocus,
 				event,
 			}) => {
-				const newCoreFocusId = Math.min(
-					(fluidFocusId ?? 0) + 1,
-					lyrics.length - 1,
-				);
-				changeFluidFocus(newCoreFocusId);
 				const el = event.target as HTMLElement;
 				const { type, index } = getInputData(el);
 				if (!type || !index) return;
 
 				if (type === "label") {
+					// Moving from label to text within the same section - don't change focus index
 					event.preventDefault();
 					const nextEl = document.getElementById(
 						"song-edit-text-" + index,
@@ -176,28 +172,35 @@ function SongEditor() {
 					const target = el as HTMLTextAreaElement;
 					const { lines, currentLine } = getLineData(target);
 					if (currentLine === lines.length - 1) {
+						// At the last line of text, move to next section
 						event.preventDefault();
+						const nextIndex = parseInt(index) + 1;
 						const next = document.getElementById(
-							"song-edit-label-" + (parseInt(index) + 1),
+							"song-edit-label-" + nextIndex,
 						) as HTMLInputElement;
 						if (next) {
 							next.setSelectionRange(0, 0);
 							next.focus();
+							// Only change focus and scroll when actually moving to a new section
+							changeFluidFocus(nextIndex);
+							scrollToSection(nextIndex);
 						} else {
 							// Add new lyric section
 							saveToHistory();
 							setLyrics(lyrics.length, createNewLyric());
 							setTimeout(() => {
 								const next = document.getElementById(
-									"song-edit-label-" + (parseInt(index) + 1),
+									"song-edit-label-" + nextIndex,
 								) as HTMLInputElement;
-								if (next) next.focus();
+								if (next) {
+									next.focus();
+									changeFluidFocus(nextIndex);
+									scrollToSection(nextIndex);
+								}
 							}, 0);
 						}
 					}
 				}
-				// Auto-scroll to active section
-				scrollToSection(newCoreFocusId);
 			},
 			ArrowUp: ({
 				coreFocusId,
@@ -207,17 +210,16 @@ function SongEditor() {
 				changeFluidFocus,
 				event,
 			}) => {
-				const newCoreFocusId = Math.max((fluidFocusId ?? 0) - 1, 0);
-				changeFluidFocus(newCoreFocusId);
-
 				const el = event.target as HTMLElement;
 				const { type, index } = getInputData(el);
 				if (!type || !index) return;
 
 				if (type === "label") {
+					// Moving from label to previous section's text
 					event.preventDefault();
+					const prevIndex = parseInt(index) - 1;
 					const prevEl = document.getElementById(
-						"song-edit-text-" + (parseInt(index) - 1),
+						"song-edit-text-" + prevIndex,
 					) as HTMLTextAreaElement;
 					if (prevEl) {
 						const { lines } = getLineData(prevEl);
@@ -229,11 +231,15 @@ function SongEditor() {
 						}
 						prevEl.setSelectionRange(relativeLinePos, relativeLinePos);
 						prevEl.focus();
+						// Only change focus and scroll when actually moving to a new section
+						changeFluidFocus(prevIndex);
+						scrollToSection(prevIndex);
 					}
 				} else if (type === "text") {
 					const target = el as HTMLTextAreaElement;
 					const { lines, currentLine } = getLineData(target);
 					if (currentLine === 0) {
+						// At the first line of text, move to label of same section - don't change focus index
 						event.preventDefault();
 						const former = document.getElementById(
 							"song-edit-label-" + index,
@@ -244,8 +250,6 @@ function SongEditor() {
 						}
 					}
 				}
-				// Auto-scroll to active section
-				scrollToSection(newCoreFocusId);
 			},
 			Enter: ({
 				coreFocusId,

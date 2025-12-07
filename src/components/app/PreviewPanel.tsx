@@ -20,6 +20,7 @@ import { useAppContext } from "~/layouts/AppContext";
 import {
 	PREVIEW_INDEX_WIDTH,
 	PREVIEW_PANEL_FOCUS_NAME,
+	LIVE_PANEL_FOCUS_NAME,
 } from "~/utils/constants";
 import { useFocusContext } from "~/layouts/FocusContext";
 import { createEffect, createMemo, For, Match, Switch } from "solid-js";
@@ -84,6 +85,8 @@ export default function PreviewPanel() {
 				changeFluidFocus,
 			}) => {
 				changeFocus(fluidFocusId);
+				pushToLive(fluidFocusId);
+				changeFocusPanel(LIVE_PANEL_FOCUS_NAME);
 			},
 		},
 		clickHandlers: {
@@ -96,6 +99,7 @@ export default function PreviewPanel() {
 				if (typeof focusId === "number") {
 					changeFocus(focusId);
 					pushToLive(focusId);
+					changeFocusPanel(LIVE_PANEL_FOCUS_NAME);
 				}
 			},
 		},

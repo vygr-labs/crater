@@ -26,6 +26,7 @@ import {
 	defaultAbsenteePalette,
 	GLOBAL_FOCUS_NAME,
 	neutralPalette,
+	defaultSupportingPalette,
 } from "~/utils/constants";
 import { IoSettings } from "solid-icons/io";
 import { Portal } from "solid-js/web";
@@ -560,12 +561,12 @@ export default function MenuBar(props: Props) {
 
 				{/* Go Live Button */}
 				<Button
-					size="sm"
-					colorPalette={appStore.isLive ? "red" : "green"}
-					variant="solid"
+					size="xs"
+					colorPalette={appStore.isLive ? defaultSupportingPalette : defaultPalette}
+					variant="surface"
 					onClick={handleLiveToggle}
 					px={4}
-					fontWeight="semibold"
+					fontWeight="medium"
 				>
 					<Show when={appStore.isLive} fallback={<TbScreenShare size={18} />}>
 						<TbScreenShareOff size={18} />

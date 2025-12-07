@@ -43,7 +43,7 @@ export default function ScheduleItem(props: Props) {
 			<Box
 				px={2}
 				py={2.5}
-				color="gray.600"
+				color={props.isFocusItem ? "gray.300" : "gray.600"}
 				_hover={{ color: "gray.400" }}
 				cursor="grab"
 				flexShrink={0}
