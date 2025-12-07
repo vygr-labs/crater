@@ -231,7 +231,7 @@ const spawnAppWindow = async () => {
 			webPreferences: {
 				backgroundThrottling: false,
 				preload: PRELOAD_PATH,
-				devTools: true, // Always enable for debugging
+				// devTools: true, // Always enable for debugging
 			},
 		});
 
@@ -253,7 +253,9 @@ const spawnAppWindow = async () => {
 			loadingWindow.close();
 		});
 		// Always open DevTools for debugging (temporarily)
-		appWindow.webContents.openDevTools({ mode: "right" });
+		if (electronIsDev) {
+			appWindow.webContents.openDevTools({ mode: "right" });
+		}
 
 		// Add keyboard shortcut to open devtools in production (Ctrl+Shift+I)
 		appWindow.webContents.on("before-input-event", (event, input) => {
