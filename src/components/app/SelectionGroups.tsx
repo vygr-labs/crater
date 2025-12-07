@@ -19,6 +19,7 @@ interface Props<T extends GroupMeta[]> {
 	currentSubgroup?: number | null;
 	groups: PanelGroup;
 	handleAccordionChange: (value: any) => void;
+	onSubgroupDblClick?: (subgroupId: number) => void;
 	searchInput?: JSXElement;
 	actionMenus?: JSXElement;
 	subgroupIcon?: IconTypes;
@@ -136,6 +137,9 @@ export default function SelectionGroups<T extends GroupMeta[]>(
 																		panel,
 																		`${panel}-${collection.id}`,
 																	])
+																}
+																onDblClick={() =>
+																	props.onSubgroupDblClick?.(collection.id)
 																}
 															>
 																<HStack gap={2}>

@@ -365,6 +365,8 @@ function SongEditor() {
 		setLyrics([]);
 		setHistory([]);
 		setHistoryIndex(-1);
+		setIsSaving(false);
+		setTitleError(false);
 		console.log(lyrics, history);
 	};
 

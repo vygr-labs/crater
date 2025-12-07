@@ -401,6 +401,45 @@ export default function ScriptureSelection() {
 		);
 	}
 
+	// Track if we need to push to live after translation changes
+	let pushToLiveAfterTranslationChange = false;
+
+	// Handle double-click on translation in left menu - push current scripture to live
+	function handleTranslationDblClick(translationId: number) {
+		const translation = allTranslations().find((t) => t.id === translationId);
+		if (!translation) return;
+
+		// If already on this translation, just push current to live
+		if (scriptureControls.translation === translation.version) {
+			const fluidId = fluidFocusId();
+			if (typeof fluidId === "number") {
+				pushToLive(fluidId, true);
+			}
+		} else {
+			// Mark that we want to push to live after translation loads
+			pushToLiveAfterTranslationChange = true;
+		}
+	}
+
+	// Effect to push to live after translation change completes
+	createEffect(() => {
+		const scriptures = filteredScriptures();
+		const currentTranslation = scriptureControls.translation;
+
+		if (
+			pushToLiveAfterTranslationChange &&
+			scriptures.length > 0 &&
+			scriptures[0]?.version?.toUpperCase() === currentTranslation.toUpperCase()
+		) {
+			// Translation has loaded, now push to live
+			const fluidId = fluidFocusId();
+			if (typeof fluidId === "number") {
+				pushToLive(fluidId, true);
+			}
+			pushToLiveAfterTranslationChange = false;
+		}
+	});
+
 	// scroll to current fluid item
 	createEffect(() => {
 		if (isCurrentPanel() && filteredScriptures().length) {
@@ -414,23 +453,8 @@ export default function ScriptureSelection() {
 		book_name: string;
 		chapter: number;
 		verse: string;
+		translation: string;
 	} | null = null;
-
-	// Update the selected scripture reference whenever fluid focus changes
-	createEffect(() => {
-		const fluidId = fluidFocusId();
-		const scriptures = filteredScriptures();
-		if (typeof fluidId === "number" && scriptures.length > 0) {
-			const scripture = scriptures[fluidId];
-			if (scripture) {
-				selectedScriptureRef = {
-					book_name: scripture.book_name,
-					chapter: scripture.chapter,
-					verse: scripture.verse,
-				};
-			}
-		}
-	});
 
 	// Re-sync selected verse when translation changes
 	// This ensures the same book/chapter/verse stays selected even though the index might change
@@ -440,10 +464,12 @@ export default function ScriptureSelection() {
 		const scriptures = filteredScriptures();
 
 		// Only re-sync if translation actually changed and we have scriptures loaded
+		// Also verify that the scriptures are from the NEW translation (async data has loaded)
 		if (
 			currentTranslation !== previousTranslation &&
 			scriptures.length > 0 &&
-			selectedScriptureRef
+			selectedScriptureRef &&
+			scriptures[0]?.version?.toUpperCase() === currentTranslation.toUpperCase()
 		) {
 			const scriptureIndex = findBestVerseMatch(
 				scriptures,
@@ -462,8 +488,32 @@ export default function ScriptureSelection() {
 			);
 			if (scriptureIndex > -1) {
 				changeFluidFocus(scriptureIndex);
+				// Update the translation in selectedScriptureRef after successful re-sync
+				selectedScriptureRef.translation = currentTranslation;
 			}
 			previousTranslation = currentTranslation;
+		}
+	});
+
+	// Update the selected scripture reference whenever fluid focus changes
+	// Only update if the scriptures are from the current translation to avoid race conditions
+	createEffect(() => {
+		const fluidId = fluidFocusId();
+		const scriptures = filteredScriptures();
+		const currentTranslation = scriptureControls.translation;
+		
+		if (typeof fluidId === "number" && scriptures.length > 0) {
+			const scripture = scriptures[fluidId];
+			// Only update selectedScriptureRef if the scripture is from the current translation
+			// This prevents corrupting the reference during translation switch
+			if (scripture && scripture.version?.toUpperCase() === currentTranslation.toUpperCase()) {
+				selectedScriptureRef = {
+					book_name: scripture.book_name,
+					chapter: scripture.chapter,
+					verse: scripture.verse,
+					translation: currentTranslation,
+				};
+			}
 		}
 	});
 
@@ -818,12 +868,41 @@ export default function ScriptureSelection() {
 	};
 
 	const updateSearchMode = () => {
+		const wasSearch = scriptureControls.searchMode === "search";
 		setScriptureControls(
 			produce((store) => {
 				store.searchMode = store.searchMode === "search" ? "special" : "search";
 				store.query = "";
 			}),
 		);
+		
+		// When switching to special mode, initialize with current scripture and trigger selection
+		if (wasSearch) {
+			// Get current scripture from fluid focus
+			const fluidId = fluidFocusId();
+			const scripture = typeof fluidId === "number" ? filteredScriptures()[fluidId] : null;
+			const bookName = scripture?.book_name || allBooks[0]?.name || "Genesis";
+			const chapter = scripture?.chapter || 1;
+			const verse = typeof scripture?.verse === "string" ? parseInt(scripture.verse) || 1 : scripture?.verse || 1;
+			
+			// Initialize stageMarkData with current scripture, which triggers the selection effect
+			setTimeout(() => {
+				setStageMarkData({
+					stage: 0,
+					book: bookName,
+					chapter: chapter,
+					verse: verse,
+					currentValue: "",
+					selectionStart: 0,
+					selectionEnd: bookName.length,
+				});
+			}, 0);
+		} else {
+			// Switching to search mode, just focus the input
+			setTimeout(() => {
+				searchInputRef?.focus();
+			}, 0);
+		}
 	};
 
 	const handleInputClick = (e: MouseEvent) => {
@@ -906,6 +985,7 @@ export default function ScriptureSelection() {
 				currentSubgroup={scriptureControls.collection}
 				groups={allGroups()}
 				handleAccordionChange={handleGroupAccordionChange}
+				onSubgroupDblClick={handleTranslationDblClick}
 				actionMenus={<ScriptureSelectionGroupDisplay />}
 				subgroupIcon={TbBook}
 			/>

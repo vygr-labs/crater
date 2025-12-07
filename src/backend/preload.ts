@@ -23,6 +23,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
 			"displays-update",
 			(_: any, allDisplays: (typeof Display)[]) => callback(allDisplays),
 		),
+	// Close confirmation listener
+	onCheckBeforeClose: (callback: () => void) =>
+		ipcRenderer.on("check-before-close", () => callback()),
+	confirmClose: () => ipcRenderer.send("confirm-close"),
 	// Miscellaneous
 	controlsWindowLoaded: () => ipcRenderer.send("controls-window-loaded"),
 	saveSchedule: (data: { schedule: unknown; overwite: boolean }) =>

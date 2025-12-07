@@ -287,6 +287,28 @@ const spawnAppWindow = async () => {
 			}
 		});
 
+		// Track if close is confirmed (to prevent re-asking)
+		let closeConfirmed = false;
+
+		// Handle confirmed close from renderer - must be set up before close event
+		ipcMain.removeAllListeners("confirm-close");
+		ipcMain.on("confirm-close", () => {
+			logger.debug("Received confirm-close from renderer");
+			closeConfirmed = true;
+			appWindow?.close();
+		});
+
+		// Intercept close to check for unsaved changes
+		appWindow.on("close", (event) => {
+			logger.debug("Close event triggered, closeConfirmed:", closeConfirmed);
+			if (!closeConfirmed && appWindow) {
+				event.preventDefault();
+				// Ask renderer if there are unsaved changes
+				logger.debug("Sending check-before-close to renderer");
+				appWindow.webContents.send("check-before-close");
+			}
+		});
+
 		appWindow.on("closed", () => {
 			appWindow = null;
 			if (projectionWindow && !projectionWindow.isDestroyed()) {

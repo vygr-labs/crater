@@ -1,38 +1,57 @@
 	◦	add accurate progress bar to database import and ensure window does not show “not responding”
-	◦	be able to add image/video from themes modal :done
+	◦	
 	◦	add padding to default themes
-	◦	ensure the current live item is projected when you click “go live” :done
-	◦	scroll issue in song editing. when you click a lyric, edit it and press the down key to go to the next input, the bar scrolls to the top :done
-	◦	improve contrast of left order icon in schedule items :done
+	◦	
 	◦	Improve the user experience of scripture filter. Thoroughly test and examine the user experience
 	◦	implement light mode, colored theme mode and semi-dark mode.
 	◦	add shortcuts to switch to schedule, preview, live, song, scripture, strong’s, media, and themes panels
 	◦	add shortcuts to open song editing and app settings
 	◦	remove buggy extra spacing in song editor (it may be due to song imports or just the way song editor parses lyrics)
-	◦	thorough song editing fails to save. the save button loads indefinitely
-	◦	enter button does not send current preview index to live :done
+
+	◦	
 	◦	add live and preview displays in preview and live panels
 	◦	when the scripture filter is clicked, the scripture panel (and current scripture) should automatically become the focused panel.
 	◦	add button and shortcut to delete schedule item
 	◦	allow selecting multiple schedule items using ctrl and shift
-	◦	scripture index bug persists (highlighted scripture changes when you switch translations)
-	◦	let lyric label be a badge in preview and live panels :done
+	◦	
+	◦	
 	◦	implement schedule ordering using the drag handler
 	◦	when a scripture or song is clicked in schedule, it should automatically be the highlighted one if the scripture/song panels are not in search mode/display
-	◦	replace red “end live” btn with a surface, outline or ghost button. it is too prominent in the UI. you could also reduce the size :done
+	◦	
 	◦	allow schedule item editing (and there should be a checkbox to allow syncing with it’s saved item in db)
 	◦	allow editing theme (or maybe only background) for a specific schedule item
 	◦	allow editing/assigning themes for a specific song
 	◦	fix song pasting (and song initialization i.e. the auto loading into arrays when the song editor is opened to edit a song) in song editor
-	◦	clicking the button to switch scripture filter to scripture search should automatically focus the search input (the button itself should not even be focusable?)
+	◦	
 	◦	add universal search shortcut for scriptures, do the same for songs
 	◦	double-clicking or pressing enter in preview panel should automatically switch focus to the live item (and it’s currently selected index) :done
 	◦	implement shortcut to switch scripture search translation (i search in a translation, then if i don’t see my results, i can toggle to search across all translations or a specific one)
 	◦	fix overflow in canvas view in theme editor
 	◦	add indicator for current logo, and add checkmark in the menu for it
 	◦	add song, scripture, image, logo transitions. add a lot of them.
-	◦	fix scripture index, please.
-	◦	double clicking a translation in the left menu should automatically push it to live.
-	◦	adding a new item to the schedule should make the item the new selected item in the schedule list
-	◦	prevent app from closing if schedule is unsaved - show dialog asking to save
+	◦	.
+	◦	.
+	◦	
 	◦	fix issue with crater not quitting even when both windows are closed.
+
+
+
+
+be able to add image/video from themes modal :done
+ensure the current live item is projected when you click “go live” :done
+scroll issue in song editing. when you click a lyric, edit it and press the down key to go to the next input, the bar scrolls to the top :done
+improve contrast of left order icon in schedule items :done
+enter button does not send current preview index to live :done
+let lyric label be a badge in preview and live panels :done
+replace red “end live” btn with a surface, outline or ghost button. it is too prominent in the UI. you could also reduce the size :done
+
+
+clicking the button to switch scripture filter to scripture search should automatically focus the search input :done
+
+fix scripture index, please. when I click on a translation in the left menu of scripture panel, the currently selected scripture item/index gets offsetted. For example, I am currently selecting Nehemiah 1:10. When I click the NLT translaton, Nehemiah 1:15 gets selected instead. Kindly fix  :done
+thorough song editing fails to save. the save button loads indefinitely :done
+scripture index bug persists (highlighted scripture changes when you switch translations): done
+
+prevent app from closing if schedule is unsaved :done
+adding a new item to the schedule should make the item the new selected item in the schedule list :done
+double clicking a translation in the left menu of scripture panel should automatically push the translation version of the current scripture index to live 	:done

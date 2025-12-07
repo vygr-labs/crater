@@ -44,6 +44,9 @@ import {
 	createMemo,
 	createSignal,
 	For,
+	on,
+	onCleanup,
+	onMount,
 	Show,
 } from "solid-js";
 import { getToastType, logger, toaster } from "~/utils";
@@ -58,6 +61,7 @@ import {
 import { Tooltip } from "../ui/tooltip";
 import { Kbd } from "../ui/kbd";
 import { AiOutlineFolderOpen } from "solid-icons/ai";
+import { useConfirm } from "../modals/ConfirmDialog";
 
 export type Props = {
 	// openAppSettings: () => void
@@ -73,6 +77,7 @@ interface MenuControlsType {
 
 export default function MenuBar(props: Props) {
 	const { appStore, setAppStore, settings, updateSettings } = useAppContext();
+	const { confirm } = useConfirm();
 	const [menuStore, setMenuStore] = createStore<MenuControlsType>({
 		scheduleName: "",
 		openSchedModal: false,
@@ -253,7 +258,16 @@ export default function MenuBar(props: Props) {
 					batch(() => {
 						setMenuStore("loadedSchedule", savedSched);
 						setMenuStore("scheduleName", savedSched.name);
+						setMenuStore("openSchedModal", false);
 					});
+					// Mark schedule as saved
+					setSavedScheduleSnapshot(JSON.stringify(unwrap(appStore.scheduleItems)));
+					
+					// If we were closing after save, now close the app
+					if (closingAfterSave()) {
+						setClosingAfterSave(false);
+						window.electronAPI.confirmClose();
+					}
 				}
 				toaster.create({ type: getToastType(success), title: message });
 			});
@@ -264,12 +278,15 @@ export default function MenuBar(props: Props) {
 			unwrap(savedSched),
 		);
 		console.log(scheduleData);
-		console.log("SCHEDULE LOADED: ", JSON.parse(scheduleData));
-		setAppStore("scheduleItems", JSON.parse(scheduleData).items);
+		const parsedData = JSON.parse(scheduleData);
+		console.log("SCHEDULE LOADED: ", parsedData);
+		setAppStore("scheduleItems", parsedData.items);
 		batch(() => {
 			setMenuStore("loadedSchedule", savedSched);
 			setMenuStore("scheduleName", savedSched.name);
 		});
+		// Mark schedule as saved (just loaded)
+		setSavedScheduleSnapshot(JSON.stringify(parsedData.items));
 	};
 
 	const emptySchedule = () => {
@@ -278,10 +295,64 @@ export default function MenuBar(props: Props) {
 			setMenuStore("loadedSchedule", null);
 			setMenuStore("scheduleName", "");
 		});
+		// Mark as saved (empty schedule)
+		setSavedScheduleSnapshot(JSON.stringify([]));
 	};
 
 	const hasScheduleItems = createMemo(() => appStore.scheduleItems.length > 0);
 	const hasLoadedSchedule = createMemo(() => menuStore.loadedSchedule !== null);
+
+	// Track saved schedule state for unsaved changes detection
+	const [savedScheduleSnapshot, setSavedScheduleSnapshot] = createSignal<string>(
+		JSON.stringify([])
+	);
+
+	// Check if schedule has unsaved changes
+	const hasUnsavedScheduleChanges = createMemo(() => {
+		const currentSchedule = JSON.stringify(unwrap(appStore.scheduleItems));
+		return currentSchedule !== savedScheduleSnapshot();
+	});
+
+	// Track if we're closing after save (for the save modal flow)
+	const [closingAfterSave, setClosingAfterSave] = createSignal(false);
+
+	// Listen for close request from Electron main process
+	onMount(() => {
+		logger.info(["Setting up onCheckBeforeClose listener"]);
+		window.electronAPI.onCheckBeforeClose(() => {
+			logger.info(["Received check-before-close, hasUnsavedChanges:", hasUnsavedScheduleChanges(), "hasItems:", hasScheduleItems()]);
+			if (hasUnsavedScheduleChanges() && hasScheduleItems()) {
+				// Show confirm dialog to warn user about unsaved changes
+				confirm({
+					title: "Unsaved Schedule Changes",
+					message: "You have unsaved schedule changes. Would you like to save before closing?",
+					confirmText: "Save",
+					cancelText: "Don't Save",
+					confirmColorPalette: "blue",
+					onConfirm: () => {
+						// User chose to save
+						if (menuStore.loadedSchedule) {
+							// Existing schedule - save directly and close
+							setClosingAfterSave(true);
+							onSaveSchedule();
+							// window.electronAPI.confirmClose();
+						} else {
+							// New schedule - open save modal and set flag to close after save
+							setClosingAfterSave(true);
+							setMenuStore("openSchedModal", true);
+						}
+					},
+					onCancel: () => {
+						// User chose not to save, proceed with close
+						window.electronAPI.confirmClose();
+					},
+				});
+			} else {
+				// No unsaved changes, proceed with close
+				window.electronAPI.confirmClose();
+			}
+		});
+	});
 
 	// Tooltip wrapper component for cleaner code
 	const TooltipButton = (props: {

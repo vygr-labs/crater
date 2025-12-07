@@ -102,6 +102,10 @@ export interface StrongsDataStatus {
 export interface IElectronAPI {
 	// Events
 	onDisplaysUpdate: (c: (allDisplays: Display[]) => void) => void;
+	
+	// Close confirmation
+	onCheckBeforeClose: (callback: () => void) => void;
+	confirmClose: () => void;
 
 	// Miscellaneous
 	controlsWindowLoaded: () => void;

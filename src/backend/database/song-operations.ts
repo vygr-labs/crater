@@ -95,18 +95,6 @@ const updateSong = ({
     `,
 	);
 
-	const lyricValues = newLyrics.map(
-		(l, i) =>
-			`(${songId}, '${l.label}', '${JSON.stringify(l.text)}', ${i + 1})`,
-	);
-
-	const insertNewLyrics = songsDB.prepare(
-		`
-    INSERT INTO song_lyrics (song_id, label, lyrics, "order")
-    VALUES ${lyricValues}
-    `,
-	);
-
 	// Transaction to ensure atomic updates
 	const transaction = songsDB.transaction(() => {
 		// Update the song title
@@ -115,17 +103,21 @@ const updateSong = ({
 		// Remove old lyrics
 		deleteOldLyrics.run(songId);
 
-		// Insert new lyrics
-		console.log(lyricValues, insertNewLyrics);
-		insertNewLyrics.run();
-		// newLyrics.forEach((lyric, index) => {
-		// 	insertNewLyrics.run(
-		// 		songId,
-		// 		lyric.label,
-		// 		JSON.stringify(lyric.text),
-		// 		index + 1,
-		// 	);
-		// });
+		// Batch insert all lyrics in a single statement for better performance
+		if (newLyrics.length > 0) {
+			const placeholders = newLyrics.map(() => "(?, ?, ?, ?)").join(", ");
+			const values = newLyrics.flatMap((lyric, index) => [
+				songId,
+				lyric.label,
+				JSON.stringify(lyric.text),
+				index + 1,
+			]);
+			
+			const insertAllLyrics = songsDB.prepare(
+				`INSERT INTO song_lyrics (song_id, label, lyrics, "order") VALUES ${placeholders}`
+			);
+			insertAllLyrics.run(...values);
+		}
 	});
 
 	transaction();

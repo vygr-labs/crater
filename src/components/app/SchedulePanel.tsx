@@ -22,7 +22,7 @@ import {
 	SCHEDULE_PANEL_FOCUS_NAME,
 } from "~/utils/constants";
 import { useFocusContext } from "~/layouts/FocusContext";
-import { createEffect, createMemo, For, Match, Show, Switch } from "solid-js";
+import { createEffect, createMemo, createSignal, For, Match, on, Show, Switch } from "solid-js";
 import { createVirtualizer } from "@tanstack/solid-virtual";
 import ContextMenu from "./ContextMenu";
 import ItemDisplay from "./ItemDisplay";
@@ -128,6 +128,27 @@ export default function SchedulePanel() {
 			}
 		}
 	});
+
+	// Track previous schedule length to detect when items are added
+	const [prevScheduleLength, setPrevScheduleLength] = createSignal(scheduleItems().length);
+	
+	// Select the newly added item when schedule grows
+	createEffect(
+		on(
+			() => scheduleItems().length,
+			(newLength) => {
+				const prevLength = prevScheduleLength();
+				if (newLength > prevLength && newLength > 0) {
+					// Items were added, select the last one
+					const newIndex = newLength - 1;
+					changeFluidFocus(newIndex);
+					changeFocus(newIndex);
+				}
+				setPrevScheduleLength(newLength);
+			},
+			{ defer: true }
+		)
+	);
 
 	return (
 		<Stack pos="relative" h="full" pt={8} pb="1" gap={0}>
