@@ -3,6 +3,7 @@ import type { SongData, SongLyric } from "./context";
 import type {
 	DisplayBounds,
 	DisplayInfo,
+	DisplayMetadata,
 	DisplayProps,
 	DisplayType,
 	FocusPanel,
@@ -108,6 +109,11 @@ export interface AppData {
 	isLive: boolean;
 	openSettings: boolean;
 	recentSchedules: SavedSchedule[];
+	// Sync schedule item selection to scripture/song panels
+	syncFromSchedule: {
+		type: "scripture" | "song";
+		metadata?: DisplayMetadata;
+	} | null;
 }
 
 export interface AppSettings {

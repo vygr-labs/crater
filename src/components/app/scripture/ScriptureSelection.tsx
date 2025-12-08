@@ -8,6 +8,7 @@ import ControlTabDisplay from "../ControlTabDisplay";
 import {
 	createEffect,
 	createMemo,
+	createSignal,
 	Match,
 	on,
 	Switch,
@@ -440,12 +441,18 @@ export default function ScriptureSelection() {
 		}
 	});
 
-	// scroll to current fluid item
-	createEffect(() => {
-		if (isCurrentPanel() && filteredScriptures().length) {
-			rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
-		}
-	});
+	// scroll to current fluid item when navigating (not on panel focus change)
+	createEffect(
+		on(
+			() => fluidFocusId(),
+			(focusId) => {
+				if (typeof focusId === "number" && filteredScriptures().length) {
+					rowVirtualizer().scrollToIndex(focusId);
+				}
+			},
+			{ defer: true }
+		)
+	);
 
 	// Track the currently selected scripture reference for translation changes
 	// This stores the reference independently of stageMarkData which only updates in "special" mode
@@ -492,6 +499,72 @@ export default function ScriptureSelection() {
 				selectedScriptureRef.translation = currentTranslation;
 			}
 			previousTranslation = currentTranslation;
+		}
+	});
+
+	// Sync from schedule item click - scroll to the scripture if it exists
+	// Switches to the schedule item's translation
+	const [pendingSyncData, setPendingSyncData] = createSignal<{ book: string; chapter: number; verse: number; translation: string } | null>(null);
+	
+	createEffect(
+		on(
+			() => appStore.syncFromSchedule,
+			(syncData) => {
+				if (!syncData || syncData.type !== "scripture") return;
+				if (scriptureControls.searchMode !== "special") return; // Don't sync in search mode
+				
+				const metadata = syncData.metadata;
+				if (!metadata?.id) return;
+				
+				// Parse the id format: "book-chapter-verse" (e.g., "genesis-1-1")
+				const idParts = String(metadata.id).split("-");
+				if (idParts.length < 3) return;
+				
+				// Handle multi-word book names (e.g., "1-samuel-1-1" -> book = "1 samuel")
+				const verseStr = idParts.pop()!;
+				const chapterStr = idParts.pop()!;
+				const book = idParts.join(" ");
+				const chapter = parseInt(chapterStr);
+				const verse = parseInt(verseStr);
+				
+				if (isNaN(chapter) || isNaN(verse)) return;
+				
+				// Extract translation from title, e.g., "Genesis 1:1 (NKJV)" -> "NKJV"
+				const titleMatch = metadata.title?.match(/\(([A-Z]+)\)\s*$/);
+				const translation = titleMatch ? titleMatch[1] as AvailableTranslation : scriptureControls.translation;
+				
+				// Store sync data for pending sync
+				setPendingSyncData({ book, chapter, verse, translation });
+				
+				if (translation !== scriptureControls.translation) {
+					// Switch translation - the pending sync will be handled when scriptures reload
+					setScriptureControls("translation", translation);
+				}
+				// Note: Don't try to sync immediately here - let the pending sync effect handle it
+				// This ensures consistent behavior whether translation changed or not
+				
+				// Clear the sync trigger
+				setAppStore("syncFromSchedule", null);
+			},
+			{ defer: true }
+		)
+	);
+	
+	// Handle pending sync when scriptures load (after translation change)
+	createEffect(() => {
+		const scriptures = filteredScriptures();
+		const syncData = pendingSyncData();
+		
+		if (syncData && scriptures.length > 0) {
+			// Verify the scriptures are from the expected translation
+			if (scriptures[0]?.version?.toUpperCase() === syncData.translation.toUpperCase()) {
+				const { book, chapter, verse } = syncData;
+				const matchIndex = findBestVerseMatch(scriptures, book, chapter, verse);
+				if (matchIndex > -1) {
+					changeFluidFocus(matchIndex);
+				}
+				setPendingSyncData(null);
+			}
 		}
 	});
 
@@ -906,6 +979,9 @@ export default function ScriptureSelection() {
 	};
 
 	const handleInputClick = (e: MouseEvent) => {
+		// Always change focus panel to scriptures when clicking the input
+		changeFocusPanel(name);
+		
 		if (scriptureControls.searchMode !== "special") return;
 		e.preventDefault();
 		console.log(e, searchInputRef.selectionStart, searchInputRef.selectionEnd);
@@ -1252,9 +1328,7 @@ const ScriptureSearchInput = (props: SearchInputProps) => {
 				placeholder={
 					props.searchMode === "special" ? "Genesis 1:1" : "Search verses..."
 				}
-				onclick={
-					props.searchMode === "special" ? props.onInputClick : undefined
-				}
+				onclick={props.onInputClick}
 				onbeforeinput={
 					props.searchMode === "special" ? props.onSpecialSearch : undefined
 				}

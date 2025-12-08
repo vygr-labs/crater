@@ -13,6 +13,7 @@ import {
 	TbPlayerPlay,
 	TbPlaylist,
 	TbPresentation,
+	TbTrash,
 	TbVideo,
 } from "solid-icons/tb";
 import { CgDisplayGrid } from "solid-icons/cg";
@@ -28,6 +29,9 @@ import ContextMenu from "./ContextMenu";
 import ItemDisplay from "./ItemDisplay";
 import ScheduleItem from "./ScheduleItem";
 import type { Theme } from "~/types";
+import { IconButton } from "../ui/icon-button";
+import { Tooltip } from "../ui/tooltip";
+import { produce } from "solid-js/store";
 
 // Icon map for different item types
 const typeIcons: Record<string, typeof TbMusic> = {
@@ -54,6 +58,77 @@ export default function SchedulePanel() {
 		message: null,
 	}));
 
+	// Multi-selection state
+	const [selectedIndices, setSelectedIndices] = createSignal<Set<number>>(new Set());
+	const [lastClickedIndex, setLastClickedIndex] = createSignal<number | null>(null);
+
+	// Drag-and-drop state
+	const [dragSourceIndex, setDragSourceIndex] = createSignal<number | null>(null);
+	const [dragOverIndex, setDragOverIndex] = createSignal<number | null>(null);
+
+	// Handle drag start
+	const handleDragStart = (index: number) => {
+		setDragSourceIndex(index);
+	};
+
+	// Handle drag over
+	const handleDragOver = (index: number) => {
+		if (dragSourceIndex() !== null && dragSourceIndex() !== index) {
+			setDragOverIndex(index);
+		}
+	};
+
+	// Handle drag end and reorder
+	const handleDragEnd = () => {
+		const sourceIndex = dragSourceIndex();
+		const targetIndex = dragOverIndex();
+		
+		if (sourceIndex !== null && targetIndex !== null && sourceIndex !== targetIndex) {
+			setAppStore("scheduleItems", produce((items) => {
+				const [removed] = items.splice(sourceIndex, 1);
+				// When dragging down, the target shifts up by 1 after removal
+				// When dragging up, the target stays the same
+				const insertIndex = sourceIndex < targetIndex ? targetIndex : targetIndex;
+				items.splice(insertIndex, 0, removed);
+			}));
+			// Update focus to follow the moved item
+			changeFluidFocus(targetIndex);
+		}
+		
+		setDragSourceIndex(null);
+		setDragOverIndex(null);
+	};
+
+	// Delete selected items
+	const deleteSelectedItems = () => {
+		const selected = selectedIndices();
+		if (selected.size === 0 && typeof fluidFocusId() === "number") {
+			// If no multi-selection, delete the focused item
+			const focusId = fluidFocusId()!;
+			setAppStore("scheduleItems", produce((items) => {
+				items.splice(focusId, 1);
+			}));
+			// Adjust focus to stay within bounds
+			if (focusId >= scheduleItems().length) {
+				changeFluidFocus(Math.max(0, scheduleItems().length - 1));
+			}
+		} else if (selected.size > 0) {
+			// Delete all selected items (in reverse order to maintain indices)
+			const indicesToDelete = Array.from(selected).sort((a, b) => b - a);
+			setAppStore("scheduleItems", produce((items) => {
+				for (const idx of indicesToDelete) {
+					items.splice(idx, 1);
+				}
+			}));
+			// Clear selection and adjust focus
+			setSelectedIndices(new Set<number>());
+			const newLength = scheduleItems().length;
+			if (newLength > 0) {
+				changeFluidFocus(Math.min(fluidFocusId() ?? 0, newLength - 1));
+			}
+		}
+	};
+
 	const pushToLive = (focusId?: number | null, live?: boolean) => {
 		// const focusId = itemIndex;
 		if (typeof focusId !== "number") return; // || !isCurrentPanel()
@@ -78,29 +153,77 @@ export default function SchedulePanel() {
 						scheduleItems().length - 1,
 					);
 					changeFluidFocus(newFocusId);
+					// Clear multi-selection when navigating with arrows (unless shift is held)
+					setSelectedIndices(new Set<number>());
 				},
 				ArrowUp: ({ fluidFocusId, changeFluidFocus }) => {
 					if (!isCurrentPanel()) return;
 					const newFocusId = Math.max((fluidFocusId ?? 0) - 1, 0);
 					changeFluidFocus(newFocusId);
+					// Clear multi-selection when navigating with arrows
+					setSelectedIndices(new Set<number>());
 				},
 				Enter: ({ fluidFocusId, changeFocus }) => {
 					if (!isCurrentPanel()) return;
 					changeFocus(fluidFocusId);
 					pushToLive(fluidFocusId, true);
 				},
+				Delete: () => {
+					if (!isCurrentPanel()) return;
+					deleteSelectedItems();
+				},
 			},
 			clickHandlers: {
 				onClick: ({ changeFluidFocus, focusId, event }) => {
-					if (typeof focusId === "number") {
-						changeFluidFocus(focusId);
-						pushToLive(focusId, false);
+					if (typeof focusId !== "number") return;
+					
+					const mouseEvent = event as MouseEvent;
+					const clickedItem = scheduleItems()[focusId];
+					
+					if (mouseEvent.ctrlKey || mouseEvent.metaKey) {
+						// Ctrl+click: Toggle selection of this item
+						setSelectedIndices((prev) => {
+							const newSet = new Set(prev);
+							if (newSet.has(focusId)) {
+								newSet.delete(focusId);
+							} else {
+								newSet.add(focusId);
+							}
+							return newSet;
+						});
+						setLastClickedIndex(focusId);
+					} else if (mouseEvent.shiftKey && lastClickedIndex() !== null) {
+						// Shift+click: Select range from last clicked to current
+						const start = Math.min(lastClickedIndex()!, focusId);
+						const end = Math.max(lastClickedIndex()!, focusId);
+						const newSet = new Set<number>();
+						for (let i = start; i <= end; i++) {
+							newSet.add(i);
+						}
+						setSelectedIndices(newSet);
+					} else {
+						// Normal click: Clear selection and focus this item
+						setSelectedIndices(new Set<number>());
+						setLastClickedIndex(focusId);
+						
+						// Sync to scripture/song panels if applicable
+						if (clickedItem && (clickedItem.type === "scripture" || clickedItem.type === "song")) {
+							setAppStore("syncFromSchedule", {
+								type: clickedItem.type,
+								metadata: clickedItem.metadata,
+							});
+						}
 					}
+					
+					changeFluidFocus(focusId);
+					pushToLive(focusId, false);
 				},
 				onDblClick: ({ changeFocus, focusId }) => {
 					if (typeof focusId === "number") {
 						changeFocus(focusId);
 						pushToLive(focusId, true);
+						// Clear multi-selection on double-click
+						setSelectedIndices(new Set<number>());
 					}
 				},
 			},
@@ -196,10 +319,15 @@ export default function SchedulePanel() {
 											index={virtualItem.index}
 											item={item}
 											isFocusItem={fluidFocusId() === virtualItem.index}
+											isSelected={selectedIndices().has(virtualItem.index)}
 											panelName={name}
 											isCurrentPanel={currentPanel() === name}
 											theme={themeMap()[item.type]}
 											icon={TypeIcon}
+											onDragStart={handleDragStart}
+											onDragOver={handleDragOver}
+											onDragEnd={handleDragEnd}
+											isDragOver={dragOverIndex() === virtualItem.index}
 										/>
 									);
 								}}
@@ -232,8 +360,37 @@ export default function SchedulePanel() {
 							({scheduleItems().length})
 						</Text>
 					</Show>
+					<Show when={selectedIndices().size > 0}>
+						<Text fontSize="11px" color="blue.400">
+							• {selectedIndices().size} selected
+						</Text>
+					</Show>
 				</HStack>
-				<HStack>
+				<HStack gap={1}>
+					{/* Delete button */}
+					<Show when={scheduleItems().length > 0}>
+						<Tooltip.Root openDelay={400} closeDelay={0}>
+							<Tooltip.Trigger
+								asChild={(triggerProps) => (
+									<IconButton
+										{...triggerProps()}
+										variant="ghost"
+										size="xs"
+										color="gray.500"
+										_hover={{ color: "red.400", bg: "gray.800" }}
+										onClick={deleteSelectedItems}
+									>
+										<TbTrash size={14} />
+									</IconButton>
+								)}
+							/>
+							<Tooltip.Positioner>
+								<Tooltip.Content>
+									<Text fontSize="xs">Delete selected (Del)</Text>
+								</Tooltip.Content>
+							</Tooltip.Positioner>
+						</Tooltip.Root>
+					</Show>
 					<Menu.Root>
 						<Menu.Trigger
 							asChild={(triggerProps) => (

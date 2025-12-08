@@ -55,3 +55,13 @@ scripture index bug persists (highlighted scripture changes when you switch tran
 prevent app from closing if schedule is unsaved :done
 adding a new item to the schedule should make the item the new selected item in the schedule list :done
 double clicking a translation in the left menu of scripture panel should automatically push the translation version of the current scripture index to live 	:done
+
+
+
+
+when the scripture filter is clicked, the scripture panel (and current scripture) should automatically become the focused panel.  :done
+add button and shortcut to delete schedule item  :done
+allow selecting multiple schedule items using ctrl and shift  :done
+
+implement schedule ordering using the drag handler  :done
+when a scripture or song is clicked in schedule, it should automatically be the highlighted one if the scripture/song panels are not in search mode/display  :done

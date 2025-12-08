@@ -276,6 +276,34 @@ export default function SongSelection() {
 		pushToLive(fluidFocusId(), false);
 	});
 
+	// Sync from schedule item click - scroll to the song if it exists
+	// Only applies when not in search mode (i.e., in title/browse mode)
+	createEffect(
+		on(
+			() => appStore.syncFromSchedule,
+			(syncData) => {
+				if (!syncData || syncData.type !== "song") return;
+				if (songControls.searchMode !== "title") return; // Don't sync in search mode
+				
+				const metadata = syncData.metadata;
+				if (!metadata?.id) return;
+				
+				const songId = typeof metadata.id === "string" ? parseInt(metadata.id) : metadata.id;
+				const songs = filteredSongs();
+				
+				// Find the song index by its id
+				const matchIndex = songs.findIndex((song) => song.id === songId);
+				if (matchIndex > -1) {
+					changeFluidFocus(matchIndex);
+				}
+				
+				// Clear the sync trigger
+				setAppStore("syncFromSchedule", null);
+			},
+			{ defer: true }
+		)
+	);
+
 	const handleSongEdit = () => {
 		const toEdit = fluidFocusId();
 		if (typeof toEdit === "number") {

@@ -160,6 +160,7 @@ export const defaultAppStore: AppData = {
 	isLive: false,
 	openSettings: false,
 	recentSchedules: [],
+	syncFromSchedule: null,
 };
 
 export const DEFAULT_PROJECTION_DISPLAY_ID = 0;
