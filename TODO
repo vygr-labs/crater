@@ -9,7 +9,7 @@
 	◦	remove buggy extra spacing in song editor (it may be due to song imports or just the way song editor parses lyrics)
 
 	◦	
-	◦	add live and preview displays in preview and live panels
+	◦	
 	◦	
 	◦
 	◦	
@@ -59,7 +59,9 @@ when a scripture or song is clicked in schedule, it should automatically be the 
 
 
 fix issue with crater not quitting even when both windows are closed  :done :hacky-fix
-
 add indicator for current logo in Media panel, and add checkmark (next to the "Set as logo" btn) in the context menu of the media assigned as logo  :done
-
 fix overflow in canvas view in theme editor  :done
+add live and preview displays in preview and live panels  :done
+
+
+ensure that the live & preview displays don't play videos, but rather show only the thumnail/first-frame

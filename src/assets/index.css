@@ -26,7 +26,7 @@ html {
     pointer-events: initial;
 }
 
-.clear-display * {
+.clear-display *:not(.preserve-color):not(.preserve-color *) {
 	color: transparent !important;
 }
 

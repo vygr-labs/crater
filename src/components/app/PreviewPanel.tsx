@@ -27,6 +27,7 @@ import { createEffect, createMemo, For, Match, Switch } from "solid-js";
 import { createVirtualizer } from "@tanstack/solid-virtual";
 import ContextMenu from "./ContextMenu";
 import ItemDisplay from "./ItemDisplay";
+import MiniDisplay from "./MiniDisplay";
 
 // Type to icon mapping
 const typeIcons = {
@@ -136,23 +137,24 @@ export default function PreviewPanel() {
 
 	return (
 		<Stack pos="relative" h="full" pt={8} pb="1" gap={0}>
-			<Box
-				visibility={
-					["image", "video"].includes(appStore.previewItem?.type ?? "")
-						? "hidden"
-						: "visible"
-				}
-				w={PREVIEW_INDEX_WIDTH}
-				h="full"
-				bgColor="gray.900/50"
-				pt={2}
-				textAlign="center"
-				position="absolute"
-				left={0}
-				bottom={0}
-				top={0}
-				zIndex={0}
-			/>
+			{/* Content area with virtualizer */}
+			<Box flex={1} overflow="hidden" pos="relative">
+				<Box
+					visibility={
+						["image", "video"].includes(appStore.previewItem?.type ?? "")
+							? "hidden"
+							: "visible"
+					}
+					w={PREVIEW_INDEX_WIDTH}
+					h="full"
+					bgColor="gray.900/50"
+					textAlign="center"
+					position="absolute"
+					left={0}
+					top={0}
+					bottom={0}
+					zIndex={0}
+				/>
 			<ContextMenu open={false} setOpen={() => null} ref={virtualizerParentRef}>
 				<Show
 					when={previewData().length}
@@ -214,6 +216,18 @@ export default function PreviewPanel() {
 					</Box>
 				</Show>
 			</ContextMenu>
+			</Box>
+
+			{/* Mini Display at bottom */}
+			<Box px={2} py={1.5} flexShrink={0} bg="gray.900" borderTop="1px solid" borderTopColor="gray.800">
+				<Box maxW="200px" mx="auto">
+					<MiniDisplay
+						mode="preview"
+						displayItem={appStore.previewItem}
+						displayIndex={fluidFocusId() ?? 0}
+					/>
+				</Box>
+			</Box>
 
 			{/* Header */}
 			<HStack
