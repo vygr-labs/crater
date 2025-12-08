@@ -4,8 +4,7 @@
 	◦	
 	◦	Improve the user experience of scripture filter. Thoroughly test and examine the user experience
 	◦	implement light mode, colored theme mode and semi-dark mode.
-	◦	add shortcuts to switch to schedule, preview, live, song, scripture, strong’s, media, and themes panels
-	◦	add shortcuts to open song editing and app settings
+	
 	◦	remove buggy extra spacing in song editor (it may be due to song imports or just the way song editor parses lyrics)
 
 	◦	
@@ -25,7 +24,6 @@
 	◦	add song, scripture, image, logo transitions. add a lot of them.
 	◦	fix context menu ux (display, rendering, etc) in the media tab (and probably across all tabs)
 	
-	◦	add proper canvas background for the theme editor canvas
 
 
 
@@ -65,3 +63,7 @@ add live and preview displays in preview and live panels  :done
 
 
 ensure that the live & preview displays don't play videos, but rather show only the thumnail/first-frame
+
+add proper canvas background for the theme editor canvas  :done
+add shortcuts to switch to schedule, preview, live, song, scripture, strong’s, media, and themes panels  :done
+add shortcuts to open song editing and app settings  :done

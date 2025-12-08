@@ -548,7 +548,6 @@ export default function ThemeEditor() {
 							{/* Editor Canvas */}
 							<Box
 								flex="1"
-								bg="gray.950"
 								overflow="hidden"
 								display="flex"
 								alignItems="center"
@@ -556,6 +555,17 @@ export default function ThemeEditor() {
 								p={4}
 								onContextMenu={handleContextMenu}
 								position="relative"
+								css={{
+									backgroundColor: "#0d0d0d",
+									backgroundImage: `
+										linear-gradient(45deg, #161616 25%, transparent 25%),
+										linear-gradient(-45deg, #161616 25%, transparent 25%),
+										linear-gradient(45deg, transparent 75%, #161616 75%),
+										linear-gradient(-45deg, transparent 75%, #161616 75%)
+									`,
+									backgroundSize: "20px 20px",
+									backgroundPosition: "0 0, 0 10px, 10px -10px, -10px 0px",
+								}}
 							>
 								<Box
 									w="full"

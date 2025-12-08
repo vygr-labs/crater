@@ -1,6 +1,7 @@
-import { Show } from "solid-js";
+import { createEffect, createMemo, Show } from "solid-js";
 import { HStack, VStack } from "styled-system/jsx";
 import { Tabs } from "../ui/tabs";
+import type { SongData } from "~/types/context";
 import { IconButton } from "../ui/icon-button";
 import {
 	TbBible,
@@ -22,8 +23,11 @@ import {
 	DEFAULT_PANEL,
 	defaultPalette,
 	GLOBAL_FOCUS_NAME,
+	LIVE_PANEL_FOCUS_NAME,
 	MEDIA_TAB_FOCUS_NAME,
 	PRESENTATIONS_TAB_FOCUS_NAME,
+	PREVIEW_PANEL_FOCUS_NAME,
+	SCHEDULE_PANEL_FOCUS_NAME,
 	SCRIPTURE_TAB_FOCUS_NAME,
 	SONGS_TAB_FOCUS_NAME,
 	STRONGS_TAB_FOCUS_NAME,
@@ -40,7 +44,7 @@ import { unwrap } from "solid-js/store";
 import MediaSelection from "./media/MediaSelection";
 
 export default function ControlsMain() {
-	const { changeFocusPanel } = useFocusContext();
+	const { changeFocusPanel, subscribeEvent, currentPanel } = useFocusContext();
 	const { appStore, setAppStore, settings } = useAppContext();
 	const handleAddToSchedule = () => {
 		if (appStore.previewItem) {
@@ -70,7 +74,82 @@ export default function ControlsMain() {
 		}
 	};
 
-	const { subscribeEvent, currentPanel } = useFocusContext();
+	// Panel switching shortcuts (Ctrl+1 through Ctrl+8)
+	const handleShortcut1: FocusEventHandlerFn = ({ event }) => {
+		if (event.ctrlKey) {
+			changeFocusPanel(SCHEDULE_PANEL_FOCUS_NAME);
+		}
+	};
+
+	const handleShortcut2: FocusEventHandlerFn = ({ event }) => {
+		if (event.ctrlKey) {
+			changeFocusPanel(PREVIEW_PANEL_FOCUS_NAME);
+		}
+	};
+
+	const handleShortcut3: FocusEventHandlerFn = ({ event }) => {
+		if (event.ctrlKey) {
+			changeFocusPanel(LIVE_PANEL_FOCUS_NAME);
+		}
+	};
+
+	const handleShortcut4: FocusEventHandlerFn = ({ event }) => {
+		if (event.ctrlKey) {
+			changeFocusPanel(SONGS_TAB_FOCUS_NAME);
+		}
+	};
+
+	const handleShortcut5: FocusEventHandlerFn = ({ event }) => {
+		if (event.ctrlKey) {
+			changeFocusPanel(SCRIPTURE_TAB_FOCUS_NAME);
+		}
+	};
+
+	const handleShortcut6: FocusEventHandlerFn = ({ event }) => {
+		if (event.ctrlKey) {
+			changeFocusPanel(STRONGS_TAB_FOCUS_NAME);
+		}
+	};
+
+	const handleShortcut7: FocusEventHandlerFn = ({ event }) => {
+		if (event.ctrlKey) {
+			changeFocusPanel(MEDIA_TAB_FOCUS_NAME);
+		}
+	};
+
+	const handleShortcut8: FocusEventHandlerFn = ({ event }) => {
+		if (event.ctrlKey) {
+			changeFocusPanel(THEMES_TAB_FOCUS_NAME);
+		}
+	};
+
+	// Modal shortcuts
+	const handleShortcutE: FocusEventHandlerFn = ({ event }) => {
+		if (event.ctrlKey) {
+			// If current preview item is a song, open it for editing
+			const previewItem = appStore.previewItem;
+			if (previewItem?.type === "song" && previewItem.metadata) {
+				setAppStore("songEdit", { open: true, song: previewItem.metadata as SongData });
+			} else {
+				// Otherwise just open the editor (will be empty or use default)
+				setAppStore("songEdit", { open: true, song: null });
+			}
+		}
+	};
+
+	// New song shortcut (Ctrl+N)
+	const handleShortcutN: FocusEventHandlerFn = ({ event }) => {
+		if (event.ctrlKey) {
+			setAppStore("songEdit", { open: true, song: null });
+		}
+	};
+
+	const handleShortcutComma: FocusEventHandlerFn = ({ event }) => {
+		if (event.ctrlKey) {
+			setAppStore("openSettings", true);
+		}
+	};
+
 	const { name, coreFocusId, fluidFocusId, changeFluidFocus } = subscribeEvent({
 		name: GLOBAL_FOCUS_NAME,
 		defaultCoreFocus: 0,
@@ -82,8 +161,41 @@ export default function ControlsMain() {
 			C: handleShortcutC,
 			l: handleShortcutL,
 			L: handleShortcutL,
+			// Panel switching shortcuts (Ctrl+1-8)
+			"1": handleShortcut1,
+			"2": handleShortcut2,
+			"3": handleShortcut3,
+			"4": handleShortcut4,
+			"5": handleShortcut5,
+			"6": handleShortcut6,
+			"7": handleShortcut7,
+			"8": handleShortcut8,
+			// Modal shortcuts
+			e: handleShortcutE,
+			E: handleShortcutE,
+			n: handleShortcutN,
+			N: handleShortcutN,
+			",": handleShortcutComma,
 		},
 		global: true,
+	});
+
+	// Track which tabs are valid for switching
+	const tabPanels = createMemo(() => {
+		const panels = [
+			SONGS_TAB_FOCUS_NAME,
+			SCRIPTURE_TAB_FOCUS_NAME,
+			...(settings.showStrongsTab ? [STRONGS_TAB_FOCUS_NAME] : []),
+			MEDIA_TAB_FOCUS_NAME,
+			THEMES_TAB_FOCUS_NAME,
+		];
+		return panels;
+	});
+
+	// Derive controlled tab value from currentPanel
+	const controlledTabValue = createMemo(() => {
+		const panel = currentPanel();
+		return panel && tabPanels().includes(panel) ? panel : undefined;
 	});
 
 	return (
@@ -96,6 +208,7 @@ export default function ControlsMain() {
 				display="flex"
 				flexDir="column"
 				defaultValue={DEFAULT_PANEL}
+				value={controlledTabValue()}
 				onValueChange={({ value }) => {
 					console.log("About to change panel: ", value);
 					changeFocusPanel(value);
