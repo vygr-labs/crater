@@ -10,13 +10,8 @@
 
 	◦	
 	◦	add live and preview displays in preview and live panels
-	◦	when the scripture filter is clicked, the scripture panel (and current scripture) should automatically become the focused panel.
-	◦	add button and shortcut to delete schedule item
-	◦	allow selecting multiple schedule items using ctrl and shift
 	◦	
-	◦	
-	◦	implement schedule ordering using the drag handler
-	◦	when a scripture or song is clicked in schedule, it should automatically be the highlighted one if the scripture/song panels are not in search mode/display
+	◦
 	◦	
 	◦	allow schedule item editing (and there should be a checkbox to allow syncing with it’s saved item in db)
 	◦	allow editing theme (or maybe only background) for a specific schedule item
@@ -24,19 +19,17 @@
 	◦	fix song pasting (and song initialization i.e. the auto loading into arrays when the song editor is opened to edit a song) in song editor
 	◦	
 	◦	add universal search shortcut for scriptures, do the same for songs
-	◦	double-clicking or pressing enter in preview panel should automatically switch focus to the live item (and it’s currently selected index) :done
+	
 	◦	implement shortcut to switch scripture search translation (i search in a translation, then if i don’t see my results, i can toggle to search across all translations or a specific one)
-	◦	fix overflow in canvas view in theme editor
-	◦	add indicator for current logo, and add checkmark in the menu for it
+	
 	◦	add song, scripture, image, logo transitions. add a lot of them.
-	◦	.
-	◦	.
-	◦	
-	◦	fix issue with crater not quitting even when both windows are closed.
+	◦	fix context menu ux (display, rendering, etc) in the media tab (and probably across all tabs)
+	
+	◦	add proper canvas background for the theme editor canvas
 
 
 
-
+double-clicking or pressing enter in preview panel should automatically switch focus to the live item (and it’s currently selected index) :done
 be able to add image/video from themes modal :done
 ensure the current live item is projected when you click “go live” :done
 scroll issue in song editing. when you click a lyric, edit it and press the down key to go to the next input, the bar scrolls to the top :done
@@ -57,11 +50,16 @@ adding a new item to the schedule should make the item the new selected item in 
 double clicking a translation in the left menu of scripture panel should automatically push the translation version of the current scripture index to live 	:done
 
 
-
-
 when the scripture filter is clicked, the scripture panel (and current scripture) should automatically become the focused panel.  :done
 add button and shortcut to delete schedule item  :done
 allow selecting multiple schedule items using ctrl and shift  :done
 
 implement schedule ordering using the drag handler  :done
 when a scripture or song is clicked in schedule, it should automatically be the highlighted one if the scripture/song panels are not in search mode/display  :done
+
+
+fix issue with crater not quitting even when both windows are closed  :done :hacky-fix
+
+add indicator for current logo in Media panel, and add checkmark (next to the "Set as logo" btn) in the context menu of the media assigned as logo  :done
+
+fix overflow in canvas view in theme editor  :done

@@ -549,15 +549,18 @@ export default function ThemeEditor() {
 							<Box
 								flex="1"
 								bg="gray.950"
-								overflow="auto"
+								overflow="hidden"
 								display="flex"
 								alignItems="center"
 								justifyContent="center"
 								p={4}
 								onContextMenu={handleContextMenu}
+								position="relative"
 							>
 								<Box
 									w="full"
+									maxW="800px"
+									mx="auto"
 									style={{
 										transform: `scale(${zoom()})`,
 										"transform-origin": "center center",

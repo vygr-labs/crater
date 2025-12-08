@@ -1,7 +1,7 @@
 import { FiPlus, FiSettings } from "solid-icons/fi";
 import { ImPlus } from "solid-icons/im";
-import { TbChevronDown, TbChevronRight, TbSettings } from "solid-icons/tb";
-import { For, Portal } from "solid-js/web";
+import { TbCheck, TbChevronDown, TbChevronRight, TbSettings } from "solid-icons/tb";
+import { For, Portal, Show } from "solid-js/web";
 import { HStack } from "styled-system/jsx";
 import { Menu } from "~/components/ui/menu";
 import { useAppContext } from "~/layouts/AppContext";
@@ -12,6 +12,7 @@ interface MediaPanelContextMenuCompProps {
 	onMediaDelete: () => void;
 	currentType: MediaType;
 	onSetLogoBg: () => void;
+	isCurrentLogo?: boolean;
 }
 
 export const MainDisplayMenuContent = (
@@ -26,7 +27,12 @@ export const MainDisplayMenuContent = (
 			textTransform="capitalize"
 			onClick={props.onSetLogoBg}
 		>
-			Set as Logo Background
+			<HStack gap={4} w="full" justifyContent="space-between">
+				Set as Logo Background
+				<Show when={props.isCurrentLogo}>
+					<TbCheck size={16} />
+				</Show>
+			</HStack>
 		</Menu.Item>
 		<Menu.Item value="duplicate-theme">Duplicate Theme</Menu.Item>
 		<Menu.Separator />

@@ -60,6 +60,7 @@ import {
 	TbStarFilled,
 	TbVideo,
 	TbX,
+	TbBrandAbstract,
 } from "solid-icons/tb";
 import Image from "../Image";
 import type { MediaItem, MediaType } from "~/types";
@@ -477,6 +478,17 @@ export default function MediaSelection() {
 		console.log(appStore.logoBg);
 	};
 
+	// Check if the currently focused media is the logo
+	const isCurrentLogo = createMemo(() => {
+		const fluidIndex = fluidFocusId();
+		if (typeof fluidIndex !== "number") return false;
+		const currentMedia = filteredMedia()[fluidIndex];
+		if (!currentMedia) return false;
+		// Compare paths - logoBg might have a cache buster query param
+		const logoBgPath = appStore.logoBg?.split("?")[0] || "";
+		return currentMedia.path === logoBgPath;
+	});
+
 	// Drag and drop handlers
 	const handleDragEnter = (e: DragEvent) => {
 		e.preventDefault();
@@ -683,6 +695,7 @@ export default function MediaSelection() {
 						onMediaDelete={handleMediaDelete}
 						currentType={mediaControls.group}
 						onSetLogoBg={handleSetLogoBg}
+						isCurrentLogo={isCurrentLogo()}
 					/>
 				}
 				actionBarMenu={
@@ -770,6 +783,11 @@ export default function MediaSelection() {
 										const isLoaded = () =>
 											loadedThumbnails().has(virtualItem.index);
 										const [isHovered, setIsHovered] = createSignal(false);
+										// Check if this media item is the current logo
+										const isMediaLogo = () => {
+											const logoBgPath = appStore.logoBg?.split("?")[0] || "";
+											return media.path === logoBgPath;
+										};
 
 										return (
 											<Show
@@ -905,6 +923,12 @@ export default function MediaSelection() {
 																<Text textTransform="capitalize">
 																	{media.type}
 																</Text>
+																<Show when={isMediaLogo()}>
+																	<HStack gap={0.5} color="green.400">
+																		<TbBrandAbstract size={12} />
+																		<Text>Logo</Text>
+																	</HStack>
+																</Show>
 															</HStack>
 														</VStack>
 														{/* Favorite button */}
@@ -1100,6 +1124,18 @@ export default function MediaSelection() {
 																	}}
 																>
 																	<TbStar size={12} />
+																</Box>
+															</Show>
+															{/* Logo indicator badge */}
+															<Show when={isMediaLogo()}>
+																<Box
+																	bg="green.600"
+																	borderRadius="sm"
+																	p={0.5}
+																	color="white"
+																	title="Current Logo"
+																>
+																	<TbBrandAbstract size={12} />
 																</Box>
 															</Show>
 															{/* Type badge */}

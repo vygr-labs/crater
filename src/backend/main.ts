@@ -138,7 +138,8 @@ const checkAndQuit = () => {
 	});
 	if (process.platform !== "darwin" && !appWindow && !projectionWindow) {
 		logger.debug("Quitting Now");
-		app.quit();
+		// app.quit();
+		app.exit(0);
 	}
 };
 
@@ -146,7 +147,8 @@ const checkAndQuit = () => {
 app.on("window-all-closed", () => {
 	logger.debug("All windows closed");
 	if (process.platform !== "darwin") {
-		app.quit();
+		// app.quit();
+		app.exit(0);
 	}
 });
 
