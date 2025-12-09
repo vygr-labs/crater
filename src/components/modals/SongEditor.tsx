@@ -16,7 +16,7 @@ import { createStore, produce, reconcile, unwrap } from "solid-js/store";
 import { useAppContext } from "~/layouts/AppContext";
 import { updateSongEdit } from "~/utils/store-helpers";
 import { defaultPalette, SONG_EDITOR_FOCUS_NAME } from "~/utils/constants";
-import type { OpenEditData } from "~/types";
+import type { OpenEditData, ThemeMetadata } from "~/types";
 import { createAsyncMemo, useDebounceFn } from "solidjs-use";
 import LyricEdit from "../app/song/LyricEdit";
 import { useFocusContext } from "~/layouts/FocusContext";
@@ -30,6 +30,8 @@ import { Text } from "../ui/text";
 import { FiPlus, FiAlertCircle } from "solid-icons/fi";
 import { Spinner } from "../ui/spinner";
 import { useConfirm } from "./ConfirmDialog";
+import { Select, createListCollection } from "../ui/select";
+import { TbChevronDown } from "solid-icons/tb";
 
 type Props = {
 	open: boolean;
@@ -77,6 +79,25 @@ function SongEditor() {
 	const [titleError, setTitleError] = createSignal(false);
 	const [isSaving, setIsSaving] = createSignal(false);
 	const [isLoading, setIsLoading] = createSignal(false);
+	const [selectedThemeId, setSelectedThemeId] = createSignal<number | null>(null);
+
+	// Fetch available song themes
+	const availableThemes = createAsyncMemo(async () => {
+		const themes = await window.electronAPI.fetchAllThemes();
+		// Filter to only song themes
+		return themes.filter((t) => t.type === "song");
+	}, []);
+
+	// Create collection for theme select
+	const themeCollection = createMemo(() => {
+		const themes = availableThemes() || [];
+		return createListCollection({
+			items: [
+				{ label: "Use Default Theme", value: "" },
+				...themes.map((t) => ({ label: t.title, value: String(t.id) })),
+			],
+		});
+	});
 
 	const fetchedSongLyrics = createAsyncMemo(async () => {
 		const toFetch = song();
@@ -342,6 +363,8 @@ function SongEditor() {
 					changeFocusPanel(SONG_EDITOR_FOCUS_NAME);
 					titleInputEl.value = appStore.songEdit.song?.title || "";
 					setTitleError(false);
+					// Set the theme_id from the song if available
+					setSelectedThemeId(appStore.songEdit.song?.theme_id ?? null);
 				}
 			},
 			{ defer: false },
@@ -367,6 +390,7 @@ function SongEditor() {
 		setHistoryIndex(-1);
 		setIsSaving(false);
 		setTitleError(false);
+		setSelectedThemeId(null);
 		console.log(lyrics, history);
 	};
 
@@ -465,6 +489,7 @@ function SongEditor() {
 					songId: nSong.id,
 					newTitle: songTitle,
 					newLyrics: unwrap(lyrics),
+					themeId: selectedThemeId(),
 				})
 				.then(({ success, message }) => {
 					setIsSaving(false);
@@ -754,6 +779,42 @@ function SongEditor() {
 									</Text>
 								</Show>
 							</HStack>
+
+							{/* Theme Selector */}
+							<Show when={song()}>
+								<Select.Root
+									collection={themeCollection()}
+									value={selectedThemeId() ? [String(selectedThemeId())] : [""]}
+									onValueChange={(e) => {
+										const val = e.value[0];
+										setSelectedThemeId(val ? parseInt(val) : null);
+									}}
+									size="sm"
+									w="200px"
+								>
+									<Select.Label fontSize="xs" color="gray.400">Assigned Theme</Select.Label>
+									<Select.Control>
+										<Select.Trigger>
+											<Select.ValueText placeholder="Use Default Theme" />
+											<Select.IndicatorGroup>
+												<Select.Indicator children={<TbChevronDown />} />
+											</Select.IndicatorGroup>
+										</Select.Trigger>
+									</Select.Control>
+									<Select.Positioner>
+										<Select.Content>
+											<For each={themeCollection().items}>
+												{(item) => (
+													<Select.Item item={item}>
+														<Select.ItemText>{item.label}</Select.ItemText>
+														<Select.ItemIndicator />
+													</Select.Item>
+												)}
+											</For>
+										</Select.Content>
+									</Select.Positioner>
+								</Select.Root>
+							</Show>
 
 							{/* Action Buttons */}
 							<HStack gap={2}>

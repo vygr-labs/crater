@@ -137,12 +137,19 @@ export default function SongSelection() {
 		const metadata = filteredSongs()[focusId];
 		if (!metadata) return;
 
-		window.electronAPI.fetchSongLyrics(metadata.id).then((songData) => {
+		window.electronAPI.fetchSongLyrics(metadata.id).then(async (songData) => {
+			// Check if song has a custom theme assigned
+			let themeOverride;
+			if (metadata.theme_id) {
+				themeOverride = await window.electronAPI.fetchTheme(metadata.theme_id);
+			}
+
 			setAppStore(isLive ? "liveItem" : "previewItem", {
 				metadata,
 				type: "song",
 				data: songData,
 				index: 0,
+				themeOverride: themeOverride ?? undefined,
 			});
 		});
 	};

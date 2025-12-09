@@ -12,6 +12,7 @@ type Song = {
 	title: string;
 	author: string;
 	copyright: string;
+	theme_id: number | null;
 	created_at: string;
 	updated_at: string;
 };
@@ -36,6 +37,7 @@ type SongUpdateParams = {
 	songId: number;
 	newTitle: string;
 	newLyrics: UpdateLyric[];
+	themeId?: number | null;
 };
 
 // Fetch all songs
@@ -43,7 +45,7 @@ const fetchAllSongs = (): Song[] => {
 	const response = songsDB
 		.prepare(
 			`
-    SELECT id, title, author, copyright, created_at, updated_at
+    SELECT id, title, author, copyright, theme_id, created_at, updated_at
     FROM songs
     ORDER BY title ASC
     `,
@@ -79,11 +81,12 @@ const updateSong = ({
 	songId,
 	newTitle,
 	newLyrics,
+	themeId,
 }: SongUpdateParams): { success: boolean; message: string } => {
-	const updateSongTitle = songsDB.prepare(
+	const updateSongData = songsDB.prepare(
 		`
     UPDATE songs
-    SET title = ?, updated_at = CURRENT_TIMESTAMP
+    SET title = ?, theme_id = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
     `,
 	);
@@ -97,8 +100,8 @@ const updateSong = ({
 
 	// Transaction to ensure atomic updates
 	const transaction = songsDB.transaction(() => {
-		// Update the song title
-		updateSongTitle.run(newTitle, songId);
+		// Update the song title and theme_id
+		updateSongData.run(newTitle, themeId ?? null, songId);
 
 		// Remove old lyrics
 		deleteOldLyrics.run(songId);

@@ -82,8 +82,18 @@ export default function MiniDisplay(props: MiniDisplayProps) {
 	const contentType = createMemo(() => displayContent()?.type);
 
 	// Get the appropriate theme based on content type
+	// Priority: themeOverride on display item > global theme
 	const theme = createMemo((): Theme | undefined => {
 		const type = contentType();
+		// For preview mode, check if the display item has a theme override
+		if (props.mode === "preview" && props.displayItem?.themeOverride) {
+			return props.displayItem.themeOverride;
+		}
+		// For live mode, check if the live item has a theme override
+		if (props.mode === "live" && appStore.liveItem?.themeOverride) {
+			return appStore.liveItem.themeOverride;
+		}
+		// Fall back to global themes
 		if (type === "scripture") return appStore.displayData.scriptureTheme;
 		if (type === "song") return appStore.displayData.songTheme;
 		return undefined;

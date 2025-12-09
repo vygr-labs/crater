@@ -6,9 +6,11 @@ import {
 	TbBook2,
 	TbChevronDown,
 	TbChevronRight,
+	TbEdit,
 	TbGripVertical,
 	TbList,
 	TbMusic,
+	TbPalette,
 	TbPhoto,
 	TbPlayerPlay,
 	TbPlaylist,
@@ -28,10 +30,12 @@ import { createVirtualizer } from "@tanstack/solid-virtual";
 import ContextMenu from "./ContextMenu";
 import ItemDisplay from "./ItemDisplay";
 import ScheduleItem from "./ScheduleItem";
-import type { Theme } from "~/types";
+import ScheduleItemEditor from "../modals/ScheduleItemEditor";
+import type { Theme, ThemeMetadata } from "~/types";
 import { IconButton } from "../ui/icon-button";
 import { Tooltip } from "../ui/tooltip";
 import { produce } from "solid-js/store";
+import { createAsyncMemo } from "solidjs-use";
 
 // Icon map for different item types
 const typeIcons: Record<string, typeof TbMusic> = {
@@ -61,6 +65,46 @@ export default function SchedulePanel() {
 	// Multi-selection state
 	const [selectedIndices, setSelectedIndices] = createSignal<Set<number>>(new Set());
 	const [lastClickedIndex, setLastClickedIndex] = createSignal<number | null>(null);
+
+	// Context menu state
+	const [contextMenuOpen, setContextMenuOpen] = createSignal(false);
+	const [contextMenuIndex, setContextMenuIndex] = createSignal<number | null>(null);
+
+	// Edit modal state
+	const [editModalOpen, setEditModalOpen] = createSignal(false);
+	const [editItemIndex, setEditItemIndex] = createSignal<number | null>(null);
+
+	// Fetch available themes for the context menu
+	const availableThemes = createAsyncMemo(async () => {
+		const themes = await window.electronAPI.fetchAllThemes();
+		return themes;
+	}, []);
+
+	// Get themes filtered by type for the current context menu item
+	const themesForCurrentItem = createMemo(() => {
+		const idx = contextMenuIndex();
+		if (idx === null) return [];
+		const item = scheduleItems()[idx];
+		if (!item) return [];
+		const themes = availableThemes() || [];
+		// Filter themes by matching type (song themes for songs, scripture themes for scripture)
+		return themes.filter((t) => t.type === item.type);
+	});
+
+	// Change theme for a schedule item
+	const changeItemTheme = async (itemIndex: number, themeId: number | null) => {
+		if (themeId === null) {
+			// Remove theme override
+			setAppStore("scheduleItems", itemIndex, "themeOverride", undefined);
+		} else {
+			// Fetch the theme and set it
+			const theme = await window.electronAPI.fetchTheme(themeId);
+			if (theme) {
+				setAppStore("scheduleItems", itemIndex, "themeOverride", theme);
+			}
+		}
+		setContextMenuOpen(false);
+	};
 
 	// Drag-and-drop state
 	const [dragSourceIndex, setDragSourceIndex] = createSignal<number | null>(null);
@@ -273,9 +317,110 @@ export default function SchedulePanel() {
 		)
 	);
 
+	// Schedule item context menu content
+	const ScheduleContextMenuContent = () => {
+		const idx = contextMenuIndex();
+		if (idx === null) return null;
+		const item = scheduleItems()[idx];
+		if (!item) return null;
+
+		return (
+			<Menu.Content>
+				<Menu.ItemGroup>
+					<Menu.ItemGroupLabel>Item Actions</Menu.ItemGroupLabel>
+					<Menu.Item
+						value="go-live"
+						onClick={() => {
+							pushToLive(idx, true);
+							setContextMenuOpen(false);
+						}}
+					>
+						<TbPlayerPlay />
+						Go Live
+					</Menu.Item>
+					<Menu.Item
+						value="preview"
+						onClick={() => {
+							pushToLive(idx, false);
+							setContextMenuOpen(false);
+						}}
+					>
+						<CgDisplayGrid />
+						Preview
+					</Menu.Item>
+					<Menu.Item
+						value="edit"
+						onClick={() => {
+							setEditItemIndex(idx);
+							setEditModalOpen(true);
+							setContextMenuOpen(false);
+						}}
+					>
+						<TbEdit />
+						Edit Item
+					</Menu.Item>
+				</Menu.ItemGroup>
+				<Menu.Separator />
+				<Show when={themesForCurrentItem().length > 0}>
+					<Menu.ItemGroup>
+						<Menu.ItemGroupLabel>
+							<HStack gap={1}>
+								<TbPalette size={14} />
+								Theme
+							</HStack>
+						</Menu.ItemGroupLabel>
+						<Menu.Item
+							value="theme-default"
+							onClick={() => changeItemTheme(idx, null)}
+						>
+							Use Default
+							<Show when={!item.themeOverride}>
+								<Text fontSize="xs" color="green.400" ml="auto">✓</Text>
+							</Show>
+						</Menu.Item>
+						<For each={themesForCurrentItem()}>
+							{(theme) => (
+								<Menu.Item
+									value={`theme-${theme.id}`}
+									onClick={() => changeItemTheme(idx, theme.id)}
+								>
+									{theme.title}
+									<Show when={item.themeOverride?.id === theme.id}>
+										<Text fontSize="xs" color="green.400" ml="auto">✓</Text>
+									</Show>
+								</Menu.Item>
+							)}
+						</For>
+					</Menu.ItemGroup>
+					<Menu.Separator />
+				</Show>
+				<Menu.ItemGroup>
+					<Menu.Item
+						value="delete"
+						color="fg.error"
+						onClick={() => {
+							setAppStore("scheduleItems", produce((items) => {
+								items.splice(idx, 1);
+							}));
+							setContextMenuOpen(false);
+						}}
+					>
+						<TbTrash />
+						Remove from Schedule
+					</Menu.Item>
+				</Menu.ItemGroup>
+			</Menu.Content>
+		);
+	};
+
 	return (
 		<Stack pos="relative" h="full" pt={8} pb="1" gap={0}>
-			<ContextMenu open={false} setOpen={() => null} ref={virtualizerParentRef}>
+			<ContextMenu
+				open={contextMenuOpen()}
+				setOpen={setContextMenuOpen}
+				ref={virtualizerParentRef}
+				content={<ScheduleContextMenuContent />}
+			>
 				<Show
 					when={scheduleItems().length}
 					fallback={
@@ -314,6 +459,8 @@ export default function SchedulePanel() {
 								{(virtualItem) => {
 									const item = scheduleItems()[virtualItem.index];
 									const TypeIcon = typeIcons[item.type] || TbList;
+									// Use themeOverride if available, otherwise fall back to global theme
+									const itemTheme = item.themeOverride ?? themeMap()[item.type];
 									return (
 										<ScheduleItem
 											index={virtualItem.index}
@@ -322,12 +469,17 @@ export default function SchedulePanel() {
 											isSelected={selectedIndices().has(virtualItem.index)}
 											panelName={name}
 											isCurrentPanel={currentPanel() === name}
-											theme={themeMap()[item.type]}
+											theme={itemTheme}
 											icon={TypeIcon}
 											onDragStart={handleDragStart}
 											onDragOver={handleDragOver}
 											onDragEnd={handleDragEnd}
 											isDragOver={dragOverIndex() === virtualItem.index}
+											hasThemeOverride={!!item.themeOverride}
+											onContextMenu={(e, idx) => {
+												setContextMenuIndex(idx);
+												// Don't prevent default - let the ContextTrigger handle the menu opening
+											}}
 										/>
 									);
 								}}
@@ -454,6 +606,13 @@ export default function SchedulePanel() {
 					</Menu.Root>
 				</HStack>
 			</HStack>
+
+			{/* Schedule Item Editor Modal */}
+			<ScheduleItemEditor
+				open={editModalOpen()}
+				setOpen={setEditModalOpen}
+				itemIndex={editItemIndex()}
+			/>
 		</Stack>
 	);
 }

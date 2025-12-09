@@ -16,6 +16,7 @@ export const selectSlotRecipe = defineSlotRecipe({
 		},
 		trigger: {
 			display: "flex",
+			cursor: "pointer",
 			alignItems: "center",
 			justifyContent: "space-between",
 			width: "full",

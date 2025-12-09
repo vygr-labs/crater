@@ -15,10 +15,18 @@ CREATE TABLE IF NOT EXISTS ${songsTableName} (
     title TEXT NOT NULL,
     author TEXT,
     copyright TEXT,
+    theme_id INTEGER,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )`,
 ).run();
+
+// Add theme_id column if it doesn't exist (migration for existing databases)
+try {
+	db.prepare(`ALTER TABLE ${songsTableName} ADD COLUMN theme_id INTEGER`).run();
+} catch (e) {
+	// Column already exists, ignore error
+}
 
 db.prepare(
 	`

@@ -51,6 +51,7 @@ export interface SongData {
 	title: string;
 	author: string | null;
 	copyright: string | null;
+	theme_id: number | null;
 	created_at: string;
 	updated_at: string;
 }
@@ -180,6 +181,7 @@ export interface IElectronAPI {
 		songId: number;
 		newTitle: string;
 		newLyrics: SongLyric[];
+		themeId?: number | null;
 	}) => Promise<{ success: boolean; message: string }>;
 	filterSongsByPhrase: (phrase: string) => Promise<SongData[]>;
 	searchSongs: (query: string) => Promise<SongData[]>;

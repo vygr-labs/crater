@@ -194,6 +194,8 @@ export interface DisplayProps {
 	type: DisplayType;
 	data: any[];
 	index: number;
+	/** Optional theme override for this specific item */
+	themeOverride?: Theme;
 }
 
 export type DisplayBounds = {

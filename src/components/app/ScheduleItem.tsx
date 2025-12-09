@@ -5,7 +5,7 @@ import type { DisplayProps, Theme } from "~/types";
 import { getFocusableStyles } from "~/utils";
 import Image from "./Image";
 import { defaultPalette, neutralPalette } from "~/utils/constants";
-import { TbCheck, TbGripVertical, TbList } from "solid-icons/tb";
+import { TbCheck, TbGripVertical, TbList, TbPalette } from "solid-icons/tb";
 import type { IconTypes } from "solid-icons";
 import { Dynamic, Show } from "solid-js/web";
 import { createMemo, createSignal } from "solid-js";
@@ -23,6 +23,8 @@ interface Props {
 	onDragOver?: (index: number) => void;
 	onDragEnd?: () => void;
 	isDragOver?: boolean;
+	onContextMenu?: (e: MouseEvent, index: number) => void;
+	hasThemeOverride?: boolean;
 }
 
 export default function ScheduleItem(props: Props) {
@@ -43,6 +45,11 @@ export default function ScheduleItem(props: Props) {
 	const handleDragEnd = () => {
 		props.onDragEnd?.();
 	};
+
+	const handleContextMenu = (e: MouseEvent) => {
+		// Don't prevent default - let the event bubble up to ContextTrigger
+		props.onContextMenu?.(e, props.index);
+	};
 	
 	return (
 		<HStack
@@ -56,6 +63,7 @@ export default function ScheduleItem(props: Props) {
 			onDragStart={handleDragStart}
 			onDragOver={handleDragOver}
 			onDragEnd={handleDragEnd}
+			onContextMenu={handleContextMenu}
 			style={getFocusableStyles(
 				"SCHEDULE_ITEM_PARENT_CONTAINER",
 				props.isFocusItem,
@@ -118,6 +126,17 @@ export default function ScheduleItem(props: Props) {
 			>
 				{props.item.metadata?.title}
 			</Text>
+
+			{/* Theme override indicator */}
+			<Show when={props.hasThemeOverride}>
+				<Box
+					pr={2}
+					color={`${defaultPalette}.400`}
+					title="Has theme override"
+				>
+					<TbPalette size={12} />
+				</Box>
+			</Show>
 		</HStack>
 	);
 }

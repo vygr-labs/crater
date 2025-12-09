@@ -4,7 +4,7 @@ import RenderTheme from "../editor/RenderTheme";
 import { RenderEditorContainer } from "../editor/ui/Container";
 import { RenderEditorText } from "../editor/ui/Text";
 import { useAppContext } from "~/layouts/AppContext";
-import { Match, Show, Switch } from "solid-js";
+import { createMemo, Match, Show, Switch } from "solid-js";
 import RenderImage from "./RenderImage";
 import { parseThemeData } from "~/utils";
 import RenderVideo from "./RenderVideo";
@@ -30,6 +30,19 @@ const NoThemeError = (props: { type: string }) => (
 
 export default function RenderProjection() {
 	const { appStore } = useAppContext();
+
+	// Get the effective song theme (themeOverride takes priority)
+	const effectiveSongTheme = createMemo(() => {
+		return appStore.liveItem?.themeOverride ?? appStore.displayData.songTheme;
+	});
+
+	// Get the effective scripture theme (themeOverride takes priority for scripture items)
+	const effectiveScriptureTheme = createMemo(() => {
+		if (appStore.liveItem?.type === "scripture" && appStore.liveItem?.themeOverride) {
+			return appStore.liveItem.themeOverride;
+		}
+		return appStore.displayData.scriptureTheme;
+	});
 
 	return (
 		<Box
@@ -65,12 +78,12 @@ export default function RenderProjection() {
 						when={appStore.displayData.displayContent?.type === "scripture"}
 					>
 						<Show
-							when={appStore.displayData.scriptureTheme}
+							when={effectiveScriptureTheme()}
 							fallback={<NoThemeError type="scripture" />}
 						>
 							<RenderTheme
 								data={parseThemeData(
-									appStore.displayData.scriptureTheme?.theme_data,
+									effectiveScriptureTheme()?.theme_data,
 								)}
 								renderMap={defaultThemeRenderMap}
 								extraProps={{ isProjectionDisplay: true }}
@@ -79,12 +92,12 @@ export default function RenderProjection() {
 					</Match>
 					<Match when={appStore.displayData.displayContent?.type === "song"}>
 						<Show
-							when={appStore.displayData.songTheme}
+							when={effectiveSongTheme()}
 							fallback={<NoThemeError type="song" />}
 						>
 							<RenderTheme
 								data={parseThemeData(
-									appStore.displayData.songTheme?.theme_data,
+									effectiveSongTheme()?.theme_data,
 								)}
 								renderMap={defaultThemeRenderMap}
 								extraProps={{ isProjectionDisplay: true }}

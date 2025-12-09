@@ -1,6 +1,7 @@
 import { Box } from "styled-system/jsx";
 import { Menu } from "../ui/menu";
 import type { JSXElement, ParentProps, Ref } from "solid-js";
+import { createSignal, onMount, Show } from "solid-js";
 
 interface Props extends ParentProps {
 	ref: Ref<Element>;
@@ -14,6 +15,9 @@ export default function ContextMenu(props: Props) {
 		<Box w="full" h="full" tabIndex={0} outline="none">
 			<Menu.Root
 				open={props.open}
+				onOpenChange={(details) => {
+					props.setOpen(details.open);
+				}}
 				onPointerDownOutside={() => {
 					props.setOpen(false);
 				}}
@@ -31,7 +35,9 @@ export default function ContextMenu(props: Props) {
 						</Box>
 					)}
 				></Menu.ContextTrigger>
-				<Menu.Positioner>{props.content}</Menu.Positioner>
+				<Menu.Positioner>
+					<Show when={props.content}>{props.content}</Show>
+				</Menu.Positioner>
 			</Menu.Root>
 		</Box>
 	);

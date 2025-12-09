@@ -1,4 +1,4 @@
-	◦	add accurate progress bar to database import and ensure window does not show “not responding”
+	◦	add accurate progress bar to database import and ensure window does not show “not responding” because of the quantity of songs being imported
 	◦	
 	◦	add padding to default themes
 	◦	
@@ -6,15 +6,6 @@
 	◦	implement light mode, colored theme mode and semi-dark mode.
 	
 	◦	remove buggy extra spacing in song editor (it may be due to song imports or just the way song editor parses lyrics)
-
-	◦	
-	◦	
-	◦	
-	◦
-	◦	
-	◦	allow schedule item editing (and there should be a checkbox to allow syncing with it’s saved item in db)
-	◦	allow editing theme (or maybe only background) for a specific schedule item
-	◦	allow editing/assigning themes for a specific song
 	◦	fix song pasting (and song initialization i.e. the auto loading into arrays when the song editor is opened to edit a song) in song editor
 	◦	
 	◦	add universal search shortcut for scriptures, do the same for songs
@@ -67,3 +58,8 @@ ensure that the live & preview displays don't play videos, but rather show only 
 add proper canvas background for the theme editor canvas  :done
 add shortcuts to switch to schedule, preview, live, song, scripture, strong’s, media, and themes panels  :done
 add shortcuts to open song editing and app settings  :done
+
+
+allow schedule item editing (and there should be a checkbox to allow syncing with it’s saved item in db)
+allow editing theme (or maybe only background) for a specific schedule item
+allow editing/assigning themes for a specific song

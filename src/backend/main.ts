@@ -247,13 +247,13 @@ const spawnAppWindow = async () => {
 		appWindow.loadURL(controlsUrl);
 
 		appWindow.setMenu(null);
-		ipcMain.on("controls-window-loaded", () => {
+		// ipcMain.on("controls-window-loaded", () => {
 			logger.info("Controls window DOM ready");
 			appWindow?.maximize();
 			appWindow?.show();
 			loadingWindow.hide();
 			loadingWindow.close();
-		});
+		// });
 		// Always open DevTools for debugging (temporarily)
 		if (electronIsDev) {
 			appWindow.webContents.openDevTools({ mode: "right" });
