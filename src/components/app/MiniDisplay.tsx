@@ -85,12 +85,12 @@ export default function MiniDisplay(props: MiniDisplayProps) {
 	// Priority: themeOverride on display item > global theme
 	const theme = createMemo((): Theme | undefined => {
 		const type = contentType();
-		// For preview mode, check if the display item has a theme override
-		if (props.mode === "preview" && props.displayItem?.themeOverride) {
+		// For preview mode, check if the display item has a theme override (matching type)
+		if (props.mode === "preview" && props.displayItem?.type === type && props.displayItem?.themeOverride) {
 			return props.displayItem.themeOverride;
 		}
-		// For live mode, check if the live item has a theme override
-		if (props.mode === "live" && appStore.liveItem?.themeOverride) {
+		// For live mode, check if the live item has a theme override (matching type)
+		if (props.mode === "live" && appStore.liveItem?.type === type && appStore.liveItem?.themeOverride) {
 			return appStore.liveItem.themeOverride;
 		}
 		// Fall back to global themes
@@ -190,8 +190,8 @@ export default function MiniDisplay(props: MiniDisplayProps) {
 				>
 					<ThemeWrapper>
 						<Switch>
-							{/* Scripture content */}
-							<Match when={contentType() === "scripture"}>
+							{/* Scripture/Song content - both use themes */}
+							<Match when={contentType() === "scripture" || contentType() === "song"}>
 								<Show
 									when={theme()}
 									fallback={
@@ -212,43 +212,14 @@ export default function MiniDisplay(props: MiniDisplayProps) {
 										data={parseThemeData(theme()?.theme_data)}
 										renderMap={miniThemeRenderMap}
 										extraProps={{
-											isProjectionDisplay: true,
+											isProjectionDisplay: false,
 											displayContent: displayContent(),
 										}}
 									/>
 								</Show>
 							</Match>
 
-							{/* Song content */}
-							<Match when={contentType() === "song"}>
-								<Show
-									when={theme()}
-									fallback={
-										<Box
-										w="full"
-										h="full"
-										display="flex"
-										alignItems="center"
-										justifyContent="center"
-									>
-										<Text fontSize="8px" color="gray.500" textAlign="center">
-											No theme
-										</Text>
-									</Box>
-								}
-							>
-								<RenderTheme
-									data={parseThemeData(theme()?.theme_data)}
-									renderMap={miniThemeRenderMap}
-									extraProps={{
-										isProjectionDisplay: true,
-										displayContent: displayContent(),
-									}}
-								/>
-							</Show>
-						</Match>
-
-						{/* Image content */}
+							{/* Image content */}
 						<Match when={contentType() === "image"}>
 							<Image
 								src={displayContent()?.image?.path}

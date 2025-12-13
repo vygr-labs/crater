@@ -591,11 +591,11 @@ export default function ThemeEditor() {
 							borderTop="1px solid"
 							borderTopColor="gray.800"
 							alignItems="center"
-							justifyContent="space-between"
+							justifyContent="end"
 							bg="gray.900"
 							roundedBottom={isFullscreen() ? 0 : "lg"}
 						>
-							<HStack flex="1" maxW="sm">
+							{/* <HStack flex="1" maxW="sm"> */}
 								<Input
 									placeholder="Enter theme name..."
 									variant="outline"
@@ -603,7 +603,7 @@ export default function ThemeEditor() {
 									value={name()}
 									onInput={(e) => setName(e.currentTarget.value)}
 								/>
-							</HStack>
+							{/* </HStack> */}
 							<HStack gap={2}>
 								<Button variant="ghost" onClick={closeModal}>
 									Cancel

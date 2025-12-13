@@ -83,6 +83,7 @@ function SongEditor() {
 
 	// Fetch available song themes
 	const availableThemes = createAsyncMemo(async () => {
+		const open = appStore.songEdit.open;
 		const themes = await window.electronAPI.fetchAllThemes();
 		// Filter to only song themes
 		return themes.filter((t) => t.type === "song");

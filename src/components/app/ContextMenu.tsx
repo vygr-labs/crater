@@ -14,13 +14,13 @@ export default function ContextMenu(props: Props) {
 	return (
 		<Box w="full" h="full" tabIndex={0} outline="none">
 			<Menu.Root
-				open={props.open}
-				onOpenChange={(details) => {
-					props.setOpen(details.open);
-				}}
-				onPointerDownOutside={() => {
-					props.setOpen(false);
-				}}
+				// open={props.open}
+				// onOpenChange={(details) => {
+				// 	props.setOpen(details.open);
+				// }}
+				// onPointerDownOutside={() => {
+				// 	props.setOpen(false);
+				// }}
 			>
 				<Menu.ContextTrigger
 					asChild={(triggerProps) => (
