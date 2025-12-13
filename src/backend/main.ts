@@ -90,6 +90,10 @@ import {
 } from "./database/app-operations.js";
 import { ndiSender, type NDISenderConfig } from "./ndi/index.js";
 import url from "url";
+import {
+	registerRemoteIpcHandlers,
+	setAppWindow as setRemoteAppWindow,
+} from "./remote/index.js";
 // import processSongs from './scripts/songs-importer/index.js'
 // import grandiose from 'grandiose'
 // const { GrandioseFinder } = grandiose
@@ -247,6 +251,10 @@ const spawnAppWindow = async () => {
 		appWindow.loadURL(controlsUrl);
 
 		appWindow.setMenu(null);
+		
+		// Set up remote control
+		setRemoteAppWindow(appWindow);
+		
 		// ipcMain.on("controls-window-loaded", () => {
 			logger.info("Controls window DOM ready");
 			appWindow?.maximize();
@@ -380,6 +388,9 @@ app.on("ready", async () => {
 	appReady = true;
 	new AppUpdater();
 	spawnAppWindow();
+
+	// Register remote control IPC handlers
+	registerRemoteIpcHandlers();
 
 	// Initialize FTS indexes if they are empty
 	try {

@@ -253,6 +253,45 @@ export interface IElectronAPI {
 	ndiStart: (config?: NDISenderConfig) => Promise<NDIResponse>;
 	ndiStop: () => Promise<NDIResponse>;
 	ndiUpdateConfig: (config: NDISenderConfig) => Promise<NDIResponse>;
+
+	// Remote Control Functions
+	remoteServerStart: (port?: number) => Promise<{
+		success: boolean;
+		port?: number;
+		addresses?: string[];
+		error?: string;
+	}>;
+	remoteServerStop: () => Promise<{ success: boolean; error?: string }>;
+	remoteServerStatus: () => Promise<{
+		running: boolean;
+		port: number;
+		addresses: string[];
+		clients: Array<{
+			id: string;
+			ip: string;
+			userAgent: string;
+			connectedAt: number;
+		}>;
+	}>;
+	remoteStateUpdate: (state: unknown) => void;
+	remoteScheduleUpdate: (items: unknown[]) => void;
+	onRemoteServerStarted: (
+		callback: (data: { port: number; addresses: string[] }) => void,
+	) => void;
+	onRemoteServerStopped: (callback: () => void) => void;
+	onRemoteServerError: (callback: (data: { error: string }) => void) => void;
+	onRemoteClientConnected: (
+		callback: (data: { clientId: string; clientInfo: unknown }) => void,
+	) => void;
+	onRemoteClientDisconnected: (
+		callback: (data: { clientId: string }) => void,
+	) => void;
+	onRemoteGoLive: (callback: (item: unknown) => void) => void;
+	onRemoteGoBlank: (callback: () => void) => void;
+	onRemoteNavigate: (
+		callback: (data: { direction: "next" | "prev" }) => void,
+	) => void;
+	onRemoteRequestSchedule: (callback: () => void) => void;
 }
 
 declare global {
