@@ -6,6 +6,8 @@
  */
 
 import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
 import { networkInterfaces } from "node:os";
 import { WebSocketServer, WebSocket } from "ws";
 import type {
@@ -20,16 +22,33 @@ import type {
 	RemoteScheduleItem,
 	RemoteScriptureChapter,
 	RemoteSongLyric,
+	RemoteTranslation,
 } from "./types.js";
+
+// Debug logging
+const LOG_FILE = path.join(process.cwd(), "remote-server.log");
+
+function log(level: "INFO" | "DEBUG" | "ERROR", message: string, data?: unknown): void {
+	const timestamp = new Date().toISOString();
+	const logLine = `[${timestamp}] [${level}] ${message}${data !== undefined ? " " + JSON.stringify(data) : ""}\n`;
+	
+	// Write to file
+	fs.appendFileSync(LOG_FILE, logLine);
+	
+	// Also write to console
+	console.log(logLine.trim());
+}
 
 // State
 let server: http.Server | null = null;
 let wss: WebSocketServer | null = null;
 const clients = new Map<string, { ws: WebSocket; info: ClientInfo }>();
 let currentState: RemoteAppState | null = null;
+let cachedTranslations: RemoteTranslation[] = [];
 
 // Send message to main process
 function sendToMain(message: RemoteToMainMessage): void {
+	log("DEBUG", "Sending to main:", message);
 	if (process.send) {
 		process.send(message);
 	}
@@ -61,6 +80,7 @@ function generateClientId(): string {
 
 // Broadcast to all connected clients
 function broadcast(message: WSServerMessage): void {
+	log("DEBUG", "Broadcasting to all clients:", { type: message.type, clientCount: clients.size });
 	const data = JSON.stringify(message);
 	for (const { ws } of clients.values()) {
 		if (ws.readyState === WebSocket.OPEN) {
@@ -79,22 +99,35 @@ function sendToClient(clientId: string, message: WSServerMessage): void {
 
 // Handle WebSocket client message
 function handleClientMessage(clientId: string, message: WSClientMessage): void {
+	log("INFO", `Received message from client ${clientId}:`, message);
+	
 	switch (message.type) {
 		case "get-songs":
 			sendToMain({ type: "request-songs" });
 			break;
 			
 		case "get-song-lyrics":
+			log("DEBUG", `Requesting lyrics for song ID: ${message.songId}`);
 			sendToMain({ type: "request-song-lyrics", songId: message.songId });
 			break;
 			
 		case "get-scripture":
+			log("INFO", `Scripture request: ${message.book} ${message.chapter} (${message.version})`);
 			sendToMain({
 				type: "request-scripture",
 				book: message.book,
 				chapter: message.chapter,
 				version: message.version,
 			});
+			break;
+			
+		case "get-translations":
+			log("DEBUG", "Requesting translations");
+			if (cachedTranslations.length > 0) {
+				sendToClient(clientId, { type: "translations", translations: cachedTranslations });
+			} else {
+				sendToMain({ type: "request-translations" });
+			}
 			break;
 			
 		case "get-themes":
@@ -106,6 +139,7 @@ function handleClientMessage(clientId: string, message: WSClientMessage): void {
 			break;
 			
 		case "go-live":
+			log("INFO", "Go live request:", message.item);
 			sendToMain({ type: "go-live", item: message.item });
 			break;
 			
@@ -664,6 +698,7 @@ function getWebUI(): string {
 				// Request initial data
 				ws.send(JSON.stringify({ type: 'get-songs' }));
 				ws.send(JSON.stringify({ type: 'get-schedule' }));
+				ws.send(JSON.stringify({ type: 'get-translations' }));
 			};
 			
 			ws.onclose = () => {
@@ -685,6 +720,7 @@ function getWebUI(): string {
 		
 		// Handle WebSocket messages
 		function handleMessage(msg) {
+			console.log('Received message:', msg);
 			switch (msg.type) {
 				case 'state':
 					state = msg.state;
@@ -704,7 +740,13 @@ function getWebUI(): string {
 					break;
 					
 				case 'scripture':
+					console.log('Scripture data:', msg.data);
 					renderVerses(msg.data);
+					break;
+					
+				case 'translations':
+					console.log('Translations:', msg.translations);
+					renderTranslations(msg.translations);
 					break;
 					
 				case 'schedule':
@@ -730,10 +772,15 @@ function getWebUI(): string {
 		
 		// Render songs list
 		function renderSongsList() {
-			const query = songSearch.value.toLowerCase();
+			const query = songSearch.value.toLowerCase().trim();
 			const filtered = query 
-				? songs.filter(s => s.title.toLowerCase().includes(query) || s.author.toLowerCase().includes(query))
+				? songs.filter(s => 
+					(s.title && s.title.toLowerCase().includes(query)) || 
+					(s.author && s.author.toLowerCase().includes(query))
+				)
 				: songs;
+			
+			console.log('Rendering songs list, query:', query, 'filtered count:', filtered.length);
 			
 			if (filtered.length === 0) {
 				songsList.innerHTML = '<div class="empty-state"><p>No songs found</p></div>';
@@ -744,7 +791,7 @@ function getWebUI(): string {
 				'<div class="list-item' + (selectedSong && selectedSong.id === song.id ? ' active' : '') + '" data-song-id="' + song.id + '">' +
 					'<div class="list-item-icon">🎵</div>' +
 					'<div class="list-item-content">' +
-						'<div class="list-item-title">' + escapeHtml(song.title) + '</div>' +
+						'<div class="list-item-title">' + escapeHtml(song.title || 'Untitled') + '</div>' +
 						'<div class="list-item-subtitle">' + escapeHtml(song.author || 'Unknown') + '</div>' +
 					'</div>' +
 				'</div>'
@@ -820,6 +867,23 @@ function getWebUI(): string {
 				bibleBooks.map(b => '<option value="' + b + '">' + b + '</option>').join('');
 		}
 		
+		// Render translations into version select
+		function renderTranslations(translations) {
+			if (!translations || translations.length === 0) return;
+			
+			const currentValue = versionSelect.value;
+			versionSelect.innerHTML = translations.map(t => 
+				'<option value="' + t.version + '">' + t.version + ' - ' + t.description + '</option>'
+			).join('');
+			
+			// Try to restore previous selection or default to first
+			if (currentValue && translations.some(t => t.version === currentValue)) {
+				versionSelect.value = currentValue;
+			} else if (translations.length > 0) {
+				versionSelect.value = translations[0].version;
+			}
+		}
+		
 		// Event listeners
 		tabs.forEach(tab => {
 			tab.addEventListener('click', () => {
@@ -835,17 +899,25 @@ function getWebUI(): string {
 		});
 		
 		songsList.addEventListener('click', (e) => {
+			console.log('Songs list clicked, target:', e.target);
 			const item = e.target.closest('.list-item');
-			if (!item) return;
+			if (!item) {
+				console.log('No list-item found');
+				return;
+			}
 			
 			const songId = parseInt(item.dataset.songId);
+			console.log('Song clicked, id:', songId);
 			selectedSong = songs.find(s => s.id === songId);
+			console.log('Selected song:', selectedSong);
 			renderSongsList();
 			
 			// Request lyrics if not cached
 			if (!songLyrics[songId]) {
+				console.log('Requesting lyrics for song:', songId);
 				ws.send(JSON.stringify({ type: 'get-song-lyrics', songId }));
 			} else {
+				console.log('Using cached lyrics for song:', songId);
 				renderSongSlides(songLyrics[songId]);
 			}
 		});
@@ -1071,6 +1143,7 @@ function stopServer(): void {
 
 // Handle messages from main process
 process.on("message", (message: MainToRemoteMessage) => {
+	log("DEBUG", "Received from main:", message);
 	switch (message.type) {
 		case "start":
 			startServer(message.port);
@@ -1094,7 +1167,14 @@ process.on("message", (message: MainToRemoteMessage) => {
 			break;
 			
 		case "scripture-chapter":
+			log("INFO", "Scripture chapter received:", message.data);
 			broadcast({ type: "scripture", data: message.data });
+			break;
+			
+		case "translations-list":
+			log("INFO", "Translations received:", message.translations);
+			cachedTranslations = message.translations;
+			broadcast({ type: "translations", translations: message.translations });
 			break;
 			
 		case "themes-list":
