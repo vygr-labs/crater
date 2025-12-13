@@ -16,9 +16,10 @@ import type {
 	RemoteScheduleItem,
 	ClientInfo,
 	RemoteSongLyric,
+	RemoteTranslation,
 } from "./types.js";
 import { fetchAllSongs, fetchSongLyrics, searchSongs } from "../database/song-operations.js";
-import { fetchChapter, searchScriptures } from "../database/bible-operations.js";
+import { fetchChapter, fetchChapterCounts, fetchTranslations, searchScriptures } from "../database/bible-operations.js";
 import logger from "../logger.js";
 import { __dirname } from "../setup.js";
 
@@ -243,6 +244,10 @@ function handleServerMessage(
 			handleScriptureRequest(message.book, message.chapter, message.version);
 			break;
 			
+		case "request-translations":
+			handleTranslationsRequest();
+			break;
+			
 		case "request-themes":
 			handleThemesRequest();
 			break;
@@ -329,7 +334,21 @@ function handleSongLyricsRequest(songId: number): void {
  */
 function handleScriptureRequest(book: string, chapter: number, version: string): void {
 	try {
-		const verses = fetchChapter({ book, chapter, version });
+		// Get actual book names from database to find the correct one
+		const chapterCounts = fetchChapterCounts();
+		const dbBookNames = Object.keys(chapterCounts);
+		
+		// Find matching book name (case-insensitive)
+		const normalizedBook = dbBookNames.find(
+			(dbName) => dbName.toLowerCase() === book.toLowerCase()
+		) || book.toLowerCase();
+		
+		logger.info(`Scripture request: book="${normalizedBook}" (from "${book}"), chapter=${chapter}, version="${version}"`);
+		logger.debug(`Available books sample: ${dbBookNames.slice(0, 5).join(', ')}`);
+		
+		const verses = fetchChapter({ book: normalizedBook, chapter, version });
+		logger.info(`Fetched ${verses.length} verses for ${normalizedBook} ${chapter}`);
+		
 		sendToServer({
 			type: "scripture-chapter",
 			data: {
@@ -341,6 +360,27 @@ function handleScriptureRequest(book: string, chapter: number, version: string):
 		});
 	} catch (err) {
 		logger.error("Failed to fetch scripture:", err);
+	}
+}
+
+/**
+ * Handle translations request
+ */
+function handleTranslationsRequest(): void {
+	try {
+		logger.info("Fetching translations from database...");
+		const translations = fetchTranslations();
+		logger.info(`Got ${translations.length} translations from DB:`, translations);
+		
+		const remoteTranslations: RemoteTranslation[] = translations.map((t) => ({
+			id: t.id,
+			version: t.version,
+			description: t.description,
+		}));
+		logger.info("Sending translations:", remoteTranslations);
+		sendToServer({ type: "translations-list", translations: remoteTranslations });
+	} catch (err) {
+		logger.error("Failed to fetch translations:", err);
 	}
 }
 

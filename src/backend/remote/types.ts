@@ -11,7 +11,8 @@ export type MainToRemoteMessage =
 	| { type: "song-lyrics"; songId: number; lyrics: RemoteSongLyric[] }
 	| { type: "scripture-chapter"; data: RemoteScriptureChapter }
 	| { type: "themes-list"; themes: RemoteTheme[] }
-	| { type: "schedule-list"; items: RemoteScheduleItem[] };
+	| { type: "schedule-list"; items: RemoteScheduleItem[] }
+	| { type: "translations-list"; translations: RemoteTranslation[] };
 
 // Messages from Remote Server to Main Process
 export type RemoteToMainMessage =
@@ -25,11 +26,18 @@ export type RemoteToMainMessage =
 	| { type: "request-scripture"; book: string; chapter: number; version: string }
 	| { type: "request-themes" }
 	| { type: "request-schedule" }
+	| { type: "request-translations" }
 	| { type: "go-live"; item: RemoteDisplayItem }
 	| { type: "go-blank" }
 	| { type: "navigate"; direction: "next" | "prev" }
 	| { type: "search-songs"; query: string }
 	| { type: "search-scripture"; query: string; version?: string };
+
+export interface RemoteTranslation {
+	id: number;
+	version: string;
+	description: string;
+}
 
 // Simplified types for remote transmission
 export interface RemoteSong {
@@ -112,6 +120,7 @@ export type WSServerMessage =
 	| { type: "scripture"; data: RemoteScriptureChapter }
 	| { type: "themes"; themes: RemoteTheme[] }
 	| { type: "schedule"; items: RemoteScheduleItem[] }
+	| { type: "translations"; translations: RemoteTranslation[] }
 	| { type: "search-results"; resultType: "songs" | "scripture"; results: unknown[] }
 	| { type: "error"; message: string }
 	| { type: "connected"; clientId: string };
@@ -123,6 +132,7 @@ export type WSClientMessage =
 	| { type: "get-scripture"; book: string; chapter: number; version: string }
 	| { type: "get-themes" }
 	| { type: "get-schedule" }
+	| { type: "get-translations" }
 	| { type: "go-live"; item: RemoteDisplayItem }
 	| { type: "go-blank" }
 	| { type: "navigate"; direction: "next" | "prev" }
