@@ -40,6 +40,7 @@ import {
 	TbRefresh,
 	TbSettings,
 	TbSun,
+	TbWifi,
 } from "solid-icons/tb";
 import {
 	DEFAULT_PROJECTION_DISPLAY_ID,
@@ -47,6 +48,7 @@ import {
 	neutralPalette,
 } from "~/utils/constants";
 import { css } from "styled-system/css";
+import { RemoteControlSettings } from "../app/RemoteControlSettings";
 
 // Section header component for consistent styling
 function SectionHeader(props: {
@@ -256,6 +258,12 @@ export function AppSettingsDialog() {
 									<HStack gap={2}>
 										<TbMusic size={16} />
 										<span>Songs</span>
+									</HStack>
+								</Tabs.Trigger>
+								<Tabs.Trigger value="remote">
+									<HStack gap={2}>
+										<TbWifi size={16} />
+										<span>Remote</span>
 									</HStack>
 								</Tabs.Trigger>
 							</Tabs.List>
@@ -691,6 +699,11 @@ export function AppSettingsDialog() {
 										</HStack>
 									</Box>
 								</Stack>
+							</Tabs.Content>
+
+							{/* Remote Control Tab */}
+							<Tabs.Content value="remote" pt={6} pb={4}>
+								<RemoteControlSettings />
 							</Tabs.Content>
 						</Tabs.Root>
 					</Dialog.Body>

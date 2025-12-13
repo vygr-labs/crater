@@ -157,4 +157,33 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		width?: number;
 		height?: number;
 	}) => ipcRenderer.invoke("ndi-update-config", config),
+
+	// Remote Control Functions
+	remoteServerStart: (port?: number) =>
+		ipcRenderer.invoke("remote-server-start", port),
+	remoteServerStop: () => ipcRenderer.invoke("remote-server-stop"),
+	remoteServerStatus: () => ipcRenderer.invoke("remote-server-status"),
+	remoteStateUpdate: (state: unknown) =>
+		ipcRenderer.send("remote-state-update", state),
+	remoteScheduleUpdate: (items: unknown[]) =>
+		ipcRenderer.send("remote-schedule-update", items),
+	// Remote server event listeners
+	onRemoteServerStarted: (callback: (data: { port: number; addresses: string[] }) => void) =>
+		ipcRenderer.on("remote-server-started", (_: unknown, data: { port: number; addresses: string[] }) => callback(data)),
+	onRemoteServerStopped: (callback: () => void) =>
+		ipcRenderer.on("remote-server-stopped", () => callback()),
+	onRemoteServerError: (callback: (data: { error: string }) => void) =>
+		ipcRenderer.on("remote-server-error", (_: unknown, data: { error: string }) => callback(data)),
+	onRemoteClientConnected: (callback: (data: { clientId: string; clientInfo: unknown }) => void) =>
+		ipcRenderer.on("remote-client-connected", (_: unknown, data: { clientId: string; clientInfo: unknown }) => callback(data)),
+	onRemoteClientDisconnected: (callback: (data: { clientId: string }) => void) =>
+		ipcRenderer.on("remote-client-disconnected", (_: unknown, data: { clientId: string }) => callback(data)),
+	onRemoteGoLive: (callback: (item: unknown) => void) =>
+		ipcRenderer.on("remote-go-live", (_: unknown, item: unknown) => callback(item)),
+	onRemoteGoBlank: (callback: () => void) =>
+		ipcRenderer.on("remote-go-blank", () => callback()),
+	onRemoteNavigate: (callback: (data: { direction: "next" | "prev" }) => void) =>
+		ipcRenderer.on("remote-navigate", (_: unknown, data: { direction: "next" | "prev" }) => callback(data)),
+	onRemoteRequestSchedule: (callback: () => void) =>
+		ipcRenderer.on("remote-request-schedule", () => callback()),
 });
