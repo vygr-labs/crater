@@ -291,6 +291,7 @@ export interface IElectronAPI {
 	onRemoteNavigate: (
 		callback: (data: { direction: "next" | "prev" }) => void,
 	) => void;
+	onRemoteAddToSchedule: (callback: (item: unknown) => void) => void;
 	onRemoteRequestSchedule: (callback: () => void) => void;
 }
 

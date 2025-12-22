@@ -23,6 +23,7 @@ import { useFocusContext } from "~/layouts/FocusContext";
 import {
 	ALL_SCRIPTURE_DYNAMICSUB_KEY,
 	defaultPalette,
+	defaultSupportingPalette,
 	neutralPalette,
 	SCRIPTURE_TAB_FOCUS_NAME,
 	SONGS_TAB_FOCUS_NAME,
@@ -450,8 +451,8 @@ export default function ScriptureSelection() {
 					rowVirtualizer().scrollToIndex(focusId);
 				}
 			},
-			{ defer: true }
-		)
+			{ defer: true },
+		),
 	);
 
 	// Track the currently selected scripture reference for translation changes
@@ -504,60 +505,70 @@ export default function ScriptureSelection() {
 
 	// Sync from schedule item click - scroll to the scripture if it exists
 	// Switches to the schedule item's translation
-	const [pendingSyncData, setPendingSyncData] = createSignal<{ book: string; chapter: number; verse: number; translation: string } | null>(null);
-	
+	const [pendingSyncData, setPendingSyncData] = createSignal<{
+		book: string;
+		chapter: number;
+		verse: number;
+		translation: string;
+	} | null>(null);
+
 	createEffect(
 		on(
 			() => appStore.syncFromSchedule,
 			(syncData) => {
 				if (!syncData || syncData.type !== "scripture") return;
 				if (scriptureControls.searchMode !== "special") return; // Don't sync in search mode
-				
+
 				const metadata = syncData.metadata;
 				if (!metadata?.id) return;
-				
+
 				// Parse the id format: "book-chapter-verse" (e.g., "genesis-1-1")
 				const idParts = String(metadata.id).split("-");
 				if (idParts.length < 3) return;
-				
+
 				// Handle multi-word book names (e.g., "1-samuel-1-1" -> book = "1 samuel")
 				const verseStr = idParts.pop()!;
 				const chapterStr = idParts.pop()!;
 				const book = idParts.join(" ");
 				const chapter = parseInt(chapterStr);
 				const verse = parseInt(verseStr);
-				
+
 				if (isNaN(chapter) || isNaN(verse)) return;
-				
+
 				// Extract translation from title, e.g., "Genesis 1:1 (NKJV)" -> "NKJV"
 				const titleMatch = metadata.title?.match(/\(([A-Z]+)\)\s*$/);
-				const translation = titleMatch ? titleMatch[1] as AvailableTranslation : scriptureControls.translation;
-				
+				const translation = titleMatch
+					? (titleMatch[1] as AvailableTranslation)
+					: scriptureControls.translation;
+
 				// Store sync data for pending sync
 				setPendingSyncData({ book, chapter, verse, translation });
-				
+
 				if (translation !== scriptureControls.translation) {
 					// Switch translation - the pending sync will be handled when scriptures reload
 					setScriptureControls("translation", translation);
 				}
 				// Note: Don't try to sync immediately here - let the pending sync effect handle it
 				// This ensures consistent behavior whether translation changed or not
-				
+
 				// Clear the sync trigger
 				setAppStore("syncFromSchedule", null);
 			},
-			{ defer: true }
-		)
+			{ defer: true },
+		),
 	);
-	
+
 	// Handle pending sync when scriptures load (after translation change)
 	createEffect(() => {
 		const scriptures = filteredScriptures();
 		const syncData = pendingSyncData();
-		
+
 		if (syncData && scriptures.length > 0) {
 			// Verify the scriptures are from the expected translation
-			if (scriptures[0]?.version?.toUpperCase() === syncData.translation.toUpperCase()) {
+			if (
+				scriptures[0]?.version?.toUpperCase() ===
+				syncData.translation.toUpperCase()
+			) {
 				const { book, chapter, verse } = syncData;
 				const matchIndex = findBestVerseMatch(scriptures, book, chapter, verse);
 				if (matchIndex > -1) {
@@ -574,12 +585,15 @@ export default function ScriptureSelection() {
 		const fluidId = fluidFocusId();
 		const scriptures = filteredScriptures();
 		const currentTranslation = scriptureControls.translation;
-		
+
 		if (typeof fluidId === "number" && scriptures.length > 0) {
 			const scripture = scriptures[fluidId];
 			// Only update selectedScriptureRef if the scripture is from the current translation
 			// This prevents corrupting the reference during translation switch
-			if (scripture && scripture.version?.toUpperCase() === currentTranslation.toUpperCase()) {
+			if (
+				scripture &&
+				scripture.version?.toUpperCase() === currentTranslation.toUpperCase()
+			) {
 				selectedScriptureRef = {
 					book_name: scripture.book_name,
 					chapter: scripture.chapter,
@@ -757,7 +771,7 @@ export default function ScriptureSelection() {
 		let verse: number =
 			typeof stageMarkData.verse === "string"
 				? parseInt(stageMarkData.verse) || 1
-				: stageMarkData.verse ?? 1;
+				: (stageMarkData.verse ?? 1);
 		let newVal;
 		if (e.data) {
 			newVal = stageMarkData.currentValue + e.data;
@@ -948,16 +962,20 @@ export default function ScriptureSelection() {
 				store.query = "";
 			}),
 		);
-		
+
 		// When switching to special mode, initialize with current scripture and trigger selection
 		if (wasSearch) {
 			// Get current scripture from fluid focus
 			const fluidId = fluidFocusId();
-			const scripture = typeof fluidId === "number" ? filteredScriptures()[fluidId] : null;
+			const scripture =
+				typeof fluidId === "number" ? filteredScriptures()[fluidId] : null;
 			const bookName = scripture?.book_name || allBooks[0]?.name || "Genesis";
 			const chapter = scripture?.chapter || 1;
-			const verse = typeof scripture?.verse === "string" ? parseInt(scripture.verse) || 1 : scripture?.verse || 1;
-			
+			const verse =
+				typeof scripture?.verse === "string"
+					? parseInt(scripture.verse) || 1
+					: scripture?.verse || 1;
+
 			// Initialize stageMarkData with current scripture, which triggers the selection effect
 			setTimeout(() => {
 				setStageMarkData({
@@ -981,7 +999,7 @@ export default function ScriptureSelection() {
 	const handleInputClick = (e: MouseEvent) => {
 		// Always change focus panel to scriptures when clicking the input
 		changeFocusPanel(name);
-		
+
 		if (scriptureControls.searchMode !== "special") return;
 		e.preventDefault();
 		console.log(e, searchInputRef.selectionStart, searchInputRef.selectionEnd);
@@ -1314,10 +1332,14 @@ const ScriptureSearchInput = (props: SearchInputProps) => {
 				h="9"
 				outline="none"
 				w="full"
-				color="gray.100"
+				color="gray.200"
+				lineHeight={2}
+				letterSpacing={0.4}
 				_placeholder={{ color: `${neutralPalette}.500` }}
 				_selection={{
-					bgColor: `${defaultPalette}.700`,
+					bgColor: `white`,
+					color: "black",
+					fontWeight: 500,
 				}}
 				ref={props.setSearchInputRef}
 				value={
