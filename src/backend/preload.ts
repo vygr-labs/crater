@@ -184,6 +184,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		ipcRenderer.on("remote-go-blank", () => callback()),
 	onRemoteNavigate: (callback: (data: { direction: "next" | "prev" }) => void) =>
 		ipcRenderer.on("remote-navigate", (_: unknown, data: { direction: "next" | "prev" }) => callback(data)),
+	onRemoteAddToSchedule: (callback: (item: unknown) => void) =>
+		ipcRenderer.on("remote-add-to-schedule", (_: unknown, item: unknown) => callback(item)),
 	onRemoteRequestSchedule: (callback: () => void) =>
 		ipcRenderer.on("remote-request-schedule", () => callback()),
 });

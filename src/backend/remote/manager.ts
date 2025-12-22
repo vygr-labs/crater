@@ -275,6 +275,10 @@ function handleServerMessage(
 		case "search-scripture":
 			handleSearchScripture(message.query, message.version);
 			break;
+			
+		case "add-to-schedule":
+			handleAddToSchedule(message.item);
+			break;
 	}
 }
 
@@ -435,6 +439,16 @@ function handleNavigate(direction: "next" | "prev"): void {
 		onRemoteCommandCallback("navigate", { direction });
 	}
 	notifyRenderer("remote-navigate", { direction });
+}
+
+/**
+ * Handle add to schedule command
+ */
+function handleAddToSchedule(item: unknown): void {
+	if (onRemoteCommandCallback) {
+		onRemoteCommandCallback("add-to-schedule", item);
+	}
+	notifyRenderer("remote-add-to-schedule", item);
 }
 
 /**

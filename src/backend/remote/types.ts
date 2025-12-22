@@ -31,7 +31,8 @@ export type RemoteToMainMessage =
 	| { type: "go-blank" }
 	| { type: "navigate"; direction: "next" | "prev" }
 	| { type: "search-songs"; query: string }
-	| { type: "search-scripture"; query: string; version?: string };
+	| { type: "search-scripture"; query: string; version?: string }
+	| { type: "add-to-schedule"; item: RemoteAddScheduleItem };
 
 export interface RemoteTranslation {
 	id: number;
@@ -83,6 +84,7 @@ export interface RemoteScheduleItem {
 
 export interface RemoteDisplayItem {
 	type: "scripture" | "song";
+	title?: string;
 	// For scripture
 	book?: string;
 	chapter?: number;
@@ -91,6 +93,18 @@ export interface RemoteDisplayItem {
 	// For song
 	songId?: number;
 	slideIndex?: number;
+}
+
+export interface RemoteAddScheduleItem {
+	type: "scripture" | "song";
+	title: string;
+	// For scripture
+	book?: string;
+	chapter?: number;
+	verses?: string[];
+	version?: string;
+	// For song
+	songId?: number;
 }
 
 export interface RemoteAppState {
@@ -138,6 +152,7 @@ export type WSClientMessage =
 	| { type: "navigate"; direction: "next" | "prev" }
 	| { type: "search-songs"; query: string }
 	| { type: "search-scripture"; query: string; version?: string }
+	| { type: "add-to-schedule"; item: RemoteAddScheduleItem }
 	| { type: "ping" };
 
 export interface ServerConfig {
