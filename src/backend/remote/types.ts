@@ -89,6 +89,7 @@ export interface RemoteDisplayItem {
 	book?: string;
 	chapter?: number;
 	verse?: string;
+	verses?: string[]; // For multiple verses
 	version?: string;
 	// For song
 	songId?: number;

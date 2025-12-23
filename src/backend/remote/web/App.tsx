@@ -3,7 +3,7 @@
  * Main application component
  */
 
-import { createSignal, createEffect, onMount, onCleanup, Show, For, JSX } from "solid-js";
+import { createSignal, createEffect, onMount, onCleanup, Show, For } from "solid-js";
 import { createStore, produce } from "solid-js/store";
 
 // Types
@@ -283,6 +283,27 @@ export default function App() {
 		});
 	};
 
+	const goLiveSelectedVerses = () => {
+		const selected = Array.from(selectedVerses()).sort((a, b) => {
+			const numA = parseInt(a.split(/[:-]/)[0]);
+			const numB = parseInt(b.split(/[:-]/)[0]);
+			return numA - numB;
+		});
+		if (selected.length === 0) return;
+		
+		send({
+			type: "go-live",
+			item: {
+				type: "scripture",
+				book: selectedBook(),
+				chapter: selectedChapter(),
+				verses: selected,
+				version: selectedVersion(),
+				title: `${selectedBook()} ${selectedChapter()}:${selected.join(", ")}`
+			}
+		});
+	};
+
 	const toggleVerseSelection = (verse: string) => {
 		setSelectedVerses(prev => {
 			const newSet = new Set(prev);
@@ -311,7 +332,7 @@ export default function App() {
 		if (!book || !chapter) return;
 		
 		setVerses([]);
-		setSelectedVerses(new Set());
+			setSelectedVerses(new Set<string>());
 		send({
 			type: "get-scripture",
 			book,
@@ -432,9 +453,14 @@ export default function App() {
 							<div class="slides-container">
 								<div class="slides-header">
 									<h3>Slides - {selectedSong()!.title}</h3>
-									<button class="btn btn-secondary" onClick={addSongToSchedule}>
-										+ Add to Schedule
-									</button>
+									<div class="slides-actions">
+										<button class="btn btn-primary" onClick={() => goLiveSong(0)}>
+											▶ Go Live
+										</button>
+										<button class="btn btn-secondary" onClick={addSongToSchedule}>
+											+ Add to Schedule
+										</button>
+									</div>
 								</div>
 								<For each={songLyrics[selectedSong()!.id]}>
 									{(lyric, idx) => (
@@ -524,12 +550,17 @@ export default function App() {
 						<Show when={selectedVerses().size > 0}>
 							<div class="selection-bar">
 								<span>{selectedVerses().size} verse(s) selected</span>
-								<button class="btn btn-secondary" onClick={addScriptureToSchedule}>
-									+ Add to Schedule
-								</button>
-								<button class="btn btn-small" onClick={() => setSelectedVerses(new Set())}>
-									Clear
-								</button>
+								<div class="selection-actions">
+									<button class="btn btn-primary" onClick={goLiveSelectedVerses}>
+										▶ Go Live
+									</button>
+									<button class="btn btn-secondary" onClick={addScriptureToSchedule}>
+										+ Add to Schedule
+									</button>
+								<button class="btn btn-small" onClick={() => setSelectedVerses(new Set<string>())}>
+										Clear
+									</button>
+								</div>
 							</div>
 						</Show>
 

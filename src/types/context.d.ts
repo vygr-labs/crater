@@ -126,7 +126,7 @@ export interface IElectronAPI {
 		version,
 	}: {
 		book: string;
-		chapter: string;
+		chapter: number;
 		version: string;
 	}) => Promise<{ verse: string; text: string }[]>;
 	fetchScripture: ({

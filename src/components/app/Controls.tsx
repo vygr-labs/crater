@@ -1,4 +1,4 @@
-import { Index, onMount } from "solid-js";
+import { Index, onMount, onCleanup } from "solid-js";
 import { Accordion } from "../ui/accordion";
 import { Box, Flex, Grid } from "styled-system/jsx";
 import { TbChevronDown, TbX } from "solid-icons/tb";
@@ -7,7 +7,7 @@ import { Portal } from "solid-js/web";
 import { Button } from "../ui/button";
 import { IconButton } from "../ui/icon-button";
 import MenuBar from "./MenuBar";
-import AppContextProvider from "~/layouts/AppContext";
+import AppContextProvider, { useAppContext } from "~/layouts/AppContext";
 import AppLoading from "../modals/AppLoading";
 import { AppSettingsDialog } from "../modals/AppSettingsDialog";
 import ControlsMain from "./ControlsMain";
@@ -25,11 +25,28 @@ import SongEditor from "../modals/SongEditor";
 import { DisplayContextProvider } from "~/layouts/DisplayContext";
 import { ConfirmDialogProvider } from "../modals/ConfirmDialog";
 import { Splitter } from "../ui/splitter";
+import { handleRemoteCommands } from "~/utils/remote-handlers";
 
 const config = {
 	EditorContainer,
 	EditorText,
 };
+
+// Inner component that has access to AppContext
+function RemoteHandlerSetup() {
+	const { setAppStore } = useAppContext();
+	
+	onMount(() => {
+		// Set up remote control event listeners
+		const cleanup = handleRemoteCommands(setAppStore);
+		
+		onCleanup(() => {
+			if (cleanup) cleanup();
+		});
+	});
+	
+	return null; // This component doesn't render anything
+}
 
 export default function AppControls() {
 	onMount(() => {
@@ -38,6 +55,7 @@ export default function AppControls() {
 
 	return (
 		<AppContextProvider>
+			<RemoteHandlerSetup />
 			<FocusContextProvider>
 				<ConfirmDialogProvider>
 					<Box w="vw" h="vh" bg="bg.muted" pos="relative" overflow="hidden">

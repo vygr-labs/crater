@@ -445,10 +445,14 @@ function handleNavigate(direction: "next" | "prev"): void {
  * Handle add to schedule command
  */
 function handleAddToSchedule(item: unknown): void {
+	logger.info("[Manager] handleAddToSchedule called with:", item);
 	if (onRemoteCommandCallback) {
+		logger.info("[Manager] Calling onRemoteCommandCallback");
 		onRemoteCommandCallback("add-to-schedule", item);
 	}
+	logger.info("[Manager] Calling notifyRenderer with 'remote-add-to-schedule'");
 	notifyRenderer("remote-add-to-schedule", item);
+	logger.info("[Manager] handleAddToSchedule completed");
 }
 
 /**

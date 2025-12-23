@@ -268,6 +268,12 @@ body {
 	color: var(--primary);
 }
 
+.selection-actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+}
+
 /* Slides */
 .slides-container {
 	margin-top: 24px;
@@ -287,6 +293,12 @@ body {
 	font-weight: 600;
 	color: var(--text-muted);
 	text-transform: uppercase;
+}
+
+.slides-actions {
+	display: flex;
+	gap: 8px;
+	align-items: center;
 }
 
 .slide {
