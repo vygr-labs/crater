@@ -8,6 +8,7 @@
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { networkInterfaces } from "node:os";
 import { WebSocketServer, WebSocket } from "ws";
 import type {
@@ -24,12 +25,55 @@ import type {
 	RemoteSongLyric,
 	RemoteTranslation,
 } from "./types.js";
-import { getWebUI } from "./web-ui.js";
+import { createRequire } from "module";
+import mime from "mime";
+
+// ES module equivalent of __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Detect dev mode: in development, execPath includes "electron" (running from node_modules)
+// In production (packaged), it's the app executable
+const isDev = process.env.NODE_ENV === "development" || 
+              process.execPath.includes("electron") ||
+              process.execPath.includes("node_modules");
+console.log("SERVER IS DEVELOPMENT: ", isDev, process.env.NODE_ENV, process.execPath.includes("electron"))
+
+// Dev server configuration (SolidJS Vite server for remote/web)
+const DEV_SERVER_HOST = "127.0.0.1";
+const DEV_SERVER_PORT = 7171; // Remote web Vite dev server port
+
+// Lazy load http-proxy only when needed (CommonJS module)
+let httpProxy: any = null;
+function getHttpProxy() {
+	if (!httpProxy) {
+		const require = createRequire(import.meta.url);
+		httpProxy = require("http-proxy");
+	}
+	return httpProxy;
+}
+
+// Check if dev server is accessible
+async function isDevServerRunning(): Promise<boolean> {
+	return new Promise((resolve) => {
+		const req = http.get(`http://${DEV_SERVER_HOST}:${DEV_SERVER_PORT}/`, (res) => {
+			resolve(res.statusCode !== undefined);
+			req.destroy();
+		});
+		req.on("error", () => {
+			resolve(false);
+		});
+		req.setTimeout(1000, () => {
+			req.destroy();
+			resolve(false);
+		});
+	});
+}
 
 // Debug logging
 const LOG_FILE = path.join(process.cwd(), "remote-server.log");
 
-function log(level: "INFO" | "DEBUG" | "ERROR", message: string, data?: unknown): void {
+function log(level: "INFO" | "DEBUG" | "ERROR" | "WARN", message: string, data?: unknown): void {
 	const timestamp = new Date().toISOString();
 	const logLine = `[${timestamp}] [${level}] ${message}${data !== undefined ? " " + JSON.stringify(data) : ""}\n`;
 	
@@ -175,6 +219,51 @@ function handleClientMessage(clientId: string, message: WSClientMessage): void {
 	}
 }
 
+// Helper function to serve static files
+function serveStaticFile(req: http.IncomingMessage, res: http.ServerResponse): void {
+	let filePath = req.url === "/" ? "/index.html" : req.url || "/index.html";
+	// Remove query string
+	filePath = filePath.split("?")[0];
+	
+	// Prevent directory traversal
+	const safePath = path.normalize(filePath).replace(/^(\.\.[\/\\])+/, "");
+	
+	// Path to dist/remote-web
+	// src/backend/build/remote/server.js -> ../../../../dist/remote-web
+	const distPath = path.join(__dirname, "../../../../dist/remote-web");
+	let fullPath = path.join(distPath, safePath);
+	
+	// If file doesn't exist, try index.html (SPA fallback)
+	if (!fs.existsSync(fullPath) || fs.statSync(fullPath).isDirectory()) {
+		fullPath = path.join(distPath, "index.html");
+	}
+	
+	try {
+		const content = fs.readFileSync(fullPath);
+		const type = mime.getType(fullPath) || "application/octet-stream";
+		
+		// Add caching headers for production performance
+		const headers: Record<string, string> = {
+			"Content-Type": type,
+		};
+		
+		// Cache static assets (JS, CSS, images) for 1 year
+		if (/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$/i.test(fullPath)) {
+			headers["Cache-Control"] = "public, max-age=31536000, immutable";
+		} else {
+			// Don't cache HTML files to ensure updates are picked up
+			headers["Cache-Control"] = "no-cache, must-revalidate";
+		}
+		
+		res.writeHead(200, headers);
+		res.end(content);
+	} catch (err) {
+		log("ERROR", "File serve error:", err);
+		res.writeHead(404);
+		res.end("Not Found");
+	}
+}
+
 // Start server
 function startServer(port: number): void {
 	if (server) {
@@ -195,23 +284,50 @@ function startServer(port: number): void {
 				return;
 			}
 			
-			// Serve web UI
-			if (req.url === "/" || req.url === "/index.html") {
-				res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-				res.end(getWebUI());
-				return;
-			}
-			
 			// Health check
 			if (req.url === "/health") {
 				res.writeHead(200, { "Content-Type": "application/json" });
 				res.end(JSON.stringify({ status: "ok", clients: clients.size }));
 				return;
 			}
-			
-			// 404
-			res.writeHead(404);
-			res.end("Not Found");
+
+			// Serve web UI
+			if (isDev) {
+				// Try to proxy to Astro dev server for hot reload
+				isDevServerRunning().then((isRunning) => {
+					if (isRunning) {
+						log("DEBUG", `Proxying to dev server at ${DEV_SERVER_HOST}:${DEV_SERVER_PORT}`);
+						const proxy = getHttpProxy().createProxyServer({
+							target: `http://${DEV_SERVER_HOST}:${DEV_SERVER_PORT}`,
+							ws: true,
+							changeOrigin: true,
+						});
+						
+						proxy.web(req, res, {}, (err: any) => {
+							log("ERROR", "Proxy error:", err.message);
+							res.writeHead(500, { "Content-Type": "text/html" });
+							res.end(`
+								<html>
+								<body>
+									<h1>Dev Server Connection Error</h1>
+									<p>Failed to connect to Astro dev server at ${DEV_SERVER_HOST}:${DEV_SERVER_PORT}</p>
+									<p>Error: ${err.message}</p>
+									<p>Make sure the dev server is running with: <code>yarn dev</code> or <code>yarn start</code></p>
+								</body>
+								</html>
+							`);
+						});
+					} else {
+						log("WARN", "Dev server not running, serving static files as fallback");
+						// Fallback to serving static files even in dev mode
+						serveStaticFile(req, res);
+					}
+				});
+				return;
+			} else {
+				serveStaticFile(req, res);
+				return;
+			}
 		});
 		
 		// Create WebSocket server

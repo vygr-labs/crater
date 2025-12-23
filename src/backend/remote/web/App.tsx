@@ -367,7 +367,7 @@ export default function App() {
 		<div class="app">
 			{/* Header */}
 			<header class="header">
-				<h1>📖 Crater Remote</h1>
+				<h1>📖 Crater Remote Reload</h1>
 				<div class="status">
 					<div class={`status-dot ${connected() ? "connected" : ""}`} />
 					<span>{connected() ? "Connected" : "Connecting..."}</span>
