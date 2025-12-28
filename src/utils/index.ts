@@ -180,18 +180,18 @@ const mappings: Record<
 > = {
 	[SONGS_TAB_FOCUS_NAME]: {
 		base: {
-			border: "4px solid transparent",
+			// border: "4px solid transparent",
 		},
 		isFluid: {
 			true: {
 				isCurrentPanel: {
 					true: {
-						"background-color": token.var(`colors.${defaultPalette}.900`),
+						"background-color": token.var(`colors.gray.700`),
 						color: token.var(`colors.white`),
 					},
 					false: {
-						"background-color": token.var(`colors.gray.800`),
-						color: token.var("colors.gray.100"),
+						"background-color": token.var(`colors.gray.700`),
+						color: token.var("colors.white"),
 					},
 				},
 			},
@@ -201,8 +201,10 @@ const mappings: Record<
 			true: {
 				isCurrentPanel: {
 					true: {
-						"border-left-color": token.var(`colors.${defaultPalette}.700`),
-						color: token.var(`colors.gray.100`),
+						"background-color": token.var(`colors.${defaultPalette}.900`),
+						// "border-left-color": token.var(`colors.${defaultPalette}.400`),
+						color: token.var(`colors.white`),
+						// "font-weight": "600",
 					},
 					false: {},
 				},
@@ -212,18 +214,18 @@ const mappings: Record<
 	},
 	[SCRIPTURE_TAB_FOCUS_NAME]: {
 		base: {
-			border: "4px solid transparent",
+			// border: "4px solid transparent",
 		},
 		isFluid: {
 			true: {
 				isCurrentPanel: {
 					true: {
-						"background-color": token.var(`colors.${defaultPalette}.900`),
+						"background-color": token.var(`colors.gray.700`),
 						color: token.var(`colors.white`),
 					},
 					false: {
-						"background-color": token.var(`colors.gray.800`),
-						color: token.var("colors.gray.100"),
+						"background-color": token.var(`colors.gray.700`),
+						color: token.var("colors.white"),
 					},
 				},
 			},
@@ -232,8 +234,10 @@ const mappings: Record<
 			true: {
 				isCurrentPanel: {
 					true: {
-						"border-left-color": token.var(`colors.${defaultPalette}.700`),
-						color: token.var(`colors.gray.100`),
+						"background-color": token.var(`colors.${defaultPalette}.900`),
+						// "border-left-color": token.var(`colors.${defaultPalette}.400`),
+						color: token.var(`colors.white`),
+						// "font-weight": "600",
 					},
 					false: {},
 				},

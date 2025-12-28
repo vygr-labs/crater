@@ -75,51 +75,54 @@ export default function ControlsMain() {
 	};
 
 	// Panel switching shortcuts (Ctrl+1 through Ctrl+8)
-	const handleShortcut1: FocusEventHandlerFn = ({ event }) => {
-		if (event.ctrlKey) {
-			changeFocusPanel(SCHEDULE_PANEL_FOCUS_NAME);
+	const handleNumberShortcut = (num: number, event: KeyboardEvent) => {
+		if (!event.ctrlKey) return;
+		event.preventDefault();
+
+		const tabs = tabPanels();
+		// 1-based index for tabs
+		if (num <= tabs.length) {
+			changeFocusPanel(tabs[num - 1]);
+		} else {
+			// Panels after tabs
+			const panelIndex = num - tabs.length;
+			if (panelIndex === 1) changeFocusPanel(SCHEDULE_PANEL_FOCUS_NAME);
+			else if (panelIndex === 2) changeFocusPanel(PREVIEW_PANEL_FOCUS_NAME);
+			else if (panelIndex === 3) changeFocusPanel(LIVE_PANEL_FOCUS_NAME);
 		}
 	};
 
-	const handleShortcut2: FocusEventHandlerFn = ({ event }) => {
-		if (event.ctrlKey) {
-			changeFocusPanel(PREVIEW_PANEL_FOCUS_NAME);
-		}
-	};
+	const handleShortcut1: FocusEventHandlerFn = ({ event }) => handleNumberShortcut(1, event);
+	const handleShortcut2: FocusEventHandlerFn = ({ event }) => handleNumberShortcut(2, event);
+	const handleShortcut3: FocusEventHandlerFn = ({ event }) => handleNumberShortcut(3, event);
+	const handleShortcut4: FocusEventHandlerFn = ({ event }) => handleNumberShortcut(4, event);
+	const handleShortcut5: FocusEventHandlerFn = ({ event }) => handleNumberShortcut(5, event);
+	const handleShortcut6: FocusEventHandlerFn = ({ event }) => handleNumberShortcut(6, event);
+	const handleShortcut7: FocusEventHandlerFn = ({ event }) => handleNumberShortcut(7, event);
+	const handleShortcut8: FocusEventHandlerFn = ({ event }) => handleNumberShortcut(8, event);
 
-	const handleShortcut3: FocusEventHandlerFn = ({ event }) => {
-		if (event.ctrlKey) {
-			changeFocusPanel(LIVE_PANEL_FOCUS_NAME);
-		}
-	};
+	const handleShortcutTab: FocusEventHandlerFn = ({ event }) => {
+		if (!event.ctrlKey) return;
+		event.preventDefault();
 
-	const handleShortcut4: FocusEventHandlerFn = ({ event }) => {
-		if (event.ctrlKey) {
-			changeFocusPanel(SONGS_TAB_FOCUS_NAME);
-		}
-	};
+		const tabs = tabPanels();
+		const current = currentPanel();
+		const currentIndex = tabs.indexOf(current || "");
 
-	const handleShortcut5: FocusEventHandlerFn = ({ event }) => {
-		if (event.ctrlKey) {
-			changeFocusPanel(SCRIPTURE_TAB_FOCUS_NAME);
+		if (currentIndex === -1) {
+			// If not in a tab, go to the first tab
+			changeFocusPanel(tabs[0]);
+			return;
 		}
-	};
 
-	const handleShortcut6: FocusEventHandlerFn = ({ event }) => {
-		if (event.ctrlKey) {
-			changeFocusPanel(STRONGS_TAB_FOCUS_NAME);
-		}
-	};
-
-	const handleShortcut7: FocusEventHandlerFn = ({ event }) => {
-		if (event.ctrlKey) {
-			changeFocusPanel(MEDIA_TAB_FOCUS_NAME);
-		}
-	};
-
-	const handleShortcut8: FocusEventHandlerFn = ({ event }) => {
-		if (event.ctrlKey) {
-			changeFocusPanel(THEMES_TAB_FOCUS_NAME);
+		if (event.shiftKey) {
+			// Previous
+			const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+			changeFocusPanel(tabs[prevIndex]);
+		} else {
+			// Next
+			const nextIndex = (currentIndex + 1) % tabs.length;
+			changeFocusPanel(tabs[nextIndex]);
 		}
 	};
 
@@ -170,6 +173,7 @@ export default function ControlsMain() {
 			"6": handleShortcut6,
 			"7": handleShortcut7,
 			"8": handleShortcut8,
+			Tab: handleShortcutTab,
 			// Modal shortcuts
 			e: handleShortcutE,
 			E: handleShortcutE,

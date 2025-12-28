@@ -472,13 +472,13 @@ export default function SongSelection() {
 											<VStack gap={0} alignItems="flex-start" flex={1} minW={0}>
 												<Text
 													fontWeight={isSelected() ? "medium" : "normal"}
-													color={
-														isSelected() && isCurrentPanel()
-															? "white"
-															: `${neutralPalette}.100`
-													}
 													truncate
 													w="full"
+													style={{
+														color:  isSelected() && isCurrentPanel()
+															? token.var("colors.gray.300")
+															: token.var(`colors.${neutralPalette}.100`)
+													}}
 												>
 													{song.title}
 												</Text>
