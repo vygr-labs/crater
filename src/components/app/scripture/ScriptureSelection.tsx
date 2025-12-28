@@ -914,15 +914,16 @@ export default function ScriptureSelection() {
 											<HStack gap={2} flex={1} minW={0} alignItems="center">
 												{/* Main scripture text */}
 												<Text
+													fontWeight={isSelected() ? "medium" : "normal"}
 													fontSize="15px"
-													color={
-														isSelected() && isCurrentPanel()
-															? `${neutralPalette}.100`
-															: `${neutralPalette}.400`
-													}
 													truncate
 													flex={1}
 													minW={0}
+													style={{
+														color:  isSelected() && isCurrentPanel()
+															? token.var("colors.gray.300")
+															: token.var(`colors.${neutralPalette}.100`)
+													}}
 												>
 													{scripture.text}
 												</Text>
