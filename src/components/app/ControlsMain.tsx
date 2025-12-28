@@ -1,4 +1,4 @@
-import { createEffect, createMemo, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, Show } from "solid-js";
 import { HStack, VStack } from "styled-system/jsx";
 import { Tabs } from "../ui/tabs";
 import type { SongData } from "~/types/context";
@@ -192,10 +192,14 @@ export default function ControlsMain() {
 		return panels;
 	});
 
-	// Derive controlled tab value from currentPanel
-	const controlledTabValue = createMemo(() => {
+	// Track the active tab separately so it doesn't deselect when focus moves to other panels (like Preview/Live)
+	const [activeTab, setActiveTab] = createSignal(DEFAULT_PANEL);
+
+	createEffect(() => {
 		const panel = currentPanel();
-		return panel && tabPanels().includes(panel) ? panel : undefined;
+		if (panel && tabPanels().includes(panel)) {
+			setActiveTab(panel);
+		}
 	});
 
 	return (
@@ -208,7 +212,7 @@ export default function ControlsMain() {
 				display="flex"
 				flexDir="column"
 				defaultValue={DEFAULT_PANEL}
-				value={controlledTabValue()}
+				value={activeTab()}
 				onValueChange={({ value }) => {
 					console.log("About to change panel: ", value);
 					changeFocusPanel(value);
