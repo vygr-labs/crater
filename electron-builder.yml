@@ -21,7 +21,17 @@ nsis:
 
 # Linux Configuration
 linux:
-  target: [AppImage, deb]
+  target:
+    - target: AppImage
+      arch:
+        - x64
+    - target: deb
+      arch:
+        - x64
+        - arm64
+    - target: tar.gz
+      arch:
+        - x64
   icon: "src/assets/media/logo.png"
   synopsis: Free Alternative to Easyworship
   description: Open Source Scripture Projection Software for Churches
