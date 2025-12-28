@@ -760,13 +760,20 @@ export default function ScriptureSelection() {
 		}
 	});
 
+	let isInputDrivenFocus = false;
+
 	// Update input value when navigating in special mode
 	createEffect(() => {
 		const fluidId = fluidFocusId();
+
+		if (isInputDrivenFocus) {
+			isInputDrivenFocus = false;
+			return;
+		}
+
 		if (
 			scriptureControls.searchMode === "special" &&
-			typeof fluidId === "number" &&
-			document.activeElement !== searchInputRef
+			typeof fluidId === "number"
 		) {
 			const scripture = filteredScriptures()[fluidId];
 			if (scripture) {
@@ -799,21 +806,21 @@ export default function ScriptureSelection() {
 
 	let highlightInput!: HTMLParagraphElement;
 
-	const handlerUpdateFluidFocus = (book: string, chapter: number, verse: number) => {
+	const handlerUpdateFluidFocus = (
+		book: string,
+		chapter: number,
+		verse: number,
+		fromInput = false,
+	) => {
 		const scriptureIndex = findBestVerseMatch(
 			filteredScriptures(),
 			book,
 			chapter,
 			verse,
 		);
-		console.log(
-			"Found Index: ",
-			scriptureIndex,
-			book,
-			chapter,
-			verse,
-		);
+		console.log("Found Index: ", scriptureIndex, book, chapter, verse);
 		if (scriptureIndex > -1 && scriptureIndex !== fluidFocusId()) {
+			if (fromInput) isInputDrivenFocus = true;
 			changeFluidFocus(scriptureIndex);
 		}
 	};
@@ -821,13 +828,13 @@ export default function ScriptureSelection() {
 	const handleInputChange = (e: InputEvent) => {
 		const target = e.target as HTMLInputElement;
 		const newValue = target.value;
-		
+
 		setScriptureControls("inputValue", newValue);
 
 		if (scriptureControls.searchMode === "special") {
 			const { book, chapter, verse } = parseScriptureInput(newValue);
 			if (book) {
-				handlerUpdateFluidFocus(book, chapter ?? 1, verse ?? 1);
+				handlerUpdateFluidFocus(book, chapter ?? 1, verse ?? 1, true);
 			}
 		}
 	};
