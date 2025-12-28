@@ -12,15 +12,18 @@ interface Props extends ParentProps {
 
 export default function ContextMenu(props: Props) {
 	return (
-		<Box w="full" h="full" tabIndex={0} outline="none">
+		<Box w="full" h="full">
 			<Menu.Root
-				// open={props.open}
-				// onOpenChange={(details) => {
-				// 	props.setOpen(details.open);
-				// }}
-				// onPointerDownOutside={() => {
-				// 	props.setOpen(false);
-				// }}
+				open={props.open}
+				onOpenChange={(details) => {
+					props.setOpen(details.open);
+				}}
+				onSelect={() => {
+					props.setOpen(false);
+				}}
+				onPointerDownOutside={() => {
+					props.setOpen(false);
+				}}
 			>
 				<Menu.ContextTrigger
 					asChild={(triggerProps) => (

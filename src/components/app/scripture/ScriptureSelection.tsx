@@ -365,6 +365,62 @@ export default function ScriptureSelection() {
 		// searchInputRef?.focus();
 	};
 
+	let globalChangeFluidFocus: ((id: number) => void) | undefined;
+	let globalFluidFocusId: (() => number | undefined) | undefined;
+
+	const toggleSearchMode = (currentFluidId?: number | null) => {
+		const wasSearch = scriptureControls.searchMode === "search";
+
+		// Capture current scripture
+		let targetScripture: ScriptureVerse | null = null;
+		const focusId =
+			typeof currentFluidId === "number" ? currentFluidId : globalFluidFocusId?.();
+
+		if (wasSearch && typeof focusId === "number") {
+			targetScripture = filteredScriptures()[focusId];
+		}
+
+		setScriptureControls(
+			produce((store) => {
+				store.searchMode = store.searchMode === "search" ? "special" : "search";
+				store.query = "";
+			}),
+		);
+
+		if (wasSearch) {
+			if (targetScripture) {
+				setScriptureControls(
+					"inputValue",
+					`${targetScripture.book_name} ${targetScripture.chapter}:${targetScripture.verse}`,
+				);
+
+				// Find index in allScriptures and update focus
+				const all = allScriptures();
+				if (all && globalChangeFluidFocus) {
+					const index = findBestVerseMatch(
+						all,
+						targetScripture.book_name,
+						targetScripture.chapter,
+						targetScripture.verse,
+					);
+					if (index > -1) {
+						globalChangeFluidFocus(index);
+						// Defer scrolling to allow virtualizer to update with new count
+						setTimeout(() => {
+							rowVirtualizer().scrollToIndex(index, { align: "center" });
+						}, 50);
+					}
+				}
+			} else {
+				setScriptureControls("inputValue", "Genesis 1:1");
+			}
+		} else {
+			setTimeout(() => {
+				searchInputRef?.focus();
+			}, 0);
+		}
+	};
+
 	const { subscribeEvent, changeFocusPanel, currentPanel } = useFocusContext();
 	const { name, coreFocusId, fluidFocusId, changeFluidFocus } = subscribeEvent({
 		name: SCRIPTURE_TAB_FOCUS_NAME,
@@ -381,7 +437,7 @@ export default function ScriptureSelection() {
 			}) => {
 				const newCoreFocusId = Math.min(
 					(fluidFocusId ?? 0) + 1,
-					filteredScriptures().length,
+					filteredScriptures().length - 1,
 				);
 				console.log("ARROWDOWN Changing fluid focus: ", newCoreFocusId);
 				changeFluidFocus(newCoreFocusId);
@@ -409,6 +465,18 @@ export default function ScriptureSelection() {
 				changeFocus(fluidFocusId);
 				pushToLive(fluidFocusId, true);
 			},
+			f: ({ event, fluidFocusId }) => {
+				if (event.ctrlKey) {
+					event.preventDefault();
+					toggleSearchMode(fluidFocusId);
+				}
+			},
+			F: ({ event, fluidFocusId }) => {
+				if (event.ctrlKey) {
+					event.preventDefault();
+					toggleSearchMode(fluidFocusId);
+				}
+			},
 		},
 		clickHandlers: {
 			onClick: ({ changeFluidFocus, focusId, event }) => {
@@ -434,6 +502,8 @@ export default function ScriptureSelection() {
 			},
 		},
 	});
+	globalChangeFluidFocus = changeFluidFocus;
+	globalFluidFocusId = fluidFocusId;
 	const isCurrentPanel = createMemo(() => currentPanel() === name);
 
 	function handleGroupAccordionChange(
@@ -690,6 +760,24 @@ export default function ScriptureSelection() {
 		}
 	});
 
+	// Update input value when navigating in special mode
+	createEffect(() => {
+		const fluidId = fluidFocusId();
+		if (
+			scriptureControls.searchMode === "special" &&
+			typeof fluidId === "number" &&
+			document.activeElement !== searchInputRef
+		) {
+			const scripture = filteredScriptures()[fluidId];
+			if (scripture) {
+				setScriptureControls(
+					"inputValue",
+					`${scripture.book_name} ${scripture.chapter}:${scripture.verse}`,
+				);
+			}
+		}
+	});
+
 	const handleFilter = (e: InputEvent) => {
 		setScriptureControls("query", (e.target as HTMLInputElement).value);
 	};
@@ -745,32 +833,7 @@ export default function ScriptureSelection() {
 	};
 
 	const updateSearchMode = () => {
-		const wasSearch = scriptureControls.searchMode === "search";
-		setScriptureControls(
-			produce((store) => {
-				store.searchMode = store.searchMode === "search" ? "special" : "search";
-				store.query = "";
-			}),
-		);
-
-		// When switching to special mode, initialize with current scripture
-		if (wasSearch) {
-			// Get current scripture from fluid focus
-			const fluidId = fluidFocusId();
-			const scripture =
-				typeof fluidId === "number" ? filteredScriptures()[fluidId] : null;
-			
-			if (scripture) {
-				setScriptureControls("inputValue", `${scripture.book_name} ${scripture.chapter}:${scripture.verse}`);
-			} else {
-				setScriptureControls("inputValue", "Genesis 1:1");
-			}
-		} else {
-			// Switching to search mode, just focus the input
-			setTimeout(() => {
-				searchInputRef?.focus();
-			}, 0);
-		}
+		toggleSearchMode(fluidFocusId());
 	};
 
 	const handleInputClick = (e: MouseEvent) => {
@@ -1075,7 +1138,7 @@ const ScriptureSearchInput = (props: SearchInputProps) => {
 						color="gray.500"
 						borderColor="gray.700"
 					>
-						⌘B
+						⌘F
 					</Kbd>
 				)}
 				endElementProps={{ pr: 1 }}
@@ -1119,21 +1182,23 @@ const ScriptureSearchInput = (props: SearchInputProps) => {
 					aria-label="Search scriptures"
 				/>
 			</InputGroup>
-			<Box
-				w="full"
-				px={2}
-				py={1}
-				bg="gray.900/30"
-				// borderBottom="1px solid"
-				// borderBottomColor="gray.800"
-			>
-				<Text fontSize="13px" color="gray.500">
-					Interpreted:{" "}
-					<Text as="span" color="gray.300">
-						{props.interpretedValue || "..."}
+			<Show when={props.searchMode === "special"}>
+				<Box
+					w="full"
+					px={2}
+					py={1}
+					bg="gray.900/30"
+					// borderBottom="1px solid"
+					// borderBottomColor="gray.800"
+				>
+					<Text fontSize="13px" color="gray.500">
+						Interpreted:{" "}
+						<Text as="span" color="gray.300">
+							{props.interpretedValue || "..."}
+						</Text>
 					</Text>
-				</Text>
-			</Box>
+				</Box>
+			</Show>
 		</VStack>
 	);
 };
