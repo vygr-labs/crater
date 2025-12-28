@@ -145,6 +145,79 @@ function findBestVerseMatch(
 	return exactMatchIndex !== -1 ? exactMatchIndex : rangeMatchIndex;
 }
 
+const allBooks = bibleData
+	.map((obj) => ({ name: obj.name, id: obj.id }))
+	.sort((a, b) => a.name.localeCompare(b.name));
+
+function parseScriptureInput(input: string): {
+	book: string | null;
+	chapter: number | null;
+	verse: number | null;
+} {
+	if (!input) return { book: null, chapter: null, verse: null };
+
+	// Normalize input:
+	// 1. Lowercase
+	// 2. Add spaces around digits to separate them from letters (e.g. "1sam" -> "1 sam", "gen1" -> "gen 1")
+	// 3. Replace colons with spaces
+	// 4. Collapse multiple spaces
+	const normalized = input.toLowerCase()
+		.replace(/(\d+)/g, " $1 ")
+		.replace(/[:]/g, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+
+	const tokens = normalized.split(" ");
+	
+	let bestBook: { name: string; id: string } | null = null;
+	let usedTokens = 0;
+	
+	// Try to match the longest sequence of tokens to a book name
+	let currentStr = "";
+	let candidateBooks = allBooks;
+
+	for (let i = 0; i < tokens.length; i++) {
+		const token = tokens[i];
+		const nextStr = currentStr ? currentStr + " " + token : token;
+		
+		// Find books that start with nextStr
+		// Note: allBooks are sorted alphabetically
+		const nextCandidates = candidateBooks.filter(b => 
+			b.name.toLowerCase().startsWith(nextStr)
+		);
+		
+		if (nextCandidates.length === 0) {
+			// No matches for nextStr.
+			// The previous match (currentStr) is the best we can do.
+			break;
+		}
+		
+		// We have matches, continue to see if we can be more specific
+		candidateBooks = nextCandidates;
+		currentStr = nextStr;
+		usedTokens = i + 1;
+	}
+	
+	if (candidateBooks.length > 0) {
+		// We found at least one book matching the prefix.
+		// Pick the first one (alphabetical).
+		bestBook = candidateBooks[0];
+		
+		// Parse chapter and verse from remaining tokens
+		const remainingTokens = tokens.slice(usedTokens);
+		const chapter = remainingTokens.length > 0 ? parseInt(remainingTokens[0]) : null;
+		const verse = remainingTokens.length > 1 ? parseInt(remainingTokens[1]) : null;
+		
+		return {
+			book: bestBook.name,
+			chapter: isNaN(chapter!) ? null : chapter,
+			verse: isNaN(verse!) ? null : verse
+		};
+	}
+
+	return { book: null, chapter: null, verse: null };
+}
+
 type ScripturePanelGroupValues = "all" | "collections" | "favorites";
 type ScriptureListData = {
 	title: string;
@@ -160,17 +233,8 @@ type ScriptureControlsData = {
 	filter: string;
 	contextMenuOpen: boolean;
 	translation: AvailableTranslation;
+	inputValue: string;
 };
-
-interface StageMarkData {
-	book?: string;
-	chapter?: number;
-	verse?: number | string;
-	stage: number;
-	currentValue: string;
-	selectionStart: number;
-	selectionEnd: number;
-}
 
 export default function ScriptureSelection() {
 	const { appStore, setAppStore } = useAppContext();
@@ -183,6 +247,7 @@ export default function ScriptureSelection() {
 			filter: "",
 			contextMenuOpen: false,
 			translation: "NKJV",
+			inputValue: "",
 		});
 	const allScriptures = createAsyncMemo(async () => {
 		// const updated = appStore.scripturesUpdateCounter
@@ -320,7 +385,6 @@ export default function ScriptureSelection() {
 				);
 				console.log("ARROWDOWN Changing fluid focus: ", newCoreFocusId);
 				changeFluidFocus(newCoreFocusId);
-				updateFilterStage(event);
 			},
 			ArrowUp: ({
 				coreFocusId,
@@ -333,7 +397,6 @@ export default function ScriptureSelection() {
 				const newCoreFocusId = Math.max((fluidFocusId ?? 0) - 1, 0);
 				console.log("ARROWUP Changing fluid focus: ", newCoreFocusId);
 				changeFluidFocus(newCoreFocusId);
-				updateFilterStage(event);
 			},
 			Enter: ({
 				coreFocusId,
@@ -456,7 +519,7 @@ export default function ScriptureSelection() {
 	);
 
 	// Track the currently selected scripture reference for translation changes
-	// This stores the reference independently of stageMarkData which only updates in "special" mode
+	// This stores the reference independently of the input value
 	let selectedScriptureRef: {
 		book_name: string;
 		chapter: number;
@@ -619,45 +682,11 @@ export default function ScriptureSelection() {
 		}
 	});
 
-	const updateFilterInput = (scripture?: ScriptureVerse) => {
-		if (scriptureControls.searchMode !== "special") return;
-		console.log(
-			"Checking: ",
-			scripture,
-			stageMarkData,
-			scripture?.book_name,
-			stageMarkData.book,
-		);
-		// Check if the scripture is different from what's in stageMarkData
-		// Use verseMatches to handle verse ranges/subdivisions (e.g., "1-4" matches verse 1)
-		const bookMatches =
-			scripture?.book_name.toLowerCase() === stageMarkData.book?.toLowerCase();
-		const chapterMatches = scripture?.chapter === stageMarkData.chapter;
-		const verseIsEquivalent =
-			scripture && verseMatches(scripture.verse, stageMarkData.verse ?? 1);
-
-		if (scripture && (!bookMatches || !chapterMatches || !verseIsEquivalent)) {
-			console.log("Check Successful: ", scripture);
-			setStageMarkData({
-				book: scripture.book_name,
-				chapter: scripture.chapter,
-				verse: scripture.verse,
-				stage: 0,
-				selectionStart: 0,
-				selectionEnd: scripture.book_name.length,
-				currentValue: "",
-			});
-		}
-	};
-
 	// send current fluid item to preview-menu
 	createEffect(() => {
 		const fluidId = fluidFocusId();
 		if (typeof fluidId === "number") {
 			pushToLive(fluidId, false);
-			const scripture = filteredScriptures()[fluidId];
-			console.log("Sending current item preview: ", fluidId, scripture);
-			updateFilterInput(scripture);
 		}
 	});
 
@@ -680,277 +709,38 @@ export default function ScriptureSelection() {
 		),
 	);
 
-	const allBooks = bibleData
-		.map((obj) => ({ name: obj.name, id: obj.id }))
-		.toSorted();
 	let highlightInput!: HTMLParagraphElement;
-	const [stageMarkData, setStageMarkData] = createStore<StageMarkData>({
-		stage: 0,
-		book: "",
-		chapter: 1,
-		verse: 1,
-		currentValue: "",
-		selectionStart: 0,
-		selectionEnd: 0,
-	});
 
-	createEffect(
-		on(
-			[
-				() => stageMarkData.selectionStart,
-				() => stageMarkData.selectionEnd,
-				() => stageMarkData.currentValue,
-				() => stageMarkData.stage,
-				() => stageMarkData.book,
-				() => stageMarkData.chapter,
-				() => stageMarkData.verse,
-			],
-			() => {
-				console.log(
-					"Should Auto Select: ",
-					stageMarkData.currentValue,
-					stageMarkData.stage,
-					stageMarkData.selectionStart,
-					stageMarkData.selectionEnd,
-					stageMarkData.book,
-					stageMarkData.chapter,
-					stageMarkData.verse,
-				);
-				const stageOffsets: Record<number, number> = {
-					0: 0,
-					1: (stageMarkData.book?.length ?? 0) + 1,
-					2: (stageMarkData.chapter?.toString().length ?? 0) + 1,
-				};
-				const offset =
-					stageMarkData.stage > 0
-						? Array(stageMarkData.stage + 1)
-								.fill(0)
-								.reduce((p, c, i) => p + stageOffsets[i], 0)
-						: 0;
-				console.log(
-					"selection Offset",
-					Array(stageMarkData.stage + 1).fill(0),
-					offset,
-				);
-				searchInputRef.focus();
-				searchInputRef.setSelectionRange(
-					offset + stageMarkData.selectionStart,
-					offset + stageMarkData.selectionEnd,
-				);
-				handlerUpdateFluidFocus();
-			},
-		),
-	);
-
-	const handlerUpdateFluidFocus = () => {
+	const handlerUpdateFluidFocus = (book: string, chapter: number, verse: number) => {
 		const scriptureIndex = findBestVerseMatch(
 			filteredScriptures(),
-			stageMarkData.book ?? "",
-			stageMarkData.chapter ?? 1,
-			stageMarkData.verse ?? 1,
+			book,
+			chapter,
+			verse,
 		);
 		console.log(
 			"Found Index: ",
 			scriptureIndex,
-			stageMarkData.book?.toLocaleLowerCase(),
-			stageMarkData.chapter,
-			stageMarkData.verse,
+			book,
+			chapter,
+			verse,
 		);
 		if (scriptureIndex > -1 && scriptureIndex !== fluidFocusId()) {
 			changeFluidFocus(scriptureIndex);
 		}
 	};
 
-	const scripturePattern = /^(\d*\s*\w*)\s*(\d*)[:|\s]*(\d*)$/gm;
-	const handleSpecialSearch = (e: InputEvent) => {
-		e.preventDefault();
+	const handleInputChange = (e: InputEvent) => {
 		const target = e.target as HTMLInputElement;
-		let stage = stageMarkData.stage;
-		let book: string = stageMarkData.book ?? "";
-		let chapter: number = stageMarkData.chapter ?? 1;
-		let verse: number =
-			typeof stageMarkData.verse === "string"
-				? parseInt(stageMarkData.verse) || 1
-				: (stageMarkData.verse ?? 1);
-		let newVal;
-		if (e.data) {
-			newVal = stageMarkData.currentValue + e.data;
-			console.log(
-				"val check: ",
-				`--${stageMarkData.currentValue}--`,
-				`--${e.data}--`,
-				newVal.split(" ").length,
-				book.split(" ").length,
-				newVal.split(" ").length > book.split(" ").length,
-			);
-			if (
-				e.data === " " &&
-				newVal.split(" ").length > book.split(" ").length &&
-				stageMarkData.stage < 2
-			) {
-				stage += 1;
-				console.log("entered new stage: ", stage);
+		const newValue = target.value;
+		
+		setScriptureControls("inputValue", newValue);
+
+		if (scriptureControls.searchMode === "special") {
+			const { book, chapter, verse } = parseScriptureInput(newValue);
+			if (book) {
+				handlerUpdateFluidFocus(book, chapter ?? 1, verse ?? 1);
 			}
-		} else {
-			newVal = stageMarkData.currentValue.substring(
-				0,
-				stageMarkData.currentValue.length - 1,
-			);
-		}
-
-		console.log(
-			"Mid-check: ",
-			newVal,
-			stage,
-			stageMarkData.currentValue,
-			e.data,
-		);
-		let invalidFilter = false;
-		let extractedChapter: number = NaN;
-		let extractedVerse: number = NaN;
-		try {
-			const d = newVal.matchAll(scripturePattern).toArray()[0];
-			book = d[1];
-			extractedChapter = parseInt(d[2]);
-			extractedVerse = parseInt(d[3]);
-			chapter = extractedChapter || 1; // set defaults
-			verse = extractedVerse || 1; // set defaults
-
-			console.log(
-				`-${book}-`,
-				"-",
-				chapter,
-				"-",
-				verse,
-				"-",
-				extractedChapter,
-				"-",
-				extractedVerse,
-			);
-			if (stage === 1) {
-				newVal = `${book} ${extractedChapter || ""}`;
-			} else if (stage === 2) {
-				newVal = `${book} ${chapter}:${extractedVerse || ""}`;
-			}
-		} catch (err) {
-			appLogger.error("Error in regex scripture search", err);
-			invalidFilter = true;
-		}
-
-		const foundBook = allBooks.find((b) =>
-			b.name.toLowerCase().startsWith(book.toLowerCase()),
-		) ?? {
-			name: stageMarkData.book || allBooks[0].name,
-			id: allBooks.find(
-				(b) => b.name.toLowerCase() === stageMarkData.book?.toLowerCase(),
-			)?.id,
-		};
-		const bookMeta = bookInfo.find((book) => book.id === foundBook.id);
-		const foundChapter = bookMeta?.chapters?.[chapter - 1];
-		const foundVerse = verse <= (foundChapter ?? 1);
-		let portionStart: number = 0;
-		let portionEnd: number = 0;
-		if (stage === 0) {
-			portionStart = book.length;
-			portionEnd = foundBook.name.length;
-		} else if (stage === 1) {
-			portionStart = extractedChapter ? extractedChapter.toString().length : 0;
-			portionEnd = chapter.toString().length;
-		} else if (stage === 2) {
-			portionStart = extractedVerse ? extractedVerse.toString().length : 0;
-			portionEnd = verse.toString().length;
-		}
-
-		console.log(
-			"What I want to set: ",
-			foundBook,
-			book,
-			chapter,
-			verse,
-			stage,
-			portionStart,
-			portionEnd,
-			newVal,
-		);
-		if (foundBook && foundChapter && foundVerse) {
-			setStageMarkData(
-				produce((store) => {
-					console.log("Before Set: ", store);
-					store.currentValue = newVal;
-					store.book = foundBook.name;
-					store.chapter = chapter;
-					store.verse = verse;
-					store.stage = stage;
-					store.selectionStart = portionStart;
-					store.selectionEnd = portionEnd;
-					console.log("Finished Setting: ", store, portionStart, portionEnd);
-				}),
-			);
-		}
-
-		console.log(
-			`--${stageMarkData.currentValue}--`,
-			`--${newVal}--`,
-			invalidFilter,
-			stageMarkData,
-		);
-	};
-
-	const updateFilterStage = (e?: KeyboardEvent) => {
-		const target = searchInputRef as HTMLInputElement;
-
-		let {
-			book: currentBook,
-			chapter: currentChapter,
-			verse: currentVerse,
-			stage,
-		} = unwrap(stageMarkData);
-		let inputVal = "";
-
-		console.log(
-			"Input Nav: ",
-			currentBook,
-			currentChapter,
-			currentVerse,
-			stage,
-			fluidFocusId(),
-		);
-
-		if (e) {
-			console.log("IS EVENT: ", e);
-			e.preventDefault();
-			if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-				stage = 2;
-			}
-			if (e.key === "ArrowRight" && stage < 2) {
-				stage += 1;
-			} else if (e.key === "ArrowLeft" && stage >= 0) {
-				stage -= 1;
-			}
-		}
-
-		if (stage === 1) {
-			inputVal = `${stageMarkData.book} `;
-		} else if (stage === 2) {
-			inputVal = `${stageMarkData.book} ${stageMarkData.chapter}:`;
-		}
-		const stageLengths = [
-			stageMarkData.book?.length ?? 0,
-			stageMarkData.chapter?.toString().length ?? 0,
-			stageMarkData.verse?.toString().length ?? 0,
-		];
-		setStageMarkData({
-			stage,
-			selectionStart: 0,
-			selectionEnd: stageLengths[stage],
-			currentValue: inputVal,
-		});
-	};
-
-	const handleFilterNav = (e: KeyboardEvent) => {
-		if (["ArrowDown", "ArrowUp", "Enter"].includes(e.key)) e.preventDefault();
-		if (["ArrowLeft", "ArrowRight"].includes(e.key)) {
-			updateFilterStage(e);
 		}
 	};
 
@@ -963,31 +753,18 @@ export default function ScriptureSelection() {
 			}),
 		);
 
-		// When switching to special mode, initialize with current scripture and trigger selection
+		// When switching to special mode, initialize with current scripture
 		if (wasSearch) {
 			// Get current scripture from fluid focus
 			const fluidId = fluidFocusId();
 			const scripture =
 				typeof fluidId === "number" ? filteredScriptures()[fluidId] : null;
-			const bookName = scripture?.book_name || allBooks[0]?.name || "Genesis";
-			const chapter = scripture?.chapter || 1;
-			const verse =
-				typeof scripture?.verse === "string"
-					? parseInt(scripture.verse) || 1
-					: scripture?.verse || 1;
-
-			// Initialize stageMarkData with current scripture, which triggers the selection effect
-			setTimeout(() => {
-				setStageMarkData({
-					stage: 0,
-					book: bookName,
-					chapter: chapter,
-					verse: verse,
-					currentValue: "",
-					selectionStart: 0,
-					selectionEnd: bookName.length,
-				});
-			}, 0);
+			
+			if (scripture) {
+				setScriptureControls("inputValue", `${scripture.book_name} ${scripture.chapter}:${scripture.verse}`);
+			} else {
+				setScriptureControls("inputValue", "Genesis 1:1");
+			}
 		} else {
 			// Switching to search mode, just focus the input
 			setTimeout(() => {
@@ -999,54 +776,34 @@ export default function ScriptureSelection() {
 	const handleInputClick = (e: MouseEvent) => {
 		// Always change focus panel to scriptures when clicking the input
 		changeFocusPanel(name);
+	};
 
-		if (scriptureControls.searchMode !== "special") return;
-		e.preventDefault();
-		console.log(e, searchInputRef.selectionStart, searchInputRef.selectionEnd);
-		const stageOffsets: Record<number, number> = {
-			0: 0,
-			1: stageMarkData.book?.length ?? 0,
-			2: stageMarkData.chapter?.toString().length ?? 0,
-		};
-		let clickedStage = 0;
-		const stageLengths = [
-			stageMarkData.book?.length ?? 0,
-			(stageMarkData.chapter?.toString().length ?? 0) + 1,
-			(stageMarkData.verse?.toString().length ?? 0) + 1,
-		];
+	const interpretedScripture = createMemo(() => {
+		const input =
+			scriptureControls.searchMode === "special"
+				? scriptureControls.inputValue
+				: scriptureControls.query;
+		if (!input) return null;
+		const { book, chapter, verse } = parseScriptureInput(input);
+		if (!book) return null;
+		return `${book} ${chapter ?? 1}:${verse ?? 1}`;
+	});
 
-		let maxPos = 0;
-		let selection: number[] = [];
-		let inputVal = "";
-		for (let i = 0; i < stageLengths.length; i++) {
-			maxPos += stageLengths[i];
-			if ((searchInputRef.selectionStart ?? 0) <= maxPos) {
-				clickedStage = i;
-				break;
+	// Auto-complete the input when the user presses Tab or Enter
+	const handleInputKeyDown = (e: KeyboardEvent) => {
+		if (e.key === "Tab" || e.key === "Enter") {
+			const interpreted = interpretedScripture();
+			if (interpreted && scriptureControls.searchMode === "special") {
+				e.preventDefault();
+				// Use space instead of colon for the input value to make navigation easier
+				setScriptureControls("inputValue", interpreted.replace(":", " "));
+				// Also ensure we navigate to it
+				const { book, chapter, verse } = parseScriptureInput(interpreted);
+				if (book) {
+					handlerUpdateFluidFocus(book, chapter ?? 1, verse ?? 1);
+				}
 			}
 		}
-
-		selection = [maxPos - stageLengths[clickedStage], maxPos];
-		if (clickedStage === 1) {
-			selection[0] += 1;
-			inputVal = `${stageMarkData.book} `;
-		} else if (clickedStage === 2) {
-			selection[0] += 1;
-			inputVal = `${stageMarkData.book} ${stageMarkData.chapter}:`;
-		}
-		console.log("Clicked Stage: ", clickedStage, selection, inputVal);
-		// searchInputRef.setSelectionRange(selection[0], selection[1]);
-		// searchInputRef.focus();
-
-		setStageMarkData(
-			produce((store) => {
-				store.stage = clickedStage;
-				store.selectionStart = 0;
-				store.selectionEnd = stageLengths[clickedStage];
-				store.currentValue = inputVal;
-			}),
-		);
-		console.log({ ...stageMarkData });
 	};
 
 	const tabCenterContent = (
@@ -1064,15 +821,15 @@ export default function ScriptureSelection() {
 						searchMode={scriptureControls.searchMode}
 						updateSearchMode={updateSearchMode}
 						query={scriptureControls.query}
-						filter={scriptureControls.filter}
+						inputValue={scriptureControls.inputValue}
+						interpretedValue={interpretedScripture()}
 						onFilter={handleFilter}
-						onSpecialSearch={handleSpecialSearch}
+						onInputChange={handleInputChange}
 						onInputClick={handleInputClick}
+						onKeyDown={handleInputKeyDown}
 						setSearchInputRef={(el) => {
 							searchInputRef = el;
 						}}
-						markData={stageMarkData}
-						handleKeyNav={handleFilterNav}
 					/>
 				}
 				currentGroup={[scriptureControls.group]}
@@ -1259,111 +1016,123 @@ export default function ScriptureSelection() {
 
 interface SearchInputProps {
 	query: string;
-	filter: string;
+	inputValue: string;
+	interpretedValue?: string | null;
 	onFilter: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
-	onSpecialSearch: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
+	onInputChange: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
 	onInputClick: JSX.EventHandlerUnion<HTMLInputElement, MouseEvent>;
+	onKeyDown?: JSX.EventHandlerUnion<HTMLInputElement, KeyboardEvent>;
 	searchMode: ScriptureSearchMode;
 	updateSearchMode: () => void;
 	setSearchInputRef: (el: HTMLInputElement) => void;
-	markData: StageMarkData;
-	handleKeyNav: JSX.EventHandlerUnion<HTMLInputElement, KeyboardEvent>;
 }
 
 const ScriptureSearchInput = (props: SearchInputProps) => {
 	return (
-		<InputGroup
-			w="full"
-			pr={1}
-			bg="gray.900/50"
-			borderBottom="1px solid"
-			borderBottomColor="gray.800"
-			_focusWithin={{
-				borderColor: `${defaultPalette}.700`,
-				bg: `${neutralPalette}.900`,
-			}}
-			transition="all 0.15s ease"
-			startElement={() => (
-				<IconButton
-					size="xs"
-					variant="ghost"
-					cursor="pointer"
-					onClick={props.updateSearchMode}
-					color="gray.400"
-					_hover={{ color: "gray.200", bg: "gray.800" }}
-					aria-label={
-						props.searchMode === "special"
-							? "Switch to search mode"
-							: "Switch to reference mode"
-					}
-					title={
-						props.searchMode === "special" ? "Reference search" : "Text search"
-					}
-				>
-					<Show
-						when={props.searchMode === "special"}
-						fallback={<VsSearchFuzzy size={14} />}
-					>
-						<VsListTree size={14} />
-					</Show>
-				</IconButton>
-			)}
-			startElementProps={{ padding: 0, pointerEvents: "auto", pl: 1 }}
-			endElement={() => (
-				<Kbd
-					variant="outline"
-					size="sm"
-					color="gray.500"
-					borderColor="gray.700"
-				>
-					⌘B
-				</Kbd>
-			)}
-			endElementProps={{ pr: 1 }}
-		>
-			<Input
-				pos="relative"
-				fontSize={13}
-				zIndex={10}
-				variant="outline"
-				rounded="none"
-				border="unset"
-				px="2"
-				h="9"
-				outline="none"
+		<VStack gap={0} w="full">
+			<InputGroup
 				w="full"
-				color="gray.200"
-				lineHeight={2}
-				letterSpacing={0.4}
-				_placeholder={{ color: `${neutralPalette}.500` }}
-				_selection={{
-					bgColor: `white`,
-					color: "black",
-					fontWeight: 500,
+				pr={1}
+				bg="gray.900/50"
+				// borderBottom="1px solid"
+				// borderBottomColor="gray.800"
+				_focusWithin={{
+					borderColor: `${defaultPalette}.700`,
+					bg: `${neutralPalette}.900`,
 				}}
-				ref={props.setSearchInputRef}
-				value={
-					props.searchMode === "special" && props.markData.book
-						? `${props.markData.book} ${props.markData.chapter}:${props.markData.verse}`
-						: ""
-				}
-				placeholder={
-					props.searchMode === "special" ? "Genesis 1:1" : "Search verses..."
-				}
-				onclick={props.onInputClick}
-				onbeforeinput={
-					props.searchMode === "special" ? props.onSpecialSearch : undefined
-				}
-				oninput={props.searchMode === "search" ? props.onFilter : undefined}
-				onkeydown={
-					props.searchMode === "special" ? props.handleKeyNav : undefined
-				}
-				textTransform={
-					props.searchMode === "special" ? "capitalize" : "initial"
-				}
-				data-testid="scripture-search-input"
-				aria-label="Search scriptures"
-			/>
-		</InputGroup>
+				transition="all 0.15s ease"
+				startElement={() => (
+					<IconButton
+						size="xs"
+						variant="ghost"
+						cursor="pointer"
+						onClick={props.updateSearchMode}
+						color="gray.400"
+						_hover={{ color: "gray.200", bg: "gray.800" }}
+						aria-label={
+							props.searchMode === "special"
+								? "Switch to search mode"
+								: "Switch to reference mode"
+						}
+						title={
+							props.searchMode === "special" ? "Reference search" : "Text search"
+						}
+					>
+						<Show
+							when={props.searchMode === "special"}
+							fallback={<VsSearchFuzzy size={14} />}
+						>
+							<VsListTree size={14} />
+						</Show>
+					</IconButton>
+				)}
+				startElementProps={{ padding: 0, pointerEvents: "auto", pl: 1 }}
+				endElement={() => (
+					<Kbd
+						variant="outline"
+						size="sm"
+						color="gray.500"
+						borderColor="gray.700"
+					>
+						⌘B
+					</Kbd>
+				)}
+				endElementProps={{ pr: 1 }}
+			>
+				<Input
+					pos="relative"
+					fontSize={13}
+					zIndex={10}
+					variant="outline"
+					rounded="none"
+					border="unset"
+					px="2"
+					h="9"
+					outline="none"
+					w="full"
+					color="gray.200"
+					lineHeight={2}
+					letterSpacing={0.4}
+					_placeholder={{ color: `${neutralPalette}.500` }}
+					_selection={{
+						bgColor: `white`,
+						color: "black",
+						fontWeight: 500,
+					}}
+					ref={props.setSearchInputRef}
+					value={
+						props.searchMode === "special" ? props.inputValue : props.query
+					}
+					placeholder={
+						props.searchMode === "special" ? "Genesis 1:1" : "Search verses..."
+					}
+					onclick={props.onInputClick}
+					oninput={
+						props.searchMode === "search" ? props.onFilter : props.onInputChange
+					}
+					onkeydown={props.onKeyDown}
+					textTransform={
+						props.searchMode === "special" ? "capitalize" : "initial"
+					}
+					data-testid="scripture-search-input"
+					aria-label="Search scriptures"
+				/>
+			</InputGroup>
+			<Box
+				w="full"
+				px={2}
+				py={1}
+				bg="gray.900/30"
+				// borderBottom="1px solid"
+				// borderBottomColor="gray.800"
+			>
+				<Text fontSize="13px" color="gray.500">
+					Interpreted:{" "}
+					<Text as="span" color="gray.300">
+						{props.interpretedValue || "..."}
+					</Text>
+				</Text>
+			</Box>
+		</VStack>
 	);
 };
