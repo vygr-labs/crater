@@ -27,11 +27,12 @@ import { defaultThemeRenderMap } from "../app/projection/RenderProjection";
 import { useDisplayStore } from "~/layouts/DisplayContext";
 import { Field } from "../ui/field";
 import { Text } from "../ui/text";
-import { FiPlus, FiAlertCircle } from "solid-icons/fi";
+import { FiPlus, FiAlertCircle, FiTag } from "solid-icons/fi";
 import { Spinner } from "../ui/spinner";
 import { useConfirm } from "./ConfirmDialog";
 import { Select, createListCollection } from "../ui/select";
 import { TbChevronDown } from "solid-icons/tb";
+import { Textarea } from "../ui/textarea";
 
 type Props = {
 	open: boolean;
@@ -80,6 +81,133 @@ function SongEditor() {
 	const [isSaving, setIsSaving] = createSignal(false);
 	const [isLoading, setIsLoading] = createSignal(false);
 	const [selectedThemeId, setSelectedThemeId] = createSignal<number | null>(null);
+	const [viewMode, setViewMode] = createSignal<"structured" | "raw">(
+		(localStorage.getItem("songEditorViewMode") as "structured" | "raw") ||
+			"structured",
+	);
+	const [rawText, setRawText] = createSignal("");
+
+	// Persist viewMode
+	createEffect(() => {
+		localStorage.setItem("songEditorViewMode", viewMode());
+	});
+
+	// Helper to generate raw text from lyrics
+	const generateRawText = (lyricsData: SongLyric[]) => {
+		return unwrap(lyricsData)
+			.map((l) => {
+				if (l.label) {
+					return `[${l.label}]\n${l.text.join("\n")}`;
+				}
+				return l.text.join("\n");
+			})
+			.join("\n\n");
+	};
+
+	// Sync raw text when switching to raw mode
+	createEffect(
+		on(viewMode, (mode) => {
+			if (mode === "raw") {
+				setRawText(generateRawText(lyrics));
+			}
+		}),
+	);
+
+	// Parse raw text to lyrics
+	const parseRawToLyrics = (text: string) => {
+		const lines = text.split("\n");
+		const sections: SongLyric[] = [];
+		let currentSection: SongLyric | null = null;
+
+		for (const line of lines) {
+			const trimmedLine = line.trim();
+			const labelMatch = trimmedLine.match(/^\[(.*)\]$/);
+
+			if (labelMatch) {
+				currentSection = { label: labelMatch[1], text: [] };
+				sections.push(currentSection);
+			} else if (trimmedLine !== "") {
+				if (!currentSection) {
+					currentSection = { label: "", text: [] };
+					sections.push(currentSection);
+				}
+				currentSection.text.push(trimmedLine);
+			} else if (trimmedLine === "" && currentSection) {
+				// Empty line means end of current section (if we have one)
+				// But only if the next line isn't a label (which would start a new section anyway)
+				// This allows for multiple empty lines between sections without creating empty sections
+				currentSection = null;
+			}
+		}
+		return sections;
+	};
+
+	const toggleLabel = () => {
+		if (!rawTextareaRef) return;
+		const start = rawTextareaRef.selectionStart;
+		const end = rawTextareaRef.selectionEnd;
+		const val = rawTextareaRef.value;
+
+		const lineStart = val.lastIndexOf("\n", start - 1) + 1;
+		let lineEnd = val.indexOf("\n", end);
+		if (lineEnd === -1) lineEnd = val.length;
+
+		const lineContent = val.substring(lineStart, lineEnd);
+		const match = lineContent.match(/^\[(.*)\]$/);
+
+		let newLineContent = "";
+		if (match) {
+			newLineContent = match[1]; // Unwrap
+		} else {
+			newLineContent = `[${lineContent}]`; // Wrap
+		}
+
+		const newVal =
+			val.substring(0, lineStart) + newLineContent + val.substring(lineEnd);
+		setRawText(newVal);
+
+		// Update lyrics
+		const newLyrics = parseRawToLyrics(newVal);
+		setLyrics(reconcile(newLyrics));
+
+		// Restore focus and cursor
+		requestAnimationFrame(() => {
+			if (rawTextareaRef) {
+				rawTextareaRef.value = newVal;
+				rawTextareaRef.focus();
+				// Set cursor to end of modified line
+				const newCursorPos = lineStart + newLineContent.length;
+				rawTextareaRef.setSelectionRange(newCursorPos, newCursorPos);
+			}
+		});
+	};
+
+	const handleRawKeyDown = (e: KeyboardEvent) => {
+		if ((e.ctrlKey || e.metaKey) && e.key === "l") {
+			e.preventDefault();
+			toggleLabel();
+		}
+	};
+
+	const handleRawChange = (e: InputEvent) => {
+		const val = (e.target as HTMLTextAreaElement).value;
+		setRawText(val);
+		
+		// Debounced update to lyrics for preview
+		// We don't save to history on every keystroke in raw mode to avoid spamming
+		const newLyrics = parseRawToLyrics(val);
+		setLyrics(reconcile(newLyrics));
+
+		// Update preview with current section
+		const currentIndex = songMeta.current;
+		const validIndex = currentIndex < newLyrics.length ? currentIndex : 0;
+		if (validIndex !== currentIndex) setSongMeta("current", validIndex);
+		
+		const currentLyric = newLyrics[validIndex];
+		if (currentLyric) {
+			debouncedPreviewUpdate(currentLyric.label, currentLyric.text);
+		}
+	};
 
 	// Fetch available song themes
 	const availableThemes = createAsyncMemo(async () => {
@@ -115,6 +243,7 @@ function SongEditor() {
 	const { setDisplayStore } = useDisplayStore();
 
 	let titleInputEl!: HTMLInputElement;
+	let rawTextareaRef!: HTMLTextAreaElement;
 
 	// Check if there are unsaved changes
 	// Since every edit calls saveToHistory(), we can check if historyIndex > 0
@@ -316,6 +445,9 @@ function SongEditor() {
 			} else if (e.key === "y" || (e.key === "z" && e.shiftKey)) {
 				e.preventDefault();
 				redo();
+			} else if (e.key === "m" && !e.shiftKey) {
+				e.preventDefault();
+				setViewMode((prev) => (prev === "structured" ? "raw" : "structured"));
 			}
 		}
 	};
@@ -353,6 +485,11 @@ function SongEditor() {
 		// Initialize history with fresh copy
 		setHistory([structuredClone(initialLyrics)]);
 		setHistoryIndex(0);
+
+		// Sync raw text if in raw mode
+		if (viewMode() === "raw") {
+			setRawText(generateRawText(initialLyrics));
+		}
 	});
 
 	// Effect to handle modal open - set up focus and title
@@ -392,6 +529,7 @@ function SongEditor() {
 		setIsSaving(false);
 		setTitleError(false);
 		setSelectedThemeId(null);
+		setRawText("");
 		console.log(lyrics, history);
 	};
 
@@ -584,43 +722,120 @@ function SongEditor() {
 			<Dialog.Backdrop />
 			<Dialog.Positioner>
 				<Dialog.Content h="85vh" maxW="70vw">
-					<Dialog.Header pb={2} borderBottomWidth="1px" borderColor="gray.800">
-						<HStack justifyContent="space-between" w="full">
-							<HStack gap={3}>
-								<Dialog.Title fontSize="lg" fontWeight="semibold">
-									{song() ? "Edit Song" : "Create New Song"}
-								</Dialog.Title>
-								<Text fontSize="sm" color="gray.500">
-									{lyrics.length} {lyrics.length === 1 ? "section" : "sections"}
-								</Text>
+					<Dialog.Header pb={4} borderBottomWidth="1px" borderColor="gray.800">
+						<VStack gap={4} w="full">
+							<HStack justifyContent="space-between" w="full">
+								<HStack gap={3}>
+									<Dialog.Title fontSize="lg" fontWeight="semibold">
+										{song() ? "Edit Song" : "Create New Song"}
+									</Dialog.Title>
+									<Text fontSize="sm" color="gray.500">
+										{lyrics.length} {lyrics.length === 1 ? "section" : "sections"}
+									</Text>
+								</HStack>
+								<HStack gap={2}>
+									<Show when={hasUnsavedChanges()}>
+										<HStack gap={1} color="yellow.500" fontSize="xs">
+											<FiAlertCircle size={12} />
+											<Text>Unsaved changes</Text>
+										</HStack>
+									</Show>
+									<Button
+										size="xs"
+										variant="ghost"
+										disabled={!canUndo()}
+										onClick={undo}
+										title="Undo (Ctrl+Z)"
+									>
+										Undo
+									</Button>
+									<Button
+										size="xs"
+										variant="ghost"
+										disabled={!canRedo()}
+										onClick={redo}
+										title="Redo (Ctrl+Y)"
+									>
+										Redo
+									</Button>
+								</HStack>
 							</HStack>
-							<HStack gap={2}>
-								<Show when={hasUnsavedChanges()}>
-									<HStack gap={1} color="yellow.500" fontSize="xs">
-										<FiAlertCircle size={12} />
-										<Text>Unsaved changes</Text>
-									</HStack>
-								</Show>
-								<Button
-									size="xs"
-									variant="ghost"
-									disabled={!canUndo()}
-									onClick={undo}
-									title="Undo (Ctrl+Z)"
-								>
-									Undo
-								</Button>
-								<Button
-									size="xs"
-									variant="ghost"
-									disabled={!canRedo()}
-									onClick={redo}
-									title="Redo (Ctrl+Y)"
-								>
-									Redo
-								</Button>
+
+							{/* Toolbar */}
+							<HStack w="full" gap={4}>
+								<Box flex={1}>
+									<Input
+										placeholder="Enter song title..."
+										variant="outline"
+										size="sm"
+										colorPalette={titleError() ? "red" : defaultPalette}
+										borderColor={titleError() ? "red.500" : undefined}
+										ref={titleInputEl}
+										fontWeight="medium"
+										onInput={() => setTitleError(false)}
+										required
+									/>
+								</Box>
+
+								<Box w="200px">
+									<Select.Root
+										collection={themeCollection()}
+										value={selectedThemeId() ? [String(selectedThemeId())] : [""]}
+										onValueChange={(e) => {
+											const val = e.value[0];
+											setSelectedThemeId(val ? parseInt(val) : null);
+										}}
+										size="sm"
+									>
+										<Select.Control>
+											<Select.Trigger>
+												<Select.ValueText placeholder="Use Default Theme" />
+												<Select.IndicatorGroup>
+													<Select.Indicator children={<TbChevronDown />} />
+												</Select.IndicatorGroup>
+											</Select.Trigger>
+										</Select.Control>
+										<Select.Positioner>
+											<Select.Content>
+												<For each={themeCollection().items}>
+													{(item) => (
+														<Select.Item item={item}>
+															<Select.ItemText>{item.label}</Select.ItemText>
+															<Select.ItemIndicator />
+														</Select.Item>
+													)}
+												</For>
+											</Select.Content>
+										</Select.Positioner>
+									</Select.Root>
+								</Box>
+
+								<HStack gap={0} borderWidth="1px" borderColor="gray.800" borderRadius="md" p={1} bg="gray.950">
+									<Button
+										size="xs"
+										variant={viewMode() === "structured" ? "solid" : "ghost"}
+										colorPalette="gray"
+										bg={viewMode() === "structured" ? "gray.800" : "transparent"}
+										color={viewMode() === "structured" ? "white" : "gray.500"}
+										onClick={() => setViewMode("structured")}
+										h={7}
+									>
+										Structured
+									</Button>
+									<Button
+										size="xs"
+										variant={viewMode() === "raw" ? "solid" : "ghost"}
+										colorPalette="gray"
+										bg={viewMode() === "raw" ? "gray.800" : "transparent"}
+										color={viewMode() === "raw" ? "white" : "gray.500"}
+										onClick={() => setViewMode("raw")}
+										h={7}
+									>
+										Raw Text
+									</Button>
+								</HStack>
 							</HStack>
-						</HStack>
+						</VStack>
 					</Dialog.Header>
 					<Dialog.Body overflow="hidden" p={0}>
 						<Flex h="full">
@@ -645,74 +860,123 @@ function SongEditor() {
 									</Flex>
 								</Show>
 
-								{/* Empty State */}
-								<Show when={!isLoading() && lyrics.length === 0}>
-									<Flex h="full" alignItems="center" justifyContent="center">
-										<VStack gap={3}>
-											<Text color="gray.400">No lyrics yet</Text>
-											<Button
-												size="sm"
-												colorPalette={defaultPalette}
-												onClick={handleAddSection}
-											>
-												<FiPlus size={14} />
-												Add first section
-											</Button>
+								<Show when={!isLoading()}>
+									<Show when={viewMode() === "structured"}>
+										{/* Empty State */}
+										<Show when={lyrics.length === 0}>
+											<Flex h="full" alignItems="center" justifyContent="center">
+												<VStack gap={3}>
+													<Text color="gray.400">No lyrics yet</Text>
+													<Button
+														size="sm"
+														colorPalette={defaultPalette}
+														onClick={handleAddSection}
+													>
+														<FiPlus size={14} />
+														Add first section
+													</Button>
+												</VStack>
+											</Flex>
+										</Show>
+
+										{/* Lyrics Editor */}
+										<Show when={lyrics.length > 0}>
+											<VStack alignItems="stretch" gap={3} ref={containerRef}>
+												<For each={lyrics}>
+													{(lyric, index) => (
+														<LyricEdit
+															index={index()}
+															{...lyric}
+															canDelete={lyrics.length > 1}
+															onLabelEdit={(e) =>
+																handleLabelEdit(
+																	index(),
+																	(e.target as HTMLInputElement).value,
+																)
+															}
+															onTextEdit={(e) =>
+																handleTextEdit(
+																	index(),
+																	(e.target as HTMLTextAreaElement).value,
+																)
+															}
+															onActiveEl={() => setSongMeta("current", index())}
+															onPaste={handlePaste}
+															onDelete={handleDeleteSection}
+															onDuplicate={handleDuplicateSection}
+														/>
+													)}
+												</For>
+
+												{/* Add Section Button */}
+												<Button
+													w="full"
+													variant="outline"
+													colorPalette="gray"
+													onClick={handleAddSection}
+													py={6}
+													borderStyle="dashed"
+												>
+													<FiPlus size={16} />
+													Add section
+												</Button>
+											</VStack>
+										</Show>
+
+										{/* Keyboard hint */}
+										<Box mt={4} pt={3} borderTopWidth="1px" borderColor="gray.800">
+											<Text fontSize="xs" color="gray.500" textAlign="center">
+												Use ↑↓ to navigate • Press ↓ at the end to add a new section
+												• Ctrl+S to save • Ctrl+Shift+M to toggle view
+											</Text>
+										</Box>
+									</Show>
+
+									<Show when={viewMode() === "raw"}>
+										<VStack h="full" gap={2}>
+											<HStack w="full" justifyContent="flex-start">
+												<Button
+													size="xs"
+													variant="outline"
+													onClick={toggleLabel}
+													colorPalette="gray"
+												>
+													<FiTag /> Make Label
+												</Button>
+											</HStack>
+											<Textarea
+												ref={rawTextareaRef}
+												h="full"
+												w="full"
+												p={4}
+												resize="none"
+												value={rawText()}
+												onInput={handleRawChange}
+												onKeyDown={handleRawKeyDown}
+												placeholder="Enter lyrics here. Use [Label] to define sections (e.g. [Verse 1])."
+												fontSize="sm"
+												lineHeight="1.6"
+												bg="gray.900"
+												color="gray.300"
+												borderWidth="0px"
+												borderRadius="md"
+												_focus={{
+													bg: "gray.800",
+													outline: "none",
+													ring: "1px",
+													ringColor: "gray.700",
+												}}
+												_selection={{
+													bgColor: `white`,
+													color: "black",
+												}}
+											/>
+											<Text fontSize="xs" color="gray.500">
+												Use [Label] to define sections. Example: [Verse 1]. Ctrl+L to toggle label. Ctrl+Shift+M to toggle view.
+											</Text>
 										</VStack>
-									</Flex>
+									</Show>
 								</Show>
-
-								{/* Lyrics Editor */}
-								<Show when={!isLoading() && lyrics.length > 0}>
-									<VStack alignItems="stretch" gap={3} ref={containerRef}>
-										<For each={lyrics}>
-											{(lyric, index) => (
-												<LyricEdit
-													index={index()}
-													{...lyric}
-													canDelete={lyrics.length > 1}
-													onLabelEdit={(e) =>
-														handleLabelEdit(
-															index(),
-															(e.target as HTMLInputElement).value,
-														)
-													}
-													onTextEdit={(e) =>
-														handleTextEdit(
-															index(),
-															(e.target as HTMLTextAreaElement).value,
-														)
-													}
-													onActiveEl={() => setSongMeta("current", index())}
-													onPaste={handlePaste}
-													onDelete={handleDeleteSection}
-													onDuplicate={handleDuplicateSection}
-												/>
-											)}
-										</For>
-
-										{/* Add Section Button */}
-										<Button
-											w="full"
-											variant="outline"
-											colorPalette="gray"
-											onClick={handleAddSection}
-											py={6}
-											borderStyle="dashed"
-										>
-											<FiPlus size={16} />
-											Add section
-										</Button>
-									</VStack>
-								</Show>
-
-								{/* Keyboard hint */}
-								<Box mt={4} pt={3} borderTopWidth="1px" borderColor="gray.800">
-									<Text fontSize="xs" color="gray.500" textAlign="center">
-										Use ↑↓ to navigate • Press ↓ at the end to add a new section
-										• Ctrl+S to save
-									</Text>
-								</Box>
 							</Box>
 
 							{/* Preview Panel */}
@@ -760,63 +1024,6 @@ function SongEditor() {
 					</Dialog.Body>
 					<Dialog.Footer pt={3} borderTopWidth="1px" borderColor="gray.800">
 						<HStack justifyContent="flex-end" w="full" gap={6}>
-							{/* Title Input */}
-							<HStack gap={2}>
-								<Input
-									w="360px"
-									placeholder="Enter song title..."
-									variant="outline"
-									size="sm"
-									colorPalette={titleError() ? "red" : defaultPalette}
-									borderColor={titleError() ? "red.500" : undefined}
-									ref={titleInputEl}
-									fontWeight="medium"
-									onInput={() => setTitleError(false)}
-									required
-								/>
-								<Show when={titleError()}>
-									<Text fontSize="sm" color="red.400">
-										Title is required
-									</Text>
-								</Show>
-							</HStack>
-
-							{/* Theme Selector */}
-							<Show when={song()}>
-								<Select.Root
-									collection={themeCollection()}
-									value={selectedThemeId() ? [String(selectedThemeId())] : [""]}
-									onValueChange={(e) => {
-										const val = e.value[0];
-										setSelectedThemeId(val ? parseInt(val) : null);
-									}}
-									size="sm"
-									w="200px"
-								>
-									<Select.Label fontSize="xs" color="gray.400">Assigned Theme</Select.Label>
-									<Select.Control>
-										<Select.Trigger>
-											<Select.ValueText placeholder="Use Default Theme" />
-											<Select.IndicatorGroup>
-												<Select.Indicator children={<TbChevronDown />} />
-											</Select.IndicatorGroup>
-										</Select.Trigger>
-									</Select.Control>
-									<Select.Positioner>
-										<Select.Content>
-											<For each={themeCollection().items}>
-												{(item) => (
-													<Select.Item item={item}>
-														<Select.ItemText>{item.label}</Select.ItemText>
-														<Select.ItemIndicator />
-													</Select.Item>
-												)}
-											</For>
-										</Select.Content>
-									</Select.Positioner>
-								</Select.Root>
-							</Show>
-
 							{/* Action Buttons */}
 							<HStack gap={2}>
 								<Button variant="ghost" onClick={closeModal}>
