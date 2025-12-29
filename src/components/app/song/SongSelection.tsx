@@ -203,6 +203,14 @@ export default function SongSelection() {
 				changeFocus(fluidFocusId);
 				pushToLive(fluidFocusId, true);
 			},
+			e: ({ fluidFocusId }) => {
+				if (typeof fluidFocusId === "number") {
+					setAppStore("songEdit", {
+						open: true,
+						song: filteredSongs()[fluidFocusId],
+					});
+				}
+			},
 		},
 		clickHandlers: {
 			onClick: ({ changeFluidFocus, focusId }) => {
