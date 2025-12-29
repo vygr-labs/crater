@@ -2,10 +2,12 @@ import { FiPlus, FiSettings } from "solid-icons/fi";
 import { ImPlus } from "solid-icons/im";
 import { TbCheck, TbChevronDown, TbChevronRight, TbSettings } from "solid-icons/tb";
 import { For, Portal, Show } from "solid-js/web";
-import { HStack } from "styled-system/jsx";
-import { Menu } from "~/components/ui/menu";
+import { HStack, Box } from "styled-system/jsx";
+import * as ParkMenu from "~/components/ui/menu";
+import * as Menu from "~/components/ui/custom-context-menu";
 import { useAppContext } from "~/layouts/AppContext";
 import type { MediaType } from "~/types";
+import { defaultPalette } from "~/utils/constants";
 
 interface MediaPanelContextMenuCompProps {
 	onMediaEdit: () => void;
@@ -18,7 +20,7 @@ interface MediaPanelContextMenuCompProps {
 export const MainDisplayMenuContent = (
 	props: MediaPanelContextMenuCompProps,
 ) => (
-	<Menu.Content>
+	<>
 		<Menu.Item value="edit-theme" onClick={props.onMediaEdit}>
 			Edit Media
 		</Menu.Item>
@@ -43,12 +45,20 @@ export const MainDisplayMenuContent = (
 			Add to Favorites
 		</Menu.Item>
 		<Menu.ItemGroup>
-			<Menu.Root positioning={{ placement: "right-start", gutter: 2 }}>
+			<Menu.SubRoot positioning={{ placement: "right-start", gutter: 2 }}>
 				<Menu.TriggerItem w="full" justifyContent="space-between">
 					Add to Collection <TbChevronRight />
 				</Menu.TriggerItem>
 				<Menu.Positioner>
-					<Menu.Content>
+					<Box
+						bg="bg.default"
+						borderWidth="1px"
+						borderColor="border.default"
+						rounded="md"
+						shadow="lg"
+						py={1}
+						minW="12rem"
+					>
 						{/* {themeCollections.map((collection, index) => (
 							<Menu.Item
 								key={index}
@@ -60,9 +70,12 @@ export const MainDisplayMenuContent = (
 								{collection.name}
 							</Menu.Item>
 						))} */}
-					</Menu.Content>
+						<Menu.Item value="new-collection" color={`${defaultPalette}.400`}>
+							+ New Collection
+						</Menu.Item>
+					</Box>
 				</Menu.Positioner>
-			</Menu.Root>
+			</Menu.SubRoot>
 			<Menu.Item value="refresh">Refresh</Menu.Item>
 		</Menu.ItemGroup>
 		<Menu.Separator />
@@ -74,7 +87,7 @@ export const MainDisplayMenuContent = (
 		>
 			Delete Theme
 		</Menu.Item>
-	</Menu.Content>
+	</>
 );
 
 interface ThemeActionBarMenuProps {
@@ -101,8 +114,8 @@ export const MainActionBarMenu = (props: ThemeActionBarMenuProps) => {
 				<FiPlus size={14} />
 			</HStack>
 
-			<Menu.Root>
-				<Menu.Trigger
+			<ParkMenu.Menu.Root>
+				<ParkMenu.Menu.Trigger
 					asChild={(triggerProps) => (
 						<HStack
 							width={10}
@@ -118,50 +131,50 @@ export const MainActionBarMenu = (props: ThemeActionBarMenuProps) => {
 							<TbChevronDown size={10} />
 						</HStack>
 					)}
-				></Menu.Trigger>
-				<Menu.Positioner>
-					<Menu.Content>
-						<Menu.ItemGroup>
-							<Menu.Item value="edit">Edit Media</Menu.Item>
-							<Menu.Item value="rename">Rename Media</Menu.Item>
-							<Menu.Item value="duplicate">Duplicate Media</Menu.Item>
-						</Menu.ItemGroup>
-						<Menu.Separator />
-						<Menu.ItemGroup>
-							<Menu.Item
+				></ParkMenu.Menu.Trigger>
+				<ParkMenu.Menu.Positioner>
+					<ParkMenu.Menu.Content>
+						<ParkMenu.Menu.ItemGroup>
+							<ParkMenu.Menu.Item value="edit">Edit Media</ParkMenu.Menu.Item>
+							<ParkMenu.Menu.Item value="rename">Rename Media</ParkMenu.Menu.Item>
+							<ParkMenu.Menu.Item value="duplicate">Duplicate Media</ParkMenu.Menu.Item>
+						</ParkMenu.Menu.ItemGroup>
+						<ParkMenu.Menu.Separator />
+						<ParkMenu.Menu.ItemGroup>
+							<ParkMenu.Menu.Item
 								value="delete"
 								color="fg.error"
 								_hover={{ bg: "bg.error", color: "fg.error" }}
 							>
 								Delete Media
-							</Menu.Item>
-						</Menu.ItemGroup>
-						<Menu.Separator />
-						<Menu.ItemGroup>
-							<Menu.Root positioning={{ placement: "right-start", gutter: 2 }}>
-								<Menu.TriggerItem w="full" justifyContent="space-between">
+							</ParkMenu.Menu.Item>
+						</ParkMenu.Menu.ItemGroup>
+						<ParkMenu.Menu.Separator />
+						<ParkMenu.Menu.ItemGroup>
+							<ParkMenu.Menu.Root positioning={{ placement: "right-start", gutter: 2 }}>
+								<ParkMenu.Menu.TriggerItem w="full" justifyContent="space-between">
 									Sort by <TbChevronRight />
-								</Menu.TriggerItem>
-								<Menu.Positioner>
-									<Menu.Content>
-										<Menu.ItemGroup>
-											<Menu.Item value="name">Name</Menu.Item>
-											<Menu.Item value="date-added">Date Added</Menu.Item>
-											<Menu.Item value="last-used">Last Used</Menu.Item>
-										</Menu.ItemGroup>
-										<Menu.Separator />
-										<Menu.ItemGroup>
-											<Menu.Item value="ascending">Ascending</Menu.Item>
-											<Menu.Item value="descending">Descending</Menu.Item>
-										</Menu.ItemGroup>
-									</Menu.Content>
-								</Menu.Positioner>
-							</Menu.Root>
-							<Menu.Item value="refresh">Refresh</Menu.Item>
-						</Menu.ItemGroup>
-					</Menu.Content>
-				</Menu.Positioner>
-			</Menu.Root>
+								</ParkMenu.Menu.TriggerItem>
+								<ParkMenu.Menu.Positioner>
+									<ParkMenu.Menu.Content>
+										<ParkMenu.Menu.ItemGroup>
+											<ParkMenu.Menu.Item value="name">Name</ParkMenu.Menu.Item>
+											<ParkMenu.Menu.Item value="date-added">Date Added</ParkMenu.Menu.Item>
+											<ParkMenu.Menu.Item value="last-used">Last Used</ParkMenu.Menu.Item>
+										</ParkMenu.Menu.ItemGroup>
+										<ParkMenu.Menu.Separator />
+										<ParkMenu.Menu.ItemGroup>
+											<ParkMenu.Menu.Item value="ascending">Ascending</ParkMenu.Menu.Item>
+											<ParkMenu.Menu.Item value="descending">Descending</ParkMenu.Menu.Item>
+										</ParkMenu.Menu.ItemGroup>
+									</ParkMenu.Menu.Content>
+								</ParkMenu.Menu.Positioner>
+							</ParkMenu.Menu.Root>
+							<ParkMenu.Menu.Item value="refresh">Refresh</ParkMenu.Menu.Item>
+						</ParkMenu.Menu.ItemGroup>
+					</ParkMenu.Menu.Content>
+				</ParkMenu.Menu.Positioner>
+			</ParkMenu.Menu.Root>
 		</>
 	);
 };
