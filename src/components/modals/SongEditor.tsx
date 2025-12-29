@@ -11,6 +11,7 @@ import {
 	on,
 	onCleanup,
 	Show,
+	untrack,
 } from "solid-js";
 import { createStore, produce, reconcile, unwrap } from "solid-js/store";
 import { useAppContext } from "~/layouts/AppContext";
@@ -109,6 +110,30 @@ function SongEditor() {
 		on(viewMode, (mode) => {
 			if (mode === "raw") {
 				setRawText(generateRawText(lyrics));
+				// Focus textarea
+				setTimeout(() => {
+					if (rawTextareaRef) {
+						rawTextareaRef.focus();
+						rawTextareaRef.setSelectionRange(0, 0);
+						rawTextareaRef.scrollTop = 0;
+					}
+				}, 0);
+			} else {
+				// When switching to structured mode, ensure lyrics are up to date
+				// (They should be from handleRawChange, but let's be safe)
+				// If we were in raw mode, rawText is the source of truth
+				const parsed = parseRawToLyrics(rawText());
+				setLyrics(reconcile(parsed));
+				
+				// Focus first lyric input
+				setTimeout(() => {
+					const firstInput = document.getElementById("song-edit-text-0");
+					if (firstInput) {
+						firstInput.focus();
+						// @ts-ignore
+						firstInput.setSelectionRange(0, 0);
+					}
+				}, 0);
 			}
 		}),
 	);
@@ -175,15 +200,18 @@ function SongEditor() {
 			if (rawTextareaRef) {
 				rawTextareaRef.value = newVal;
 				rawTextareaRef.focus();
-				// Set cursor to end of modified line
-				const newCursorPos = lineStart + newLineContent.length;
+				// Set cursor to end of modified line, or inside brackets if empty label
+				let newCursorPos = lineStart + newLineContent.length;
+				if (!match && lineContent.length === 0) {
+					newCursorPos = lineStart + 1;
+				}
 				rawTextareaRef.setSelectionRange(newCursorPos, newCursorPos);
 			}
 		});
 	};
 
 	const handleRawKeyDown = (e: KeyboardEvent) => {
-		if ((e.ctrlKey || e.metaKey) && e.key === "l") {
+		if ((e.ctrlKey || e.metaKey) && e.key === "/") {
 			e.preventDefault();
 			toggleLabel();
 		}
@@ -487,7 +515,7 @@ function SongEditor() {
 		setHistoryIndex(0);
 
 		// Sync raw text if in raw mode
-		if (viewMode() === "raw") {
+		if (untrack(() => viewMode()) === "raw") {
 			setRawText(generateRawText(initialLyrics));
 		}
 	});
@@ -773,6 +801,12 @@ function SongEditor() {
 										ref={titleInputEl}
 										fontWeight="medium"
 										onInput={() => setTitleError(false)}
+										onKeyDown={(e) => {
+											if (e.key === "Enter") {
+												e.preventDefault();
+												saveSong();
+											}
+										}}
 										required
 									/>
 								</Box>
