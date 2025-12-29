@@ -13,9 +13,9 @@ import {
 	TbTrash,
 } from "solid-icons/tb";
 import { For, Portal, Show } from "solid-js/web";
-import { HStack } from "styled-system/jsx";
+import { HStack, Box } from "styled-system/jsx";
 import { Kbd } from "~/components/ui/kbd";
-import { Menu } from "~/components/ui/menu";
+import * as Menu from "~/components/ui/custom-context-menu";
 import { useAppContext } from "~/layouts/AppContext";
 import { defaultPalette } from "~/utils/constants";
 
@@ -27,7 +27,7 @@ interface SongPanelContextMenuCompProps {
 export const MainDisplayMenuContent = (
 	props: SongPanelContextMenuCompProps,
 ) => (
-	<Menu.Content minW="200px">
+	<>
 		<Menu.ItemGroup>
 			<Menu.Item value="edit-song" onClick={props.onSongEdit}>
 				<HStack justify="space-between" w="full">
@@ -55,7 +55,7 @@ export const MainDisplayMenuContent = (
 					<span>Add to Favorites</span>
 				</HStack>
 			</Menu.Item>
-			<Menu.Root positioning={{ placement: "right-start", gutter: 2 }}>
+			<Menu.SubRoot>
 				<Menu.TriggerItem w="full" justifyContent="space-between">
 					<HStack gap={2}>
 						<TbMusic size={14} />
@@ -64,14 +64,22 @@ export const MainDisplayMenuContent = (
 					<TbChevronRight size={14} />
 				</Menu.TriggerItem>
 				<Menu.Positioner>
-					<Menu.Content minW="150px">
+					<Box
+						bg="gray.950"
+						border="1px solid"
+						borderColor="gray.800"
+						rounded="md"
+						shadow="xl"
+						py={1}
+						minW="150px"
+					>
 						{/* TODO: Populate with actual collections */}
 						<Menu.Item value="new-collection" color={`${defaultPalette}.400`}>
 							+ New Collection
 						</Menu.Item>
-					</Menu.Content>
+					</Box>
 				</Menu.Positioner>
-			</Menu.Root>
+			</Menu.SubRoot>
 		</Menu.ItemGroup>
 		<Menu.Separator />
 		<Menu.Item
@@ -90,7 +98,7 @@ export const MainDisplayMenuContent = (
 				</Kbd>
 			</HStack>
 		</Menu.Item>
-	</Menu.Content>
+	</>
 );
 
 interface MainActionBarMenuProps {
