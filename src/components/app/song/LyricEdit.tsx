@@ -169,3 +169,4 @@ export default function LyricEdit(props: Props) {
 		</Flex>
 	);
 }
+

@@ -1,8 +1,8 @@
 	◦	add accurate progress bar to database import and ensure window does not show “not responding” because of the quantity of songs being imported
 	◦	
 	◦	add padding to default themes
+	◦	allow copying a theme json and pasting it into the editor
 	◦	
-	◦	Improve the user experience of scripture filter. Thoroughly test and examine the user experience
 	◦	implement light mode, colored theme mode and semi-dark mode.
 	
 	◦	remove buggy extra spacing in song editor (it may be due to song imports or just the way song editor parses lyrics)
@@ -63,3 +63,5 @@ add shortcuts to open song editing and app settings  :done
 allow schedule item editing (and there should be a checkbox to allow syncing with it’s saved item in db)
 allow editing theme (or maybe only background) for a specific schedule item
 allow editing/assigning themes for a specific song
+
+Improve the user experience of scripture filter. Thoroughly test and examine the user experience  :done
