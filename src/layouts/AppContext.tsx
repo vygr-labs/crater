@@ -144,6 +144,10 @@ export default function AppContextProvider(props: ParentProps) {
 	const [settings, updateSettings] =
 		createStore<AppSettings>(defaultAppSettings);
 
+	createEffect(() => {
+		window.electronAPI.updateAppSettings(unwrap(settings));
+	});
+
 	return (
 		<AppContext.Provider
 			value={{ appStore, setAppStore, settings, updateSettings }}

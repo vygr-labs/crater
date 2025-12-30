@@ -128,10 +128,13 @@ export interface AppSettings {
 	showVerseNumbers: boolean;
 	showScriptureReference: boolean;
 	showStrongsTab: boolean;
+	scriptureInputMode: "controlled" | "crater";
 	// Song settings
 	showSongAuthor: boolean;
 	showCcliNumber: boolean;
 	autoAdvanceSlides: boolean;
+	// General settings
+	authoritativeOverlay: boolean;
 }
 
 export interface DisplayContextObj {

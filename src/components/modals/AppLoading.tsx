@@ -10,11 +10,11 @@ export default function AppLoading() {
 
 	return (
 		<Box
-			class="relative"
 			w="full"
 			h="full"
 			pos="fixed"
 			inset={0}
+			zIndex={5000}
 			opacity={appStore.loading?.isLoading ? 1 : 0}
 			visibility={appStore.loading?.isLoading ? "visible" : "hidden"}
 		>

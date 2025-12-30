@@ -23,6 +23,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
 			"displays-update",
 			(_: any, allDisplays: (typeof Display)[]) => callback(allDisplays),
 		),
+	onImportProgress: (callback: (progress: any) => void) =>
+		ipcRenderer.on("import-progress", (_: any, progress: any) =>
+			callback(progress),
+		),
+	removeImportProgressListeners: () =>
+		ipcRenderer.removeAllListeners("import-progress"),
 	// Close confirmation listener
 	onCheckBeforeClose: (callback: () => void) =>
 		ipcRenderer.on("check-before-close", () => callback()),
@@ -89,6 +95,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
 	// Projection requests
 	sendVerseUpdate: (verseData: unknown) =>
 		ipcRenderer.send("scripture-update", verseData),
+	updateAppSettings: (settings: unknown) =>
+		ipcRenderer.send("update-app-settings", settings),
 
 	// Toolbar Functions
 	openProjectionWindow: (bounds: { x: number; y: number }) =>

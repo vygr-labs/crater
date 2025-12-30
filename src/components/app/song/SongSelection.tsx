@@ -77,6 +77,7 @@ export default function SongSelection() {
 
 	// Search songs using backend FTS5 trigram search
 	const searchedSongs = createAsyncMemo(async () => {
+		const _ = appStore.songsUpdateCounter;
 		if (!songControls.query.trim()) return null;
 		return await window.electronAPI.searchSongs(songControls.query);
 	}, null);
