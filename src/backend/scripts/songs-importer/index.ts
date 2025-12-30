@@ -11,7 +11,11 @@ import { SONG_DB_PATHS } from "../../types.js";
 // Initialize databases
 console.log(PATHS);
 
-async function processSongs(PATHS: SONG_DB_PATHS, db: DatabaseType) {
+async function processSongs(
+	PATHS: SONG_DB_PATHS,
+	db: DatabaseType,
+	onProgress?: (progress: { current: number; total: number }) => void,
+) {
 	const songsDB = new Database(PATHS.SONG_DB, { readonly: true });
 	const songWordsDB = new Database(PATHS.SONG_WORDS_DB, { readonly: true });
 	let counter = 0;
@@ -32,6 +36,7 @@ async function processSongs(PATHS: SONG_DB_PATHS, db: DatabaseType) {
 		// Get songs
 		const songsStmt = songsDB.prepare(query);
 		const songs = songsStmt.all(...params) as Song[];
+		const totalSongs = songs.length;
 
 		// Process each song
 		let errors = 0;
@@ -62,6 +67,11 @@ async function processSongs(PATHS: SONG_DB_PATHS, db: DatabaseType) {
 				// Test mode early exit
 				if (TEST_MODE && counter >= 9) break;
 				counter++;
+
+				// Report progress every 10 songs or if it's the last one
+				if (counter % 10 === 0 || counter === totalSongs) {
+					onProgress?.({ current: counter, total: totalSongs });
+				}
 			} catch (error) {
 				console.error(`Error processing song ${song.id}:`, error);
 			}

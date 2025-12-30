@@ -22,6 +22,8 @@ import {
 	toggleShowSongAuthor,
 	toggleShowCcliNumber,
 	toggleAutoAdvanceSlides,
+	toggleAuthoritativeOverlay,
+	toggleScriptureInputMode,
 } from "~/utils/store-helpers";
 import { Button } from "../ui/button";
 import type { BasicSelectOption, DisplayBounds } from "~/types";
@@ -388,6 +390,21 @@ export function AppSettingsDialog() {
 											</GenericField>
 										</HStack>
 									</Box>
+
+									<Box bg="gray.900/50" rounded="xl" p={4}>
+										<SettingRow
+											label="Authoritative Overlay"
+											description="Bring projection window to front when controls are focused"
+										>
+											<Checkbox
+												colorPalette={defaultPalette}
+												checked={settings.authoritativeOverlay}
+												onCheckedChange={() =>
+													toggleAuthoritativeOverlay(updateSettings)
+												}
+											/>
+										</SettingRow>
+									</Box>
 								</Stack>
 							</Tabs.Content>
 
@@ -565,6 +582,21 @@ export function AppSettingsDialog() {
 												checked={settings.showScriptureReference}
 												onCheckedChange={() =>
 													toggleShowScriptureReference(updateSettings)
+												}
+											/>
+										</SettingRow>
+
+										<Divider my={2} borderColor="gray.800" />
+
+										<SettingRow
+											label="Use Crater Input Mode"
+											description="Enable smart scripture parsing and navigation"
+										>
+											<Checkbox
+												colorPalette={defaultPalette}
+												checked={settings.scriptureInputMode === "crater"}
+												onCheckedChange={() =>
+													toggleScriptureInputMode(updateSettings)
 												}
 											/>
 										</SettingRow>

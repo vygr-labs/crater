@@ -1,11 +1,16 @@
 import Database from "better-sqlite3";
 import { SONGS_DB_PATH } from "../constants.js";
+import {
+	rebuildAllSongsFtsIndex as rebuildAllFts,
+	rebuildSongFtsIndex as rebuildSongFts,
+	songsTableName,
+	lyricsTableName,
+	ftsTableName,
+} from "./fts-logic.js";
 
 const db = new Database(SONGS_DB_PATH);
 // Removed spellfix extension - using FTS5 trigram instead
-export const songsTableName = "songs";
-export const lyricsTableName = "song_lyrics";
-export const ftsTableName = "song_fts5"; // New FTS5 table name
+export { songsTableName, lyricsTableName, ftsTableName };
 
 // Create Tables
 db.prepare(
@@ -52,44 +57,9 @@ db.exec(`
   );
 `);
 
-// Helper function to extract plain text from JSON lyrics
-const extractLyricsText = (songId: number): string => {
-	const lyrics = db
-		.prepare(
-			`
-    SELECT lyrics FROM ${lyricsTableName} 
-    WHERE song_id = ? 
-    ORDER BY "order" ASC
-  `,
-		)
-		.all(songId) as { lyrics: string }[];
-
-	return lyrics
-		.map((l) => {
-			try {
-				const parsed = JSON.parse(l.lyrics);
-				return Array.isArray(parsed) ? parsed.join(" ") : String(parsed);
-			} catch {
-				return l.lyrics;
-			}
-		})
-		.join(" ");
-};
-
 // Function to rebuild the FTS5 index for a song
 export const rebuildSongFtsIndex = (songId: number) => {
-	const song = db
-		.prepare(`SELECT id, title, author FROM ${songsTableName} WHERE id = ?`)
-		.get(songId) as { id: number; title: string; author: string } | undefined;
-	if (!song) return;
-
-	const lyricsText = extractLyricsText(songId);
-
-	// For contentless FTS5 tables, we need to use INSERT OR REPLACE
-	// or delete with special syntax. Using INSERT OR REPLACE is simpler.
-	db.prepare(
-		`INSERT OR REPLACE INTO ${ftsTableName}(rowid, title, author, lyrics) VALUES(?, ?, ?, ?)`,
-	).run(songId, song.title || "", song.author || "", lyricsText);
+	rebuildSongFts(songId, db);
 };
 
 // Function to delete a song from FTS5 index (for contentless tables)
@@ -107,29 +77,7 @@ export const deleteSongFromFtsIndex = (
 
 // Function to rebuild entire FTS5 index
 export const rebuildAllSongsFtsIndex = () => {
-	// For contentless FTS5, we need to drop and recreate the table
-	db.exec(`DROP TABLE IF EXISTS ${ftsTableName}`);
-	db.exec(`
-		CREATE VIRTUAL TABLE ${ftsTableName} USING fts5(
-			title, 
-			author,
-			lyrics,
-			content='',
-			tokenize='trigram'
-		);
-	`);
-
-	// Get all songs
-	const songs = db.prepare(`SELECT id FROM ${songsTableName}`).all() as {
-		id: number;
-	}[];
-
-	// Rebuild index for each song
-	for (const song of songs) {
-		rebuildSongFtsIndex(song.id);
-	}
-
-	console.log(`Rebuilt FTS5 index for ${songs.length} songs`);
+	rebuildAllFts(db);
 };
 
 // Check if FTS index is populated and needs rebuilding

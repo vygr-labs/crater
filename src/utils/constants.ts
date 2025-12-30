@@ -181,10 +181,13 @@ export const defaultAppSettings: AppSettings = {
 	showVerseNumbers: true,
 	showScriptureReference: true,
 	showStrongsTab: true,
+	scriptureInputMode: "crater",
 	// Song settings
 	showSongAuthor: true,
 	showCcliNumber: false,
 	autoAdvanceSlides: false,
+	// General settings
+	authoritativeOverlay: true,
 };
 
 export const storageKey = "crater-store";

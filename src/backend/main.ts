@@ -123,6 +123,7 @@ process.on("unhandledRejection", (reason, promise) => {
 const { autoUpdater } = electronUpdater;
 let appWindow: BrowserWindow | null = null;
 let projectionWindow: BrowserWindow | null = null;
+let authoritativeOverlay = true;
 
 // Get platform-specific app icon (Windows requires .ico)
 const getAppIcon = () => {
@@ -153,6 +154,12 @@ app.on("window-all-closed", () => {
 	if (process.platform !== "darwin") {
 		// app.quit();
 		app.exit(0);
+	}
+});
+
+ipcMain.on("update-app-settings", (event, settings) => {
+	if (settings.authoritativeOverlay !== undefined) {
+		authoritativeOverlay = settings.authoritativeOverlay;
 	}
 });
 
@@ -277,7 +284,12 @@ const spawnAppWindow = async () => {
 
 		// Bring projection window to top when main window is focused (only if on different screens)
 		appWindow.on("focus", () => {
-			if (projectionWindow && !projectionWindow.isDestroyed() && appWindow) {
+			if (
+				authoritativeOverlay &&
+				projectionWindow &&
+				!projectionWindow.isDestroyed() &&
+				appWindow
+			) {
 				// Get the display for each window
 				const appBounds = appWindow.getBounds();
 				const projBounds = projectionWindow.getBounds();
@@ -698,6 +710,13 @@ const processSongs = (songsPaths: SONG_DB_PATHS) => {
 		});
 
 		worker.on("message", (m) => {
+			if (m.type === "progress") {
+				if (appWindow) {
+					appWindow.webContents.send("import-progress", m);
+				}
+				return;
+			}
+
 			logger.info("Song import completed", m);
 			if (m.isComplete) {
 				resolve({
@@ -769,11 +788,11 @@ ipcMain.handle("import-easyworship-songs", async () => {
 		const importResult = await processSongs(songsPaths);
 
 		// Rebuild FTS index after importing songs
-		if (importResult && (importResult as { success: boolean }).success) {
-			logger.info("Rebuilding FTS index after song import...");
-			rebuildAllSongsFtsIndex();
-			logger.info("FTS index rebuilt successfully");
-		}
+		// if (importResult && (importResult as { success: boolean }).success) {
+		// 	logger.info("Rebuilding FTS index after song import...");
+		// 	rebuildAllSongsFtsIndex();
+		// 	logger.info("FTS index rebuilt successfully");
+		// }
 
 		return importResult;
 	}

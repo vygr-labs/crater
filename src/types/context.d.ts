@@ -110,6 +110,7 @@ export interface IElectronAPI {
 
 	// Miscellaneous
 	controlsWindowLoaded: () => void;
+	updateAppSettings: (settings: any) => void;
 	saveSchedule: (data: {
 		schedule: ScheduleSaveItem;
 		overwrite: boolean;

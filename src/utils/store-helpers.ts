@@ -132,6 +132,12 @@ export const toggleShowStrongsTab: AppSettingsUpdateFn = (setStore) => {
 	setStore("showStrongsTab", (former) => !former);
 };
 
+export const toggleScriptureInputMode: AppSettingsUpdateFn = (setStore) => {
+	setStore("scriptureInputMode", (former) =>
+		former === "controlled" ? "crater" : "controlled",
+	);
+};
+
 // Song settings
 export const toggleShowSongAuthor: AppSettingsUpdateFn = (setStore) => {
 	setStore("showSongAuthor", (former) => !former);
@@ -143,4 +149,9 @@ export const toggleShowCcliNumber: AppSettingsUpdateFn = (setStore) => {
 
 export const toggleAutoAdvanceSlides: AppSettingsUpdateFn = (setStore) => {
 	setStore("autoAdvanceSlides", (former) => !former);
+};
+
+// General settings
+export const toggleAuthoritativeOverlay: AppSettingsUpdateFn = (setStore) => {
+	setStore("authoritativeOverlay", (former) => !former);
 };

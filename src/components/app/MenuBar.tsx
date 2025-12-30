@@ -130,12 +130,32 @@ export default function MenuBar(props: Props) {
 			reason: "Importing Database...",
 			isLoading: true,
 		});
+
+		// Listen for progress updates
+		window.electronAPI.onImportProgress((progress) => {
+			if (progress.message) {
+				setAppStore("loading", "reason", progress.message);
+			} else if (progress.total) {
+				const percentage = Math.round(
+					(progress.current / progress.total) * 100,
+				);
+				setAppStore(
+					"loading",
+					"reason",
+					`Importing Database... ${percentage}%`,
+				);
+			}
+		});
+
 		window.electronAPI.importEswSongs().then(({ success, message }) => {
 			console.log("Result from Dialog: ", message);
 			toaster.create({
 				type: getToastType(success),
 				title: message,
 			});
+
+			// Clean up listener
+			window.electronAPI.removeImportProgressListeners();
 
 			setAppStore("songsUpdateCounter", (former) => ++former);
 			setAppStore("loading", { reason: "Finished task", isLoading: false });
