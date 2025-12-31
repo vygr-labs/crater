@@ -155,3 +155,7 @@ export const toggleAutoAdvanceSlides: AppSettingsUpdateFn = (setStore) => {
 export const toggleAuthoritativeOverlay: AppSettingsUpdateFn = (setStore) => {
 	setStore("authoritativeOverlay", (former) => !former);
 };
+
+export const toggleUseCustomProjectionBounds: AppSettingsUpdateFn = (setStore) => {
+	setStore("useCustomProjectionBounds", (former) => !former);
+};

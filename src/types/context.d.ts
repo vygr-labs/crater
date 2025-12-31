@@ -194,7 +194,13 @@ export interface IElectronAPI {
 		version?: string,
 	) => Promise<ScriptureVerse[]>;
 	rebuildScripturesFtsIndex: () => Promise<void>;
-	openProjectionWindow: ({ x: number, y: number }) => void;
+	openProjectionWindow: (bounds: {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+		useCustomBounds: boolean;
+	}) => void;
 	closeProjectionWindow: () => void;
 	getConnectedDisplays: () => Promise<Display[]>;
 	darkModeToggle: () => Promise<"light" | "dark">;

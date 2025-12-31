@@ -24,6 +24,7 @@ import {
 	toggleAutoAdvanceSlides,
 	toggleAuthoritativeOverlay,
 	toggleScriptureInputMode,
+	toggleUseCustomProjectionBounds,
 } from "~/utils/store-helpers";
 import { Button } from "../ui/button";
 import type { BasicSelectOption, DisplayBounds } from "~/types";
@@ -164,9 +165,12 @@ export function AppSettingsDialog() {
 						}) ?? allDisplays[1])
 					: allDisplays[0];
 
-			updateDisplayBounds(updateSettings, {
-				...externalDisplay.workArea,
-			});
+			// Only auto-update bounds when not using custom bounds
+			if (!settings.useCustomProjectionBounds) {
+				updateDisplayBounds(updateSettings, {
+					...externalDisplay.workArea,
+				});
+			}
 			updateProjectionDisplayId(updateSettings, externalDisplay.id);
 		}
 	};
@@ -198,7 +202,10 @@ export function AppSettingsDialog() {
 	);
 
 	function handleDisplayChange(details: SelectValueChangeDetails) {
-		updateDisplayBounds(updateSettings, { ...details.items[0].workArea });
+		// Only auto-update bounds when not using custom bounds
+		if (!settings.useCustomProjectionBounds) {
+			updateDisplayBounds(updateSettings, { ...details.items[0].workArea });
+		}
 		updateProjectionDisplayId(updateSettings, details.items[0].id);
 	}
 
@@ -348,44 +355,91 @@ export function AppSettingsDialog() {
 
 										<Divider my={4} borderColor="gray.800" />
 
+										<SettingRow
+											label="Use Custom Dimensions"
+											description="Set custom window size instead of using full display"
+										>
+											<Checkbox
+												colorPalette={defaultPalette}
+												checked={settings.useCustomProjectionBounds}
+												onCheckedChange={() =>
+													toggleUseCustomProjectionBounds(updateSettings)
+												}
+											/>
+										</SettingRow>
+
+										<Divider my={2} borderColor="gray.800" />
+
 										<Text fontSize="xs" color="gray.500" mb={3}>
-											Display Bounds (Read-only)
+											{settings.useCustomProjectionBounds ? "Custom Projection Bounds" : "Display Bounds (Read-only)"}
 										</Text>
 										<HStack gap={3} width="full">
 											<GenericField label="Left">
 												<Input
 													placeholder="0"
+													type="number"
 													value={settings.projectionBounds?.x}
 													variant="outline"
 													size="sm"
-													disabled
+													disabled={!settings.useCustomProjectionBounds}
+													onInput={(e) => {
+														const val = parseInt(e.currentTarget.value) || 0;
+														updateDisplayBounds(updateSettings, {
+															...settings.projectionBounds,
+															x: val,
+														});
+													}}
 												/>
 											</GenericField>
 											<GenericField label="Top">
 												<Input
 													placeholder="0"
+													type="number"
 													value={settings.projectionBounds?.y}
 													variant="outline"
 													size="sm"
-													disabled
+													disabled={!settings.useCustomProjectionBounds}
+													onInput={(e) => {
+														const val = parseInt(e.currentTarget.value) || 0;
+														updateDisplayBounds(updateSettings, {
+															...settings.projectionBounds,
+															y: val,
+														});
+													}}
 												/>
 											</GenericField>
 											<GenericField label="Width">
 												<Input
 													placeholder="1920"
+													type="number"
 													value={settings.projectionBounds?.width}
 													variant="outline"
 													size="sm"
-													disabled
+													disabled={!settings.useCustomProjectionBounds}
+													onInput={(e) => {
+														const val = parseInt(e.currentTarget.value) || 0;
+														updateDisplayBounds(updateSettings, {
+															...settings.projectionBounds,
+															width: val,
+														});
+													}}
 												/>
 											</GenericField>
 											<GenericField label="Height">
 												<Input
 													placeholder="1080"
+													type="number"
 													value={settings.projectionBounds?.height}
 													variant="outline"
 													size="sm"
-													disabled
+													disabled={!settings.useCustomProjectionBounds}
+													onInput={(e) => {
+														const val = parseInt(e.currentTarget.value) || 0;
+														updateDisplayBounds(updateSettings, {
+															...settings.projectionBounds,
+															height: val,
+														});
+													}}
 												/>
 											</GenericField>
 										</HStack>

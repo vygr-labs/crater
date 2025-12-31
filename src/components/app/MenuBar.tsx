@@ -249,9 +249,10 @@ export default function MenuBar(props: Props) {
 	createEffect(() => {
 		if (appStore.isLive) {
 			console.log(settings.projectionBounds);
-			window.electronAPI.openProjectionWindow(
-				unwrap(settings.projectionBounds),
-			);
+			window.electronAPI.openProjectionWindow({
+				...unwrap(settings.projectionBounds),
+				useCustomBounds: settings.useCustomProjectionBounds,
+			});
 		} else {
 			window.electronAPI.closeProjectionWindow();
 		}
