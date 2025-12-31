@@ -515,6 +515,7 @@ export default function SongSelection() {
 						query={songControls.query}
 						onFilter={handleFilter}
 						onClear={() => setSongControls("query", "")}
+						onFocus={() => changeFocusPanel(SONGS_TAB_FOCUS_NAME)}
 					/>
 				}
 				currentGroup={[songControls.group]}
@@ -556,6 +557,10 @@ export default function SongSelection() {
 									const song = filteredSongs()[virtualItem.index];
 									const isSelected = () => virtualItem.index === fluidFocusId();
 									const isCurrent = () => virtualItem.index === coreFocusId();
+									// Check if this song is currently displayed in live panel
+									const isLive = () => 
+										appStore.liveItem?.type === "song" && 
+										(appStore.liveItem?.metadata as SongData)?.id === song.id;
 									return (
 										<HStack
 											pos="absolute"
@@ -580,13 +585,11 @@ export default function SongSelection() {
 											style={{
 												height: `${virtualItem.size}px`,
 												transform: `translateY(${virtualItem.start}px)`,
-												...getBaseFocusStyles(SONGS_TAB_FOCUS_NAME),
-												...getFocusableStyles(
-													SONGS_TAB_FOCUS_NAME,
-													isSelected(),
-													isCurrentPanel(),
-													isCurrent(),
-												),
+												"background-color": isLive() 
+													? token.var(`colors.${defaultPalette}.900`)
+													: isSelected() && isCurrentPanel()
+														? token.var("colors.gray.800")
+														: undefined,
 											}}
 											data-panel={SONGS_TAB_FOCUS_NAME}
 											data-focusId={virtualItem.index}
@@ -594,9 +597,11 @@ export default function SongSelection() {
 											{/* Song icon */}
 											<Box
 												color={
-													isSelected() && isCurrentPanel()
+													isLive()
 														? `${defaultPalette}.300`
-														: `${neutralPalette}.500`
+														: isSelected() && isCurrentPanel()
+															? "gray.300"
+															: `${neutralPalette}.500`
 												}
 												flexShrink={0}
 											>
@@ -605,13 +610,15 @@ export default function SongSelection() {
 											{/* Song info */}
 											<VStack gap={0} alignItems="flex-start" flex={1} minW={0}>
 												<Text
-													fontWeight={isSelected() ? "medium" : "normal"}
+													fontWeight={isSelected() || isLive() ? "medium" : "normal"}
 													truncate
 													w="full"
 													style={{
-														color:  isSelected() && isCurrentPanel()
-															? token.var("colors.gray.300")
-															: token.var(`colors.${neutralPalette}.100`)
+														color: isLive()
+															? token.var(`colors.${defaultPalette}.100`)
+															: isSelected() && isCurrentPanel()
+																? token.var("colors.gray.200")
+																: token.var(`colors.${neutralPalette}.100`)
 													}}
 												>
 													{song.title}
@@ -620,9 +627,11 @@ export default function SongSelection() {
 													<Text
 														fontSize="12px"
 														color={
-															isSelected() && isCurrentPanel()
+															isLive()
 																? `${defaultPalette}.200`
-																: `${neutralPalette}.500`
+																: isSelected() && isCurrentPanel()
+																	? "gray.400"
+																	: `${neutralPalette}.500`
 														}
 														truncate
 														w="full"
@@ -710,6 +719,7 @@ interface SearchInputProps {
 	query: string;
 	onFilter: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
 	onClear: () => void;
+	onFocus: () => void;
 	searchMode: SongSearchMode;
 	updateSearchMode: (mode?: SongSearchMode) => void;
 	ref: HTMLInputElement;
@@ -851,6 +861,7 @@ const SongSearchInput = (props: SearchInputProps) => {
 				value={props.query}
 				placeholder={SONG_SEARCH_MODE_PLACEHOLDERS[props.searchMode]}
 				onInput={props.onFilter}
+				onFocus={props.onFocus}
 				data-testid="song-search-input"
 				aria-label="Search songs"
 			/>
