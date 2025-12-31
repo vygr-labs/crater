@@ -54,6 +54,8 @@ export default function ControlsMain() {
 	};
 
 	const handleShortcutT: FocusEventHandlerFn = ({ event }) => {
+		// Don't trigger if any modal is open
+		if (appStore.songEdit.open || appStore.themeEditor.open) return;
 		if (event.ctrlKey) {
 			console.log("Adding Item: ");
 			handleAddToSchedule();
@@ -62,6 +64,8 @@ export default function ControlsMain() {
 
 	const handleShortcutL: FocusEventHandlerFn = ({ event }) => {
 		console.log("handling shortcut: ", event);
+		// Don't trigger if any modal is open
+		if (appStore.songEdit.open || appStore.themeEditor.open) return;
 		if (event.ctrlKey) {
 			toggleLogo(setAppStore);
 		}
@@ -69,6 +73,8 @@ export default function ControlsMain() {
 
 	const handleShortcutC: FocusEventHandlerFn = ({ event }) => {
 		console.log("handling shortcut: ", event);
+		// Don't trigger if any modal is open
+		if (appStore.songEdit.open || appStore.themeEditor.open) return;
 		if (event.ctrlKey) {
 			toggleClearDisplay(setAppStore);
 		}
@@ -218,7 +224,6 @@ export default function ControlsMain() {
 				defaultValue={DEFAULT_PANEL}
 				value={activeTab()}
 				onValueChange={({ value }) => {
-					console.log("About to change panel: ", value);
 					changeFocusPanel(value);
 				}}
 			>

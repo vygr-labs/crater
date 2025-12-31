@@ -13,6 +13,11 @@ import {
 	TbSettings,
 	TbTree,
 	TbX,
+	TbUser,
+	TbClock,
+	TbSortAscending,
+	TbSortDescending,
+	TbFileText,
 } from "solid-icons/tb";
 import { IconButton } from "../../ui/icon-button";
 import { InputGroup } from "../../ui/input-group";
@@ -57,7 +62,44 @@ type SongListData = {
 	title: string;
 	value: SongPanelGroupValues;
 };
-type SongSearchMode = "search" | "title";
+
+// Search modes:
+// - "title": Search by song title only
+// - "lyrics": Full-text search across title, author, and lyrics (FTS5 trigram)
+// - "author": Search by author only
+// - "recent": Sort by most recently modified
+// - "oldest": Sort by oldest (creation date)
+// - "newest": Sort by newest (creation date)
+type SongSearchMode = "title" | "lyrics" | "author" | "recent" | "oldest" | "newest";
+
+const SONG_SEARCH_MODES: SongSearchMode[] = ["title", "lyrics", "author", "recent", "oldest", "newest"];
+
+const SONG_SEARCH_MODE_LABELS: Record<SongSearchMode, string> = {
+	title: "Title",
+	lyrics: "Lyrics",
+	author: "Author",
+	recent: "Recently Modified",
+	oldest: "Oldest First",
+	newest: "Newest First",
+};
+
+const SONG_SEARCH_MODE_PLACEHOLDERS: Record<SongSearchMode, string> = {
+	title: "Search by title...",
+	lyrics: "Search in lyrics...",
+	author: "Search by author...",
+	recent: "Filter recently modified...",
+	oldest: "Filter oldest songs...",
+	newest: "Filter newest songs...",
+};
+
+const SONG_SEARCH_MODE_ICONS: Record<SongSearchMode, typeof TbSearch> = {
+	title: TbSearch,
+	lyrics: TbFileText,
+	author: TbUser,
+	recent: TbClock,
+	oldest: TbSortAscending,
+	newest: TbSortDescending,
+};
 
 type SongControlsData = {
 	searchMode: SongSearchMode;
@@ -100,31 +142,106 @@ export default function SongSelection() {
 
 	const filteredSongs = createMemo<SongData[]>(() => {
 		const songCollection = currentCollection();
-		const query = songControls.query.trim();
-
-		// If there's a search query, use FTS5 results
-		if (query) {
-			const ftsResults = searchedSongs();
-			if (ftsResults && ftsResults.length > 0) {
-				// If in a collection, filter FTS results to only include collection songs
-				if (currentGroup().subGroups && songCollection) {
-					const collectionIds = new Set(songCollection.items);
-					return ftsResults.filter((song: SongData) =>
-						collectionIds.has(song.id),
-					);
-				}
-				return ftsResults;
-			}
-			return []; // No results found
-		}
-
-		// No query - return all songs (or filtered by collection)
+		const query = songControls.query.trim().toLowerCase();
+		const searchMode = songControls.searchMode;
+		
+		// Get base song list (all songs or collection filtered)
+		let baseSongs = allSongs();
 		if (currentGroup().subGroups && songCollection) {
-			return allSongs().filter((song) =>
+			baseSongs = baseSongs.filter((song) =>
 				songCollection.items.includes(song.id),
 			);
 		}
-		return allSongs();
+
+		// Apply search mode specific filtering/sorting
+		let result: SongData[] = baseSongs;
+
+		switch (searchMode) {
+			case "title":
+				// Simple title filter (case-insensitive)
+				if (query) {
+					result = baseSongs.filter((song) =>
+						song.title.toLowerCase().includes(query)
+					);
+				}
+				break;
+
+			case "lyrics":
+				// Use FTS5 trigram search for lyrics/full-text search
+				if (query) {
+					const ftsResults = searchedSongs();
+					if (ftsResults && ftsResults.length > 0) {
+						// If in a collection, filter FTS results to only include collection songs
+						if (currentGroup().subGroups && songCollection) {
+							const collectionIds = new Set(songCollection.items);
+							result = ftsResults.filter((song: SongData) =>
+								collectionIds.has(song.id),
+							);
+						} else {
+							result = ftsResults;
+						}
+					} else {
+						result = [];
+					}
+				}
+				break;
+
+			case "author":
+				// Filter by author name
+				if (query) {
+					result = baseSongs.filter((song) =>
+						song.author?.toLowerCase().includes(query)
+					);
+				}
+				break;
+
+			case "recent":
+				// Sort by most recently modified (updated_at)
+				result = [...baseSongs].sort((a, b) => {
+					const dateA = new Date(a.updated_at).getTime();
+					const dateB = new Date(b.updated_at).getTime();
+					return dateB - dateA; // Most recent first
+				});
+				// Optionally filter by query if present
+				if (query) {
+					result = result.filter((song) =>
+						song.title.toLowerCase().includes(query)
+					);
+				}
+				break;
+
+			case "oldest":
+				// Sort by creation date (oldest first)
+				result = [...baseSongs].sort((a, b) => {
+					const dateA = new Date(a.created_at).getTime();
+					const dateB = new Date(b.created_at).getTime();
+					return dateA - dateB; // Oldest first
+				});
+				// Optionally filter by query if present
+				if (query) {
+					result = result.filter((song) =>
+						song.title.toLowerCase().includes(query)
+					);
+				}
+				break;
+
+			case "newest":
+				// Sort by creation date (newest first)
+				result = [...baseSongs].sort((a, b) => {
+					const dateA = new Date(a.created_at).getTime();
+					const dateB = new Date(b.created_at).getTime();
+					return dateB - dateA; // Newest first
+				});
+				// Optionally filter by query if present
+				if (query) {
+					result = result.filter((song) =>
+						song.title.toLowerCase().includes(query)
+					);
+				}
+				break;
+		}
+
+		return result;
 	});
 	const pushToLive = (itemId?: number | null, isLive?: boolean) => {
 		const focusId = itemId;
@@ -204,14 +321,6 @@ export default function SongSelection() {
 				changeFocus(fluidFocusId);
 				pushToLive(fluidFocusId, true);
 			},
-			e: ({ fluidFocusId }) => {
-				if (typeof fluidFocusId === "number") {
-					setAppStore("songEdit", {
-						open: true,
-						song: filteredSongs()[fluidFocusId],
-					});
-				}
-			},
 		},
 		clickHandlers: {
 			onClick: ({ changeFluidFocus, focusId }) => {
@@ -235,6 +344,13 @@ export default function SongSelection() {
 		},
 	});
 	const isCurrentPanel = createMemo(() => currentPanel() === name);
+
+	let searchInputRef!: HTMLInputElement;
+	createEffect(() => {
+		if (isCurrentPanel()) {
+			searchInputRef?.focus();
+		}
+	});
 
 	createEffect(() => {
 		if (!isCurrentPanel()) {
@@ -293,13 +409,14 @@ export default function SongSelection() {
 	});
 
 	// Sync from schedule item click - scroll to the song if it exists
-	// Only applies when not in search mode (i.e., in title/browse mode)
+	// Don't sync in lyrics search mode as results are filtered by search text
 	createEffect(
 		on(
 			() => appStore.syncFromSchedule,
 			(syncData) => {
 				if (!syncData || syncData.type !== "song") return;
-				if (songControls.searchMode !== "title") return; // Don't sync in search mode
+				// Don't sync in lyrics search mode as FTS results won't contain the song
+				if (songControls.searchMode === "lyrics" && songControls.query.trim()) return;
 				
 				const metadata = syncData.metadata;
 				if (!metadata?.id) return;
@@ -363,10 +480,17 @@ export default function SongSelection() {
 		),
 	);
 
-	const updateSearchMode = () => {
-		setSongControls("searchMode", (former) =>
-			former === "search" ? "title" : "search",
-		);
+	const updateSearchMode = (newMode?: SongSearchMode) => {
+		if (newMode) {
+			setSongControls("searchMode", newMode);
+		} else {
+			// Cycle through modes: title -> lyrics -> author -> recent -> oldest -> newest -> title
+			const modes: SongSearchMode[] = ["title", "lyrics", "author", "recent", "oldest", "newest"];
+			setSongControls("searchMode", (current) => {
+				const currentIndex = modes.indexOf(current);
+				return modes[(currentIndex + 1) % modes.length];
+			});
+		}
 	};
 
 	const songCountDisplay = (
@@ -385,6 +509,7 @@ export default function SongSelection() {
 			<SelectionGroups
 				searchInput={
 					<SongSearchInput
+						ref={searchInputRef}
 						searchMode={songControls.searchMode}
 						updateSearchMode={updateSearchMode}
 						query={songControls.query}
@@ -586,10 +711,16 @@ interface SearchInputProps {
 	onFilter: JSX.EventHandlerUnion<HTMLInputElement, InputEvent>;
 	onClear: () => void;
 	searchMode: SongSearchMode;
-	updateSearchMode: () => void;
+	updateSearchMode: (mode?: SongSearchMode) => void;
+	ref: HTMLInputElement;
 }
 
 const SongSearchInput = (props: SearchInputProps) => {
+	const SearchIcon = () => {
+		const Icon = SONG_SEARCH_MODE_ICONS[props.searchMode];
+		return <Icon size={14} />;
+	};
+
 	return (
 		<InputGroup
 			w="full"
@@ -603,27 +734,74 @@ const SongSearchInput = (props: SearchInputProps) => {
 			}}
 			transition="all 0.15s ease"
 			startElement={() => (
-				<IconButton
-					size="xs"
-					variant="ghost"
-					cursor="pointer"
-					onClick={props.updateSearchMode}
-					color="gray.400"
-					_hover={{ color: "gray.200", bg: "gray.800" }}
-					aria-label={
-						props.searchMode === "title"
-							? "Switch to fuzzy search mode"
-							: "Switch to title search mode"
-					}
-					title={props.searchMode === "title" ? "Title search" : "Fuzzy search"}
+				<Menu.Root
+					positioning={{ placement: "bottom-start" }}
+					onSelect={(details) => {
+						props.updateSearchMode(details.value as SongSearchMode);
+					}}
 				>
-					<Show
-						when={props.searchMode === "title"}
-						fallback={<VsSearchFuzzy size={14} />}
-					>
-						<TbSearch size={14} />
-					</Show>
-				</IconButton>
+					<Menu.Trigger asChild={(triggerProps) => (
+						<IconButton
+							{...triggerProps()}
+							size="xs"
+							variant="ghost"
+							cursor="pointer"
+							color="gray.400"
+							_hover={{ color: "gray.200", bg: "gray.800" }}
+							aria-label={`Search mode: ${SONG_SEARCH_MODE_LABELS[props.searchMode]}`}
+							title={`Search mode: ${SONG_SEARCH_MODE_LABELS[props.searchMode]}`}
+						>
+							<HStack gap={0.5}>
+								<SearchIcon />
+								<TbChevronDown size={10} />
+							</HStack>
+						</IconButton>
+					)} />
+					<Portal>
+						<Menu.Positioner>
+							<Menu.Content
+								minW="180px"
+								bg="gray.900"
+								borderColor="gray.700"
+								boxShadow="lg"
+							>
+								<Menu.ItemGroup>
+									<Menu.ItemGroupLabel
+										fontSize="11px"
+										color="gray.500"
+										fontWeight="medium"
+										px={2}
+										py={1}
+									>
+										Search Mode
+									</Menu.ItemGroupLabel>
+									<For each={SONG_SEARCH_MODES}>
+										{(mode) => {
+											const ModeIcon = SONG_SEARCH_MODE_ICONS[mode];
+											return (
+												<Menu.Item
+													value={mode}
+													px={2}
+													py={1.5}
+													fontSize="13px"
+													cursor="pointer"
+													_hover={{ bg: "gray.800" }}
+													color={props.searchMode === mode ? `${defaultPalette}.400` : "gray.200"}
+													fontWeight={props.searchMode === mode ? "medium" : "normal"}
+												>
+													<HStack gap={2}>
+														<ModeIcon size={14} />
+														<Text>{SONG_SEARCH_MODE_LABELS[mode]}</Text>
+													</HStack>
+												</Menu.Item>
+											);
+										}}
+									</For>
+								</Menu.ItemGroup>
+							</Menu.Content>
+						</Menu.Positioner>
+					</Portal>
+				</Menu.Root>
 			)}
 			startElementProps={{ padding: 0, pointerEvents: "auto", pl: 1 }}
 			endElement={() => (
@@ -654,6 +832,7 @@ const SongSearchInput = (props: SearchInputProps) => {
 			endElementProps={{ pr: 1 }}
 		>
 			<Input
+				ref={props.ref}
 				pos="relative"
 				fontSize={13}
 				zIndex={10}
@@ -670,7 +849,7 @@ const SongSearchInput = (props: SearchInputProps) => {
 					bgColor: `${defaultPalette}.600`,
 				}}
 				value={props.query}
-				placeholder="Search songs..."
+				placeholder={SONG_SEARCH_MODE_PLACEHOLDERS[props.searchMode]}
 				onInput={props.onFilter}
 				data-testid="song-search-input"
 				aria-label="Search songs"

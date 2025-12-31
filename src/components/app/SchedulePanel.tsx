@@ -274,21 +274,22 @@ export default function SchedulePanel() {
 		});
 
 	let virtualizerParentRef!: HTMLDivElement;
-	const rowVirtualizer = createMemo(() =>
-		createVirtualizer({
-			count: scheduleItems().length,
-			getScrollElement: () => virtualizerParentRef,
-			estimateSize: () => 20,
-			overscan: 5,
-		}),
-	);
+	const rowVirtualizer = createVirtualizer({
+		get count() {
+			return scheduleItems().length;
+		},
+		getScrollElement: () => virtualizerParentRef,
+		estimateSize: () => 20,
+		overscan: 5,
+	});
 
 	// Scroll to focused item and update preview when navigating
 	createEffect(() => {
 		const focusId = fluidFocusId();
 		console.log("Schedule Panel Fluid Focus Changed: ", focusId);
 		if (typeof focusId === "number") {
-			rowVirtualizer().scrollToIndex(focusId);
+			const isLast = focusId === scheduleItems().length - 1;
+			rowVirtualizer.scrollToIndex(focusId, { align: isLast ? "end" : "auto" });
 			// Update preview when navigating with keyboard
 			if (isCurrentPanel() && scheduleItems().length > 0) {
 				pushToLive(focusId, false);
@@ -441,7 +442,7 @@ export default function SchedulePanel() {
 				>
 					<Box
 						style={{
-							height: `${rowVirtualizer().getTotalSize()}px`,
+							height: `${rowVirtualizer.getTotalSize()}px`,
 							width: "100%",
 							position: "relative",
 						}}
@@ -452,10 +453,10 @@ export default function SchedulePanel() {
 							left={0}
 							w="full"
 							style={{
-								transform: `translateY(${rowVirtualizer().getVirtualItems()[0]?.start ?? 0}px)`,
+								transform: `translateY(${rowVirtualizer.getVirtualItems()[0]?.start ?? 0}px)`,
 							}}
 						>
-							<For each={rowVirtualizer().getVirtualItems()}>
+							<For each={rowVirtualizer.getVirtualItems()}>
 								{(virtualItem) => {
 									const item = scheduleItems()[virtualItem.index];
 									const TypeIcon = typeIcons[item.type] || TbList;

@@ -521,6 +521,12 @@ export default function ScriptureSelection() {
 	};
 	const isCurrentPanel = createMemo(() => currentPanel() === name);
 
+	createEffect(() => {
+		if (isCurrentPanel()) {
+			searchInputRef?.focus();
+		}
+	});
+
 	function handleGroupAccordionChange(
 		open: (ScripturePanelGroupValues | string)[],
 		e?: MouseEvent,
