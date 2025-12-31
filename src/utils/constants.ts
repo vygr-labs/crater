@@ -174,6 +174,7 @@ export const defaultAppSettings: AppSettings = {
 		y: 0,
 	},
 	projectionDisplayId: DEFAULT_PROJECTION_DISPLAY_ID,
+	useCustomProjectionBounds: false,
 	// Appearance settings
 	fontSize: "medium",
 	// Scripture settings

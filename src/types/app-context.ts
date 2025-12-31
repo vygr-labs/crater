@@ -121,6 +121,7 @@ export interface AppSettings {
 	language: string;
 	projectionBounds: DisplayBounds;
 	projectionDisplayId: number;
+	useCustomProjectionBounds: boolean;
 	// Appearance settings
 	fontSize: "small" | "medium" | "large" | "xlarge";
 	// Scripture settings

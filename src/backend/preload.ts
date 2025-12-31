@@ -99,8 +99,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		ipcRenderer.send("update-app-settings", settings),
 
 	// Toolbar Functions
-	openProjectionWindow: (bounds: { x: number; y: number }) =>
-		ipcRenderer.send("open-projection", bounds),
+	openProjectionWindow: (bounds: {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+		useCustomBounds: boolean;
+	}) => ipcRenderer.send("open-projection", bounds),
 	closeProjectionWindow: () => ipcRenderer.send("close-projection"),
 	getConnectedDisplays: () => ipcRenderer.invoke("get-all-displays"),
 

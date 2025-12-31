@@ -354,16 +354,28 @@ const spawnAppWindow = async () => {
 	});
 };
 
-function spawnProjectionWindow({ x, y }: { x: number; y: number }) {
+function spawnProjectionWindow({
+	x,
+	y,
+	width,
+	height,
+	useCustomBounds,
+}: {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	useCustomBounds: boolean;
+}) {
 	projectionWindow = new BrowserWindow({
-		width: 800,
-		height: 600,
+		width: useCustomBounds ? width : 800,
+		height: useCustomBounds ? height : 600,
 		title: electronIsDev
 			? "Projection Window - Development"
 			: "Crater Projection Window",
 		icon: getAppIcon(),
 		show: false,
-		fullscreen: true,
+		fullscreen: !useCustomBounds,
 		frame: false,
 		transparent: true, // Allow transparency
 		webPreferences: {
@@ -595,22 +607,40 @@ ipcMain.on("dark-mode:system", () => {
 	nativeTheme.themeSource = "system";
 });
 
-ipcMain.on("open-projection", (_, { x, y }: { x: number; y: number }) => {
-	const coords = { x, y };
-	logger.info("Opening projection window", { x, y });
-	if (!projectionWindow) {
-		const display = screen.getDisplayNearestPoint({ x, y });
-		if (!display) {
-			coords.x = 0;
-			coords.y = 0;
+ipcMain.on(
+	"open-projection",
+	(
+		_,
+		{
+			x,
+			y,
+			width,
+			height,
+			useCustomBounds,
+		}: {
+			x: number;
+			y: number;
+			width: number;
+			height: number;
+			useCustomBounds: boolean;
+		},
+	) => {
+		const bounds = { x, y, width, height, useCustomBounds };
+		logger.info("Opening projection window", bounds);
+		if (!projectionWindow) {
+			const display = screen.getDisplayNearestPoint({ x, y });
+			if (!display) {
+				bounds.x = 0;
+				bounds.y = 0;
+			}
+			logger.debug("Projection window display info", {
+				bounds,
+				displayCount: screen.getAllDisplays().length,
+			});
+			spawnProjectionWindow(bounds);
 		}
-		logger.debug("Projection window display info", {
-			coords,
-			displayCount: screen.getAllDisplays().length,
-		});
-		spawnProjectionWindow(coords);
-	}
-});
+	},
+);
 
 ipcMain.on("close-projection", () => {
 	if (projectionWindow) {
