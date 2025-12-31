@@ -588,6 +588,12 @@ export default function StrongsSelection() {
 
 	const isCurrentPanel = createMemo(() => currentPanel() === name);
 
+	createEffect(() => {
+		if (isCurrentPanel()) {
+			searchInputRef?.focus();
+		}
+	});
+
 	// Groups for the sidebar
 	const allGroups = createMemo(
 		(): PanelGroup => ({
@@ -1027,6 +1033,7 @@ export default function StrongsSelection() {
 						</HStack>
 					) : (
 						<Input
+							ref={searchInputRef}
 							type="text"
 							placeholder="Search by number (H123) or keyword..."
 							value={controls.dictQuery}

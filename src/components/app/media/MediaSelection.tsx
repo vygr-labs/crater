@@ -353,6 +353,13 @@ export default function MediaSelection() {
 	});
 	const isCurrentPanel = createMemo(() => currentPanel() === name);
 
+	let searchInputRef!: HTMLInputElement;
+	createEffect(() => {
+		if (isCurrentPanel()) {
+			searchInputRef?.focus();
+		}
+	});
+
 	function handleGroupAccordionChange(
 		open: (MediaPanelGroupValues | string)[],
 		e?: MouseEvent,
@@ -674,6 +681,7 @@ export default function MediaSelection() {
 			<SelectionGroups
 				searchInput={
 					<MediaSearchInput
+						ref={searchInputRef}
 						searchMode={mediaControls.searchMode}
 						updateSearchMode={updateSearchMode}
 						query={mediaControls.query}
@@ -1277,6 +1285,7 @@ interface SearchInputProps {
 	onFilter: (e: InputEvent) => void;
 	searchMode: MediaSearchMode;
 	updateSearchMode: () => void;
+	ref: HTMLInputElement;
 }
 
 const MediaSearchInput = (props: SearchInputProps) => {
@@ -1288,6 +1297,7 @@ const MediaSearchInput = (props: SearchInputProps) => {
 			</Box>
 			{/* Search input */}
 			<Input
+				ref={props.ref}
 				pos="relative"
 				zIndex={10}
 				variant="outline"

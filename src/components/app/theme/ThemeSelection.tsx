@@ -233,6 +233,14 @@ export default function ThemeSelection() {
 		},
 	});
 	const isCurrentPanel = createMemo(() => currentPanel() === name);
+
+	let searchInputRef!: HTMLInputElement;
+	createEffect(() => {
+		if (isCurrentPanel()) {
+			searchInputRef?.focus();
+		}
+	});
+
 	const currentSelectedTheme = createAsyncMemo(async () => {
 		const fluidId = fluidFocusId();
 		if (typeof fluidId === "number") {
@@ -374,6 +382,7 @@ export default function ThemeSelection() {
 			<SelectionGroups
 				searchInput={
 					<ThemeSearchInput
+						ref={searchInputRef}
 						searchMode={themeControls.searchMode}
 						updateSearchMode={updateSearchMode}
 						query={themeControls.query}
@@ -666,6 +675,7 @@ interface SearchInputProps {
 	onFilter: (e: InputEvent) => void;
 	searchMode: ThemeSearchMode;
 	updateSearchMode: () => void;
+	ref: HTMLInputElement;
 }
 
 const ThemeSearchInput = (props: SearchInputProps) => {
@@ -677,6 +687,7 @@ const ThemeSearchInput = (props: SearchInputProps) => {
 			</Box>
 			{/* Search input */}
 			<Input
+				ref={props.ref}
 				pos="relative"
 				zIndex={10}
 				variant="outline"
