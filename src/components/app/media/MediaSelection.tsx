@@ -356,7 +356,9 @@ export default function MediaSelection() {
 	let searchInputRef!: HTMLInputElement;
 	createEffect(() => {
 		if (isCurrentPanel()) {
-			searchInputRef?.focus();
+			setTimeout(() => {
+				searchInputRef?.focus();
+			}, 0);
 		}
 	});
 

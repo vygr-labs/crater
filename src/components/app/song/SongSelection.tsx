@@ -127,7 +127,7 @@ export default function SongSelection() {
 	const [songControls, setSongControls] = createStore<SongControlsData>({
 		group: "all",
 		collection: null,
-		searchMode: "title",
+		searchMode: "lyrics",
 		query: "",
 		contextMenuOpen: false,
 	});
@@ -348,7 +348,9 @@ export default function SongSelection() {
 	let searchInputRef!: HTMLInputElement;
 	createEffect(() => {
 		if (isCurrentPanel()) {
-			searchInputRef?.focus();
+			setTimeout(() => {
+				searchInputRef?.focus();
+			}, 0);
 		}
 	});
 
@@ -856,7 +858,9 @@ const SongSearchInput = (props: SearchInputProps) => {
 				color="gray.100"
 				_placeholder={{ color: `${neutralPalette}.500` }}
 				_selection={{
-					bgColor: `${defaultPalette}.600`,
+					bgColor: `white`,
+					color: "black",
+					fontWeight: 500,
 				}}
 				value={props.query}
 				placeholder={SONG_SEARCH_MODE_PLACEHOLDERS[props.searchMode]}

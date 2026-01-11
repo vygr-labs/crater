@@ -237,7 +237,9 @@ export default function ThemeSelection() {
 	let searchInputRef!: HTMLInputElement;
 	createEffect(() => {
 		if (isCurrentPanel()) {
-			searchInputRef?.focus();
+			setTimeout(() => {
+				searchInputRef?.focus();
+			}, 0);
 		}
 	});
 

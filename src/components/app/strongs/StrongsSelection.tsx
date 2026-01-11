@@ -590,7 +590,9 @@ export default function StrongsSelection() {
 
 	createEffect(() => {
 		if (isCurrentPanel()) {
-			searchInputRef?.focus();
+			setTimeout(() => {
+				searchInputRef?.focus();
+			}, 0);
 		}
 	});
 
