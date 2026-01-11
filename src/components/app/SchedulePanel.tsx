@@ -275,21 +275,18 @@ export default function SchedulePanel() {
 
 	let virtualizerParentRef!: HTMLDivElement;
 	const rowVirtualizer = createVirtualizer({
-		get count() {
-			return scheduleItems().length;
-		},
+		get count() { return scheduleItems().length; },
 		getScrollElement: () => virtualizerParentRef,
-		estimateSize: () => 20,
+		estimateSize: () => 32,
 		overscan: 5,
 	});
 
 	// Scroll to focused item and update preview when navigating
 	createEffect(() => {
 		const focusId = fluidFocusId();
-		console.log("Schedule Panel Fluid Focus Changed: ", focusId);
 		if (typeof focusId === "number") {
 			const isLast = focusId === scheduleItems().length - 1;
-			rowVirtualizer.scrollToIndex(focusId, { align: isLast ? "end" : "auto" });
+			rowVirtualizer.scrollToIndex(focusId, { align: isLast ? "end" : "auto", behavior: "auto" });
 			// Update preview when navigating with keyboard
 			if (isCurrentPanel() && scheduleItems().length > 0) {
 				pushToLive(focusId, false);
@@ -311,6 +308,13 @@ export default function SchedulePanel() {
 					const newIndex = newLength - 1;
 					changeFluidFocus(newIndex);
 					changeFocus(newIndex);
+					// Scroll to the bottom after DOM updates - use double rAF to ensure virtualizer has recalculated
+					requestAnimationFrame(() => {
+						// Scroll the container directly to the bottom for reliability
+						if (virtualizerParentRef) {
+							virtualizerParentRef.scrollTop = virtualizerParentRef.scrollHeight;
+						}
+					});
 				}
 				setPrevScheduleLength(newLength);
 			},
@@ -419,7 +423,9 @@ export default function SchedulePanel() {
 			<ContextMenu
 				open={contextMenuOpen()}
 				setOpen={setContextMenuOpen}
-				ref={virtualizerParentRef}
+				ref={(el) => {
+					virtualizerParentRef = el as HTMLDivElement;
+				}}
 				content={<ScheduleContextMenuContent />}
 			>
 				<Show

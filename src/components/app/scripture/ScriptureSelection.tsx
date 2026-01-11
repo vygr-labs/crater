@@ -523,7 +523,9 @@ export default function ScriptureSelection() {
 
 	createEffect(() => {
 		if (isCurrentPanel()) {
-			searchInputRef?.focus();
+			setTimeout(() => {
+				searchInputRef?.focus();
+			}, 0);
 		}
 	});
 
@@ -800,7 +802,7 @@ export default function ScriptureSelection() {
 			if (scripture) {
 				setScriptureControls(
 					"inputValue",
-					`${scripture.book_name} ${scripture.chapter}:${scripture.verse}`,
+					`${scripture.book_name} ${scripture.chapter} ${scripture.verse}`,
 				);
 			}
 		}
@@ -1139,6 +1141,11 @@ export default function ScriptureSelection() {
 			return;
 		}
 
+		if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+			e.preventDefault();
+		}
+		// console.log("SCROLLS: ", rowVirtualizer().scrollElement)
+
 		const isCraterMode = settings.scriptureInputMode === "crater";
 
 		if (e.key === "Tab" || e.key === "Enter") {
@@ -1164,8 +1171,12 @@ export default function ScriptureSelection() {
 		) {
 			// Autocomplete book on space
 			const input = scriptureControls.inputValue;
-			const { book } = parseScriptureInput(input);
-			if (book && !input.includes(" ")) {
+			const { book, chapter } = parseScriptureInput(input);
+
+			const isSpacePartofName =
+				book && book.toLowerCase().startsWith(input.toLowerCase() + " ");
+
+			if (book && chapter === null && !isSpacePartofName) {
 				e.preventDefault();
 				setScriptureControls("inputValue", book + " ");
 				// Navigate to book chapter 1 verse 1
