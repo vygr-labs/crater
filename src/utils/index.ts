@@ -201,9 +201,9 @@ const mappings: Record<
 			true: {
 				isCurrentPanel: {
 					true: {
-						"background-color": token.var(`colors.${defaultPalette}.900`),
+						// "background-color": token.var(`colors.${defaultPalette}.900`),
 						// "border-left-color": token.var(`colors.${defaultPalette}.400`),
-						color: token.var(`colors.white`),
+						// color: token.var(`colors.white`),
 						// "font-weight": "600",
 					},
 					false: {},
@@ -234,9 +234,9 @@ const mappings: Record<
 			true: {
 				isCurrentPanel: {
 					true: {
-						"background-color": token.var(`colors.${defaultPalette}.900`),
+						// "background-color": token.var(`colors.${defaultPalette}.900`),
 						// "border-left-color": token.var(`colors.${defaultPalette}.400`),
-						color: token.var(`colors.white`),
+						// color: token.var(`colors.white`),
 						// "font-weight": "600",
 					},
 					false: {},
