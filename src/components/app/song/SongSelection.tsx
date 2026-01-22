@@ -382,12 +382,18 @@ export default function SongSelection() {
 		);
 	}
 
-	// scroll to current fluid item
-	createEffect(() => {
-		if (isCurrentPanel() && filteredSongs().length) {
-			rowVirtualizer().scrollToIndex(fluidFocusId() ?? 0);
-		}
-	});
+	// scroll to current fluid item when navigating (not on panel focus change)
+	createEffect(
+		on(
+			() => fluidFocusId(),
+			(focusId) => {
+				if (typeof focusId === "number" && filteredSongs().length) {
+					rowVirtualizer().scrollToIndex(focusId, { align: "auto" });
+				}
+			},
+			{ defer: true },
+		),
+	);
 
 	// close contextMenu when we scroll
 	createEffect(() => {
@@ -587,9 +593,7 @@ export default function SongSelection() {
 											style={{
 												height: `${virtualItem.size}px`,
 												transform: `translateY(${virtualItem.start}px)`,
-												"background-color": isLive() 
-													? token.var(`colors.${defaultPalette}.900`)
-													: isSelected() && isCurrentPanel()
+												"background-color": isSelected() && isCurrentPanel()
 														? token.var("colors.gray.800")
 														: undefined,
 											}}
@@ -599,11 +603,9 @@ export default function SongSelection() {
 											{/* Song icon */}
 											<Box
 												color={
-													isLive()
-														? `${defaultPalette}.300`
-														: isSelected() && isCurrentPanel()
-															? "gray.300"
-															: `${neutralPalette}.500`
+													isSelected() && isCurrentPanel()
+														? "gray.300"
+														: `${neutralPalette}.500`
 												}
 												flexShrink={0}
 											>
@@ -612,13 +614,11 @@ export default function SongSelection() {
 											{/* Song info */}
 											<VStack gap={0} alignItems="flex-start" flex={1} minW={0}>
 												<Text
-													fontWeight={isSelected() || isLive() ? "medium" : "normal"}
+													fontWeight={isSelected() ? "medium" : "normal"}
 													truncate
 													w="full"
 													style={{
-														color: isLive()
-															? token.var(`colors.${defaultPalette}.100`)
-															: isSelected() && isCurrentPanel()
+														color: isSelected() && isCurrentPanel()
 																? token.var("colors.gray.200")
 																: token.var(`colors.${neutralPalette}.100`)
 													}}
@@ -629,11 +629,9 @@ export default function SongSelection() {
 													<Text
 														fontSize="12px"
 														color={
-															isLive()
-																? `${defaultPalette}.200`
-																: isSelected() && isCurrentPanel()
-																	? "gray.400"
-																	: `${neutralPalette}.500`
+															isSelected() && isCurrentPanel()
+																? "gray.400"
+																: `${neutralPalette}.500`
 														}
 														truncate
 														w="full"
