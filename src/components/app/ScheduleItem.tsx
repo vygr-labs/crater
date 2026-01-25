@@ -25,6 +25,7 @@ interface Props {
 	isDragOver?: boolean;
 	onContextMenu?: (e: MouseEvent, index: number) => void;
 	hasThemeOverride?: boolean;
+	ref?: (element: Element) => void;
 }
 
 export default function ScheduleItem(props: Props) {
@@ -53,6 +54,8 @@ export default function ScheduleItem(props: Props) {
 	
 	return (
 		<HStack
+			ref={props.ref}
+			data-index={props.index}
 			class="disable-child-clicks"
 			userSelect="none"
 			gap={0}

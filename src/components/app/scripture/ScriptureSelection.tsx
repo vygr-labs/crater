@@ -652,6 +652,12 @@ export default function ScriptureSelection() {
 			);
 			if (scriptureIndex > -1) {
 				changeFluidFocus(scriptureIndex);
+				
+				// Force scroll to current selection since the list content was replaced
+				setTimeout(() => {
+					rowVirtualizer()?.scrollToIndex(scriptureIndex, { align: "center" });
+				}, 50);
+
 				// Update the translation in selectedScriptureRef after successful re-sync
 				selectedScriptureRef.translation = currentTranslation;
 			}
