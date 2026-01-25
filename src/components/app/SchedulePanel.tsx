@@ -277,7 +277,7 @@ export default function SchedulePanel() {
 	const rowVirtualizer = createVirtualizer({
 		get count() { return scheduleItems().length; },
 		getScrollElement: () => virtualizerParentRef,
-		estimateSize: () => 32,
+		estimateSize: () => 36,
 		overscan: 5,
 	});
 
@@ -470,6 +470,7 @@ export default function SchedulePanel() {
 									const itemTheme = item.themeOverride ?? themeMap()[item.type];
 									return (
 										<ScheduleItem
+											ref={rowVirtualizer.measureElement}
 											index={virtualItem.index}
 											item={item}
 											isFocusItem={fluidFocusId() === virtualItem.index}
