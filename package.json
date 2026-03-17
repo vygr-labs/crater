@@ -8,6 +8,7 @@
 		"email": "eyetukingsley330@gmail.com",
 		"url": "https://eyetukingsley.dev"
 	},
+	"license": "GPL-3.0-or-later",
 	"main": "src/backend/build/main.js",
 	"scripts": {
 		"dev": "astro dev",
