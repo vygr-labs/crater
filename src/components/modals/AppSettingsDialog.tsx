@@ -34,6 +34,7 @@ import { GenericSwitch } from "../ui/switch";
 import { Checkbox } from "../ui/checkbox";
 import {
 	TbBook,
+	TbBroadcast,
 	TbCheck,
 	TbChevronDown,
 	TbDeviceDesktop,
@@ -52,6 +53,7 @@ import {
 } from "~/utils/constants";
 import { css } from "styled-system/css";
 import { RemoteControlSettings } from "../app/RemoteControlSettings";
+import { NDISettings } from "../app/NDISettings";
 
 // Section header component for consistent styling
 function SectionHeader(props: {
@@ -273,6 +275,12 @@ export function AppSettingsDialog() {
 									<HStack gap={2}>
 										<TbWifi size={16} />
 										<span>Remote</span>
+									</HStack>
+								</Tabs.Trigger>
+								<Tabs.Trigger value="streaming">
+									<HStack gap={2}>
+										<TbBroadcast size={16} />
+										<span>Streaming</span>
 									</HStack>
 								</Tabs.Trigger>
 							</Tabs.List>
@@ -790,6 +798,11 @@ export function AppSettingsDialog() {
 							{/* Remote Control Tab */}
 							<Tabs.Content value="remote" pt={6} pb={4}>
 								<RemoteControlSettings />
+							</Tabs.Content>
+
+							{/* Streaming / NDI Tab */}
+							<Tabs.Content value="streaming" pt={6} pb={4}>
+								<NDISettings />
 							</Tabs.Content>
 						</Tabs.Root>
 					</Dialog.Body>

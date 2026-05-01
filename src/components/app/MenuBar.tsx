@@ -100,6 +100,24 @@ export default function MenuBar(props: Props) {
 		});
 	});
 
+	// NDI auto-starts in main when the projection window finishes loading and
+	// stops on close, so the renderer's view of streaming state can drift after
+	// going Live. Re-sync whenever isLive changes.
+	createEffect(
+		on(
+			() => appStore.isLive,
+			() => {
+				// Small delay so main has time to attach after the projection
+				// window's did-finish-load fires.
+				setTimeout(() => {
+					window.electronAPI.ndiGetStatus().then((status) => {
+						setMenuStore("ndiStreaming", status.isStreaming);
+					});
+				}, 800);
+			},
+		),
+	);
+
 	const handleShortcutSave: FocusEventHandlerFn = ({ event }) => {
 		console.log(
 			"Saving schedule ",
@@ -189,16 +207,7 @@ export default function MenuBar(props: Props) {
 			toaster.create({
 				type: "error",
 				title: "NDI not supported",
-				description: "NDI sending is not supported by the current library",
-			});
-			return;
-		}
-
-		if (!appStore.isLive) {
-			toaster.create({
-				type: "warning",
-				title: "Go Live first",
-				description: "You must be live to start NDI streaming",
+				description: "NDI sending is not supported on this machine",
 			});
 			return;
 		}
@@ -212,7 +221,15 @@ export default function MenuBar(props: Props) {
 					title: result.message,
 				});
 			} else {
-				const result = await window.electronAPI.ndiStart();
+				// Pass the configured projection bounds so the backend can spawn
+				// a hidden projection window at the right resolution if Live is
+				// not currently active.
+				const result = await window.electronAPI.ndiStart({
+					projectionBounds: {
+						...unwrap(settings.projectionBounds),
+						useCustomBounds: settings.useCustomProjectionBounds,
+					},
+				} as any);
 				setMenuStore("ndiStreaming", result.success);
 				if (!result.success && result.status?.error) {
 					toaster.create({
@@ -236,15 +253,6 @@ export default function MenuBar(props: Props) {
 			});
 		}
 	}
-
-	// Stop NDI when going off-live
-	createEffect(() => {
-		if (!appStore.isLive && menuStore.ndiStreaming) {
-			window.electronAPI.ndiStop().then(() => {
-				setMenuStore("ndiStreaming", false);
-			});
-		}
-	});
 
 	createEffect(() => {
 		if (appStore.isLive) {
@@ -626,17 +634,30 @@ export default function MenuBar(props: Props) {
 					<Text fontSize="sm">Clear</Text>
 				</TooltipButton>
 
-				{/* NDI Toggle */}
+				{/* NDI Toggle — works whether or not Live is active. When Live is
+				    off, clicking spawns a hidden projection window so NDI can
+				    stream without showing on a physical display. The button's
+				    colour reflects the output mode:
+				      blue  = streaming AND on a physical display (Live)
+				      amber = streaming but hidden (network only)
+				      gray  = offline */}
 				<Show when={menuStore.ndiSupported !== false}>
 					<TooltipButton
 						tooltip={
 							menuStore.ndiStreaming
-								? "Stop NDI Streaming"
+								? appStore.isLive
+									? "NDI streaming (Live + Network)"
+									: "NDI streaming (Hidden — network only)"
 								: "Start NDI Streaming"
 						}
 						onClick={handleNdiToggle}
-						disabled={!appStore.isLive && !menuStore.ndiStreaming}
-						colorPalette={menuStore.ndiStreaming ? "blue" : "gray"}
+						colorPalette={
+							menuStore.ndiStreaming
+								? appStore.isLive
+									? "blue"
+									: "amber"
+								: "gray"
+						}
 						variant={menuStore.ndiStreaming ? "solid" : "outline"}
 					>
 						<Show

@@ -95,8 +95,6 @@ import {
 	setAppWindow as setRemoteAppWindow,
 } from "./remote/index.js";
 // import processSongs from './scripts/songs-importer/index.js'
-// import grandiose from 'grandiose'
-// const { GrandioseFinder } = grandiose
 
 // Global error handlers to catch uncaught exceptions in production
 process.on("uncaughtException", (error) => {
@@ -110,12 +108,6 @@ process.on("uncaughtException", (error) => {
 process.on("unhandledRejection", (reason, promise) => {
 	logger.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
-
-// const finder = new GrandioseFinder()
-// setTimeout(() => {
-// 	// Log the discovered sources after 1000ms wait
-// 	console.log('NDI Sources: ', finder.getCurrentSources())
-// }, 1000)
 
 // processSongs()
 // const electronIsDev = false;
@@ -155,6 +147,12 @@ app.on("window-all-closed", () => {
 		// app.quit();
 		app.exit(0);
 	}
+});
+
+// Release the NDI runtime cleanly so subsequent launches don't see a stale
+// sender lingering on the network.
+app.on("before-quit", () => {
+	ndiSender.shutdown();
 });
 
 ipcMain.on("update-app-settings", (event, settings) => {
@@ -360,24 +358,44 @@ function spawnProjectionWindow({
 	width,
 	height,
 	useCustomBounds,
+	hidden = false,
 }: {
 	x: number;
 	y: number;
 	width: number;
 	height: number;
 	useCustomBounds: boolean;
+	hidden?: boolean;
 }) {
+	// For visible windows we let the OS handle sizing via fullscreen=true when
+	// useCustomBounds is false. For hidden windows there's no display to go
+	// fullscreen on, so the constructor's width/height are exactly what NDI
+	// receivers will see — we must use the real projection-display bounds even
+	// when the user hasn't explicitly opted into custom bounds. Defaulting to
+	// 800x600 (as the visible path does) would leave NDI streaming at SD and
+	// every receiver would have to upscale.
+	const targetWidth = hidden ? width : useCustomBounds ? width : 800;
+	const targetHeight = hidden ? height : useCustomBounds ? height : 600;
+
 	projectionWindow = new BrowserWindow({
-		width: useCustomBounds ? width : 800,
-		height: useCustomBounds ? height : 600,
+		width: targetWidth,
+		height: targetHeight,
 		title: electronIsDev
 			? "Projection Window - Development"
 			: "Crater Projection Window",
 		icon: getAppIcon(),
 		show: false,
-		fullscreen: !useCustomBounds,
+		fullscreen: !hidden && !useCustomBounds,
 		frame: false,
 		transparent: true, // Allow transparency
+		// Skip task-bar entry when the window is only used as an NDI source so
+		// users don't see a phantom "Crater Projection Window" they didn't open.
+		skipTaskbar: hidden,
+		// Critical for NDI-without-Live: ensures the renderer paints (and our
+		// beginFrameSubscription callback fires) even when the window has
+		// never been shown. Without this, hidden windows skip painting until
+		// first show.
+		paintWhenInitiallyHidden: true,
 		webPreferences: {
 			backgroundThrottling: false,
 			preload: PRELOAD_PATH,
@@ -395,14 +413,39 @@ function spawnProjectionWindow({
 				pathname: path.resolve(app.getAppPath(), "dist/index.html"),
 			});
 	projectionWindow.loadURL(projectionUrl);
-	projectionWindow.show();
-	appWindow?.focus();
+	if (!hidden) {
+		projectionWindow.show();
+		appWindow?.focus();
+	}
 
 	// projectionWindow.setIgnoreMouseEvents(true)
 	// if (electronIsDev)
 	// 	projectionWindow.webContents.openDevTools({ mode: 'right' })
 
+	// Auto-start the NDI source as soon as the projection window has a real
+	// surface to capture. did-finish-load is the earliest point where
+	// beginFrameSubscription will yield non-empty frames.
+	projectionWindow.webContents.once("did-finish-load", () => {
+		if (!projectionWindow) return;
+		ndiSender
+			.start(projectionWindow)
+			.then((ok) => {
+				if (!ok) {
+					logger.warn(
+						"NDI auto-start failed; sender will remain offline until restarted via IPC",
+					);
+				}
+			})
+			.catch((err) => {
+				logger.error(
+					"NDI auto-start threw",
+					err instanceof Error ? err.message : err,
+				);
+			});
+	});
+
 	projectionWindow.on("closed", () => {
+		ndiSender.stop();
 		projectionWindow = null;
 		checkAndQuit();
 	});
@@ -627,29 +670,83 @@ ipcMain.on(
 	) => {
 		const bounds = { x, y, width, height, useCustomBounds };
 		logger.info("Opening projection window", bounds);
-		if (!projectionWindow) {
-			const display = screen.getDisplayNearestPoint({ x, y });
-			if (!display) {
-				bounds.x = 0;
-				bounds.y = 0;
+
+		// If a hidden projection window already exists (because NDI was started
+		// before going Live), promote it to visible instead of spawning a new
+		// one — the renderer is already loaded and NDI is already attached.
+		//
+		// Two subtleties to avoid the well-known "Go Live flash":
+		//   1. setBounds before showing, so the window appears in its final
+		//      position from the very first painted frame — no jump from
+		//      origin to projection display.
+		//   2. showInactive() instead of show(): show() activates the window,
+		//      which briefly raises it above the controls window before our
+		//      appWindow.focus() pushes it back. showInactive() never steals
+		//      focus, so there's nothing to push back — the controls stay on
+		//      top throughout.
+		//
+		// We also skip setFullScreen(true) here. The hidden window was created
+		// at the projection display's exact bounds with frame:false +
+		// transparent:true, so on Windows it's visually indistinguishable from
+		// real fullscreen, and it avoids the activate-and-flip transition that
+		// fullscreen mode causes.
+		if (projectionWindow && !projectionWindow.isDestroyed()) {
+			if (!projectionWindow.isVisible()) {
+				// Same workArea-vs-bounds correction as the hidden-spawn path:
+				// the renderer sent workArea, but for fullscreen intent we want
+				// the display's full bounds so the visible window covers the
+				// taskbar area like real fullscreen does.
+				const targetBounds = resolveProjectionBounds({
+					x,
+					y,
+					width,
+					height,
+					useCustomBounds,
+				});
+				projectionWindow.setSkipTaskbar(false);
+				projectionWindow.setBounds({
+					x: targetBounds.x,
+					y: targetBounds.y,
+					width: targetBounds.width,
+					height: targetBounds.height,
+				});
+				projectionWindow.showInactive();
+				logger.info("Promoted hidden projection window to visible");
 			}
-			logger.debug("Projection window display info", {
-				bounds,
-				displayCount: screen.getAllDisplays().length,
-			});
-			spawnProjectionWindow(bounds);
+			return;
 		}
+
+		const display = screen.getDisplayNearestPoint({ x, y });
+		if (!display) {
+			bounds.x = 0;
+			bounds.y = 0;
+		}
+		logger.debug("Projection window display info", {
+			bounds,
+			displayCount: screen.getAllDisplays().length,
+		});
+		spawnProjectionWindow(bounds);
 	},
 );
 
 ipcMain.on("close-projection", () => {
-	if (projectionWindow) {
-		projectionWindow.close();
-		projectionWindow = null;
-		logger.info("Projection window closed");
-	} else {
+	if (!projectionWindow || projectionWindow.isDestroyed()) {
 		logger.warn("Projection window is already closed or does not exist");
+		return;
 	}
+	// If NDI is still streaming we keep the renderer alive (and hidden) so
+	// receivers don't see the source disappear when the operator just wanted
+	// to end Live. NDI keeps consuming frames from the hidden window.
+	if (ndiSender.getStatus().isStreaming) {
+		projectionWindow.setSkipTaskbar(true);
+		if (projectionWindow.isFullScreen()) projectionWindow.setFullScreen(false);
+		projectionWindow.hide();
+		logger.info("Projection window hidden (NDI still streaming)");
+		return;
+	}
+	projectionWindow.close();
+	projectionWindow = null;
+	logger.info("Projection window closed");
 });
 
 ipcMain.handle("get-system-fonts", () => getFonts2({ disableQuoting: true }));
@@ -996,18 +1093,103 @@ ipcMain.handle("ndi-get-status", () => {
 	return ndiSender.getStatus();
 });
 
+/**
+ * When the user has chosen "fullscreen on display" (useCustomBounds=false),
+ * the renderer hands us display.workArea (which excludes the taskbar). That's
+ * fine for visible windows because real OS fullscreen mode covers the taskbar
+ * area on its own — but a hidden window has no fullscreen escape hatch, and
+ * the visible promote path skips fullscreen too. In both cases we'd publish
+ * NDI at workArea size (e.g. 1920x1020) instead of the display's true 16:9
+ * dimensions, leaving black bars in receivers.
+ *
+ * This helper resolves the bounds to the display's full size whenever fullscreen
+ * was the user's intent, so NDI / promoted windows match what an actual
+ * fullscreen Live session would produce.
+ */
+function resolveProjectionBounds(b: {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	useCustomBounds: boolean;
+}) {
+	if (b.useCustomBounds) return b;
+	const display = screen.getDisplayNearestPoint({ x: b.x, y: b.y });
+	if (!display) return b;
+	return {
+		...b,
+		x: display.bounds.x,
+		y: display.bounds.y,
+		width: display.bounds.width,
+		height: display.bounds.height,
+	};
+}
+
+/**
+ * Wait for a window's first paint to land. We need this before subscribing to
+ * frames — otherwise the very first NDI frames are empty buffers.
+ */
+async function waitForProjectionLoad(win: BrowserWindow): Promise<void> {
+	if (!win.webContents.isLoading()) return;
+	await new Promise<void>((resolve) => {
+		const done = () => {
+			win.webContents.off("did-finish-load", done);
+			resolve();
+		};
+		win.webContents.once("did-finish-load", done);
+	});
+}
+
 ipcMain.handle(
 	"ndi-start",
-	async (_, config?: Partial<NDISenderConfig>) => {
-		if (!projectionWindow) {
-			logger.warn("Cannot start NDI: projection window is not open");
+	async (
+		_,
+		config?: Partial<NDISenderConfig> & {
+			projectionBounds?: {
+				x: number;
+				y: number;
+				width: number;
+				height: number;
+				useCustomBounds: boolean;
+			};
+		},
+	) => {
+		// Without an existing projection window we spawn one off-screen so NDI
+		// can stream without the operator having to "Go Live" first. The hidden
+		// window paints normally because of paintWhenInitiallyHidden + the
+		// disabled background throttling.
+		if (!projectionWindow || projectionWindow.isDestroyed()) {
+			const requestedBounds = config?.projectionBounds ?? {
+				x: 0,
+				y: 0,
+				width: 1920,
+				height: 1080,
+				useCustomBounds: true,
+			};
+			// Use display.bounds (full size, taskbar inclusive) when the user's
+			// intent was "fullscreen on display"; otherwise honour the custom
+			// bounds verbatim. Without this, NDI ships at workArea height and
+			// receivers show black bars.
+			const fallbackBounds = resolveProjectionBounds(requestedBounds);
+			logger.info("Spawning hidden projection window for NDI", fallbackBounds);
+			spawnProjectionWindow({ ...fallbackBounds, hidden: true });
+			if (projectionWindow) {
+				await waitForProjectionLoad(projectionWindow);
+			}
+			// The did-finish-load hook in spawnProjectionWindow auto-starts NDI.
+			// Wait a beat so its result is reflected in getStatus().
+			await new Promise((r) => setTimeout(r, 100));
 			return {
-				success: false,
-				message: "Projection window must be open to start NDI streaming",
+				success: ndiSender.getStatus().isStreaming,
+				message: ndiSender.getStatus().isStreaming
+					? "NDI streaming started (hidden output)"
+					: "Failed to start NDI streaming",
+				status: ndiSender.getStatus(),
 			};
 		}
 
-		const success = await ndiSender.start(projectionWindow, config);
+		const { projectionBounds: _ignored, ...senderConfig } = config ?? {};
+		const success = await ndiSender.start(projectionWindow, senderConfig);
 		return {
 			success,
 			message: success
@@ -1020,6 +1202,17 @@ ipcMain.handle(
 
 ipcMain.handle("ndi-stop", () => {
 	ndiSender.stop();
+	// If the projection window only exists because NDI spawned it (hidden,
+	// never shown), close it now — there's nothing else keeping it open.
+	if (
+		projectionWindow &&
+		!projectionWindow.isDestroyed() &&
+		!projectionWindow.isVisible()
+	) {
+		projectionWindow.close();
+		projectionWindow = null;
+		logger.info("Closed hidden projection window after NDI stop");
+	}
 	return {
 		success: true,
 		message: "NDI streaming stopped",

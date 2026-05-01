@@ -1,4 +1,3 @@
-declare module "grandiose";
 declare module "redux-electron-store";
 declare module "rtf-parse";
 declare module "rtf-parse/src/rtf/model/Document.js";
