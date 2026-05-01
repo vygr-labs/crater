@@ -17,7 +17,7 @@ nsis:
   createDesktopShortcut: true
   createStartMenuShortcut: true
   shortcutName: "Crater Bible Project"
-  license: "LICENSE.md"
+  license: "license.txt"
 
 # Linux Configuration
 linux:
