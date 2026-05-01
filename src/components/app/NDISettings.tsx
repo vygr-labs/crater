@@ -374,6 +374,15 @@ export function NDISettings() {
 						</Box>
 					)}
 				</Show>
+
+				{/* Trademark attribution — required by the NDI SDK redistribution
+				    license. Placed at panel level so it's visible whenever the
+				    user interacts with the feature. */}
+				<Box pt={1}>
+					<Text fontSize="2xs" color="gray.600" textAlign="center">
+						NDI® is a registered trademark of Vizrt NDI AB.
+					</Text>
+				</Box>
 			</Show>
 		</Stack>
 	);

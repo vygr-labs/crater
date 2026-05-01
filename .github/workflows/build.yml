@@ -1,42 +1,255 @@
-name: Build Crater Application
+name: Build & Release
 
-on: push
+# Manual-only. Pick a platform, optionally toggle release creation, and run.
+# The version is auto-incremented from package.json's current value — you do
+# NOT need to bump versions or push tags manually anymore. The workflow finds
+# the next unused vX.Y.Z (skipping any tag that already exists locally or on
+# origin), uses that for the build, and creates the tag itself in the release
+# job after all builds succeed.
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Target platform"
+        required: true
+        # Defaults to windows because the @vygr-labs/ndi-node package currently
+        # only ships the Windows NDI SDK in its deps/ndi/lib directory. macOS
+        # and Linux builds will fail at node-gyp rebuild until libndi.dylib /
+        # libndi.so are added to the package.
+        default: "windows"
+        type: choice
+        options:
+          - windows
+          - macos
+          - linux
+          - all
+      create_release:
+        description: "Create a GitHub Release (draft) once all selected builds succeed"
+        required: true
+        default: true
+        type: boolean
 
 permissions:
   contents: write
 
 jobs:
-  release:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-
+  # ----------------------------------------------------------------------
+  # Resolve the version to build at by finding the next unused vX.Y.Z tag.
+  # This runs once and feeds its output into every per-OS build, so all
+  # artifacts of a single workflow run share one version even if the patch
+  # number had to be bumped multiple times.
+  # ----------------------------------------------------------------------
+  resolve-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve effective release version
+        id: resolve
+        run: |
+          BASE=$(node -p "require('./package.json').version")
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$BASE"
+          CANDIDATE="$BASE"
+          # Bump patch until the candidate tag is free both locally and on
+          # origin. Both checks matter: a fresh clone won't know about tags
+          # created by a previous workflow run unless we hit origin.
+          while git rev-parse "v$CANDIDATE" >/dev/null 2>&1 \
+             || git ls-remote --exit-code --tags origin "v$CANDIDATE" >/dev/null 2>&1; do
+            PATCH=$((PATCH + 1))
+            CANDIDATE="$MAJOR.$MINOR.$PATCH"
+          done
+          echo "Resolved release version: $CANDIDATE (package.json: $BASE)"
+          echo "version=$CANDIDATE" >> $GITHUB_OUTPUT
+
+  # ----------------------------------------------------------------------
+  # Windows build — produces .exe (NSIS) and the YAML/blockmap files
+  # electron-updater needs for delta updates.
+  # ----------------------------------------------------------------------
+  build-windows:
+    needs: resolve-version
+    if: ${{ inputs.platform == 'windows' || inputs.platform == 'all' }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
         with:
           lfs: true
 
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
+      - name: Enable Corepack & install dependencies
+        # Corepack is required because crater pins yarn to 4.10.3 via the
+        # packageManager field. The postinstall script then runs
+        # electron-builder install-app-deps, which rebuilds better-sqlite3 and
+        # @vygr-labs/ndi-node against the matching Electron ABI.
+        shell: bash
+        run: |
+          corepack enable
+          yarn install --immutable
+
+      - name: Set package version (local, not committed)
+        shell: bash
+        run: npm version "${{ needs.resolve-version.outputs.version }}" --no-git-tag-version --allow-same-version
+
+      - name: Build
+        run: |
+          yarn pre-build
+          yarn exec electron-builder --publish never --config electron-builder.yml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
+          name: crater-windows
+          # electron-builder.yml sets directories.output to "build", so all
+          # artifacts land there. Include .yml/.blockmap so auto-update works.
+          path: |
+            build/*.exe
+            build/*.yml
+            build/*.blockmap
+          if-no-files-found: warn
 
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+  # ----------------------------------------------------------------------
+  # macOS build — produces .dmg.
+  # NOTE: Will fail until @vygr-labs/ndi-node ships libndi.dylib in its
+  # deps/ndi/lib directory.
+  # ----------------------------------------------------------------------
+  build-macos:
+    needs: resolve-version
+    if: ${{ inputs.platform == 'macos' || inputs.platform == 'all' }}
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
 
-          build_script_name: pre-build
-          
-          # Build for all configured targets in electron-builder.yml
-          # This ensures arm64 and tar.gz are included
-          args: "--config electron-builder.yml"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack & install dependencies
+        run: |
+          corepack enable
+          yarn install --immutable
+
+      - name: Set package version (local, not committed)
+        run: npm version "${{ needs.resolve-version.outputs.version }}" --no-git-tag-version --allow-same-version
+
+      - name: Build
+        run: |
+          yarn pre-build
+          yarn exec electron-builder --publish never --config electron-builder.yml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Skip codesigning until certificates are configured. Without this,
+          # electron-builder tries to find a Developer ID and aborts the build.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crater-macos
+          path: |
+            build/*.dmg
+            build/*.yml
+            build/*.blockmap
+          if-no-files-found: warn
+
+  # ----------------------------------------------------------------------
+  # Linux build — produces AppImage (x64), .deb (x64 + arm64), .tar.gz (x64).
+  # NOTE: Will fail until @vygr-labs/ndi-node ships libndi.so in its
+  # deps/ndi/lib directory.
+  # ----------------------------------------------------------------------
+  build-linux:
+    needs: resolve-version
+    if: ${{ inputs.platform == 'linux' || inputs.platform == 'all' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack & install dependencies
+        run: |
+          corepack enable
+          yarn install --immutable
+
+      - name: Set package version (local, not committed)
+        run: npm version "${{ needs.resolve-version.outputs.version }}" --no-git-tag-version --allow-same-version
+
+      - name: Build
+        run: |
+          yarn pre-build
+          yarn exec electron-builder --publish never --config electron-builder.yml
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crater-linux
+          path: |
+            build/*.AppImage
+            build/*.deb
+            build/*.tar.gz
+            build/*.yml
+            build/*.blockmap
+          if-no-files-found: warn
+
+  # ----------------------------------------------------------------------
+  # Release — runs only after every requested build succeeds. Creates the
+  # canonical git tag and a draft GitHub Release with all artifacts attached.
+  # The release is left as a draft so you can review/edit notes before
+  # publishing it from the GitHub UI.
+  # ----------------------------------------------------------------------
+  release:
+    needs: [resolve-version, build-windows, build-macos, build-linux]
+    if: ${{ always() && inputs.create_release && needs.resolve-version.result == 'success' && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create git tag
+        # Push the tag *after* all builds succeeded — if something failed mid-
+        # workflow we want the version still available for the next attempt.
+        run: |
+          TAG="v${{ needs.resolve-version.outputs.version }}"
+          git tag "$TAG"
+          git push origin "$TAG"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.resolve-version.outputs.version }}
+          name: Crater Bible Project v${{ needs.resolve-version.outputs.version }}
+          draft: true
+          make_latest: true
+          generate_release_notes: true
+          files: |
+            artifacts/**/*.exe
+            artifacts/**/*.dmg
+            artifacts/**/*.AppImage
+            artifacts/**/*.deb
+            artifacts/**/*.tar.gz
+            artifacts/**/*.yml
+            artifacts/**/*.blockmap
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
