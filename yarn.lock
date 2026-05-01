@@ -2793,6 +2793,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vygr-labs/ndi-node@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@vygr-labs/ndi-node@npm:1.0.0"
+  dependencies:
+    node-addon-api: "npm:^7.0.0"
+    node-gyp: "npm:latest"
+  checksum: 10c0/81329add33d2dd30706917af75596fa78729718c544cf177565ebac9a58f46e0178f3c037feb3dc1266d9318b40fe90d53da3e72bab3cccec60edf624108c1f3
+  languageName: node
+  linkType: hard
+
 "@xmldom/xmldom@npm:^0.8.3, @xmldom/xmldom@npm:^0.8.8":
   version: 0.8.11
   resolution: "@xmldom/xmldom@npm:0.8.11"
@@ -4922,6 +4932,7 @@ __metadata:
     "@types/ws": "npm:^8.18.1"
     "@typescript-eslint/parser": "npm:^5.0.1"
     "@use-gesture/core": "npm:^10.3.1"
+    "@vygr-labs/ndi-node": "npm:^1.0.0"
     astro: "npm:^5.14.1"
     astro-relative-links: "npm:^0.4.2"
     better-sqlite3: "npm:^12.4.1"
@@ -8808,6 +8819,15 @@ __metadata:
   dependencies:
     node-gyp: "npm:latest"
   checksum: 10c0/bcf526f2ce788182730d3c3df5206585873d1e837a6e1378ff84abccf2f19cf3f93a8274f9c1245af0de63a0dbd1bb95ca2f767ecf5c678d6930326aaf396c4e
+  languageName: node
+  linkType: hard
+
+"node-addon-api@npm:^7.0.0":
+  version: 7.1.1
+  resolution: "node-addon-api@npm:7.1.1"
+  dependencies:
+    node-gyp: "npm:latest"
+  checksum: 10c0/fb32a206276d608037fa1bcd7e9921e177fe992fc610d098aa3128baca3c0050fc1e014fa007e9b3874cf865ddb4f5bd9f43ccb7cbbbe4efaff6a83e920b17e9
   languageName: node
   linkType: hard
 

@@ -37,6 +37,7 @@
 		"@solid-primitives/deep": "^0.3.3",
 		"@solid-primitives/storage": "^4.3.3",
 		"@tanstack/solid-virtual": "^3.13.12",
+		"@vygr-labs/ndi-node": "^1.0.0",
 		"astro": "^5.14.1",
 		"astro-relative-links": "^0.4.2",
 		"better-sqlite3": "^12.4.1",

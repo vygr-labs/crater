@@ -61,6 +61,12 @@ publish:
   repo: crater
 
 files: ["src/backend/build/**/*", "dist/**/*"]
+# The NDI native addon ships a .node binary plus the NDI runtime DLL next to
+# it; both must be unpacked from app.asar so the OS loader can resolve them at
+# runtime. asarUnpack copies the matched paths into app.asar.unpacked/ while
+# leaving them resolvable via the normal require() path.
+asarUnpack:
+  - "node_modules/@vygr-labs/ndi-node/build/Release/**/*"
 extraResources: [{from: "src/assets/default", to: "store"}, {from: "src/assets/media", to: "media"}]
 directories:
   output: "build"

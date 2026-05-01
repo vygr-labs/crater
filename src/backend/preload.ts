@@ -162,6 +162,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		frameRate?: number;
 		width?: number;
 		height?: number;
+		// Sent by the renderer so the backend can spawn a hidden projection
+		// window at the correct resolution when NDI is started without Live.
+		projectionBounds?: {
+			x: number;
+			y: number;
+			width: number;
+			height: number;
+			useCustomBounds: boolean;
+		};
 	}) => ipcRenderer.invoke("ndi-start", config),
 	ndiStop: () => ipcRenderer.invoke("ndi-stop"),
 	ndiUpdateConfig: (config: {
