@@ -6,7 +6,7 @@ import { RenderEditorContainer } from "./editor/ui/Container";
 import { RenderEditorText } from "./editor/ui/Text";
 import { parseThemeData } from "~/utils";
 import Image from "./Image";
-import Video from "./Video";
+import VideoThumbnail from "./VideoThumbnail";
 import { css } from "styled-system/css";
 import type { DisplayInfo, DisplayProps, Theme } from "~/types";
 import { Text } from "../ui/text";
@@ -242,12 +242,9 @@ export default function MiniDisplay(props: MiniDisplayProps) {
 								justifyContent="center"
 								bg="gray.900"
 							>
-								<Video
-									src={displayContent()?.video?.path}
+								<VideoThumbnail
+									src={displayContent()?.video?.path ?? ""}
 									about={displayContent()?.video?.title || "Video"}
-									controls={false}
-									preload="metadata"
-									muted
 								/>
 							</Box>
 						</Match>
