@@ -9,7 +9,7 @@ import {
 	THEMES_TAB_FOCUS_NAME,
 } from "~/utils/constants";
 import Image from "../app/Image";
-import Video from "../app/Video";
+import VideoThumbnail from "../app/VideoThumbnail";
 import { Text } from "../ui/text";
 import { Button } from "../ui/button";
 import { TbPlus } from "solid-icons/tb";
@@ -127,15 +127,9 @@ export default function MediaContentLibrary(props: Props) {
 													<Image src={media.path} alt={media.title} />
 												</Match>
 												<Match when={media.type === "video"}>
-													<Video
-														id={
-															THEME_EDITOR_FOCUS_NAME +
-															"-vid-" +
-															virtualItem.index
-														}
+													<VideoThumbnail
 														src={media.path}
 														about={media.title}
-														preload="metadata"
 													/>
 												</Match>
 											</Switch>

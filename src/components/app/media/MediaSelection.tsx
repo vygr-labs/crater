@@ -65,7 +65,7 @@ import {
 import Image from "../Image";
 import type { MediaItem, MediaType } from "~/types";
 import { changeLogoBg } from "~/utils/store-helpers";
-import Video from "../Video";
+import VideoThumbnail from "../VideoThumbnail";
 import { Input } from "~/components/ui/input";
 import { Menu } from "~/components/ui/menu";
 
@@ -901,15 +901,9 @@ export default function MediaSelection() {
 																	/>
 																</Match>
 																<Match when={media.type === "video"}>
-																	<Video
-																		id={
-																			MEDIA_TAB_FOCUS_NAME +
-																			"-list-vid-" +
-																			virtualItem.index
-																		}
+																	<VideoThumbnail
 																		src={media.path}
 																		about={media.title}
-																		preload="metadata"
 																	/>
 																</Match>
 															</Switch>
@@ -1041,15 +1035,9 @@ export default function MediaSelection() {
 																/>
 															</Match>
 															<Match when={media.type === "video"}>
-																<Video
-																	id={
-																		MEDIA_TAB_FOCUS_NAME +
-																		"-vid-" +
-																		virtualItem.index
-																	}
+																<VideoThumbnail
 																	src={media.path}
 																	about={media.title}
-																	preload="metadata"
 																/>
 															</Match>
 														</Switch>
