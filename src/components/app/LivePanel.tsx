@@ -24,6 +24,7 @@ import { createVirtualizer } from "@tanstack/solid-virtual";
 import ContextMenu from "./ContextMenu";
 import ItemDisplay from "./ItemDisplay";
 import MiniDisplay from "./MiniDisplay";
+import VideoTransport from "./VideoTransport";
 
 // Type to icon mapping
 const typeIcons = {
@@ -208,6 +209,15 @@ export default function LivePanel() {
 				</Show>
 			</ContextMenu>
 			</Box>
+
+			{/* Transport bar — only mounted when the live item is a video.
+			    The transport itself owns the spacebar shortcut and the
+			    BroadcastChannel sub, so it self-cleans when unmounted. */}
+			<Show when={appStore.liveItem?.type === "video"}>
+				<Box px={2} pt={1.5} flexShrink={0}>
+					<VideoTransport />
+				</Box>
+			</Show>
 
 			{/* Mini Display at bottom - shows actual live output */}
 			<Box px={2} py={1.5} flexShrink={0} bg="gray.900" borderTop="1px solid" borderTopColor="gray.800">

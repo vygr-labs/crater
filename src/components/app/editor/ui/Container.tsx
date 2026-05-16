@@ -45,7 +45,7 @@ import MediaContentLibrary from "~/components/custom/MediaContentLibrary";
 import { useTabsContext } from "@ark-ui/solid";
 import type { MediaItem } from "~/types";
 import Image from "../../Image";
-import Video from "../../Video";
+import VideoBackground from "../../VideoBackground";
 import { css } from "styled-system/css";
 import { CgDropOpacity } from "solid-icons/cg";
 
@@ -84,12 +84,9 @@ export default function EditorContainer(props: EditorContainerProps) {
 						/>
 					</Match>
 					<Match when={node.data.background?.type === "video"}>
-						<Video
-							id={node.compName + "-vid-" + node.id}
+						<VideoBackground
 							src={node.data.background.path}
 							about={node.data.background.title}
-							controls={false}
-							preload="auto"
 							autoplay
 							loop
 						/>
@@ -129,12 +126,9 @@ export function RenderEditorContainer(props: RenderEditorItemProps) {
 						/>
 					</Match>
 					<Match when={props.node.data.background?.type === "video"}>
-						<Video
-							id={props.node.compName + "-render-vid-" + props.node.id}
+						<VideoBackground
 							src={props.node.data.background.path}
 							about={props.node.data.background.title}
-							controls={false}
-							preload="auto"
 							autoplay={props.extraData?.isProjectionDisplay}
 							loop
 						/>
