@@ -109,39 +109,26 @@ function SettingRow(props: {
 }
 
 export function AppSettingsDialog() {
-	const [displayBounds, setDisplayBounds] = createSignal<
-		DisplayBounds | undefined
-	>();
 	const { appStore, setAppStore, settings, updateSettings } = useAppContext();
 	const [isRefreshing, setIsRefreshing] = createSignal(false);
+	const [displayBounds, setDisplayBounds] = createSignal<DisplayBounds>({
+		x: 0,
+		y: 0,
+		width: 0,
+		height: 0,
+	});
 
-	const { collection: displayCollection, set: setDisplayCollection } =
-		useListCollection<BasicSelectOption>({
-			initialItems: [],
+	const { collection: displayCollection, setCollection: setDisplayCollection } =
+		useListCollection({
+			initialItems: [] as (Display & { label: string; value: string })[],
 		});
 
-	// Available translations for scripture settings
-	const { collection: translationCollection } = useListCollection({
-		initialItems: [
-			{ label: "NKJV - New King James Version", value: "NKJV" },
-			{ label: "KJV - King James Version", value: "KJV" },
-			{ label: "NIV - New International Version", value: "NIV" },
-			{ label: "NLT - New Living Translation", value: "NLT" },
-			{ label: "ASV - American Standard Version", value: "ASV" },
-			{ label: "AMPC - Amplified Bible Classic", value: "AMPC" },
-			{ label: "TLV - Tree of Life Version", value: "TLV" },
-		],
-	});
-
-	// Font size options
-	const { collection: fontSizeCollection } = useListCollection({
-		initialItems: [
-			{ label: "Small", value: "small" },
-			{ label: "Medium", value: "medium" },
-			{ label: "Large", value: "large" },
-			{ label: "Extra Large", value: "xlarge" },
-		],
-	});
+	const fontSizeOptions: BasicSelectOption[] = [
+		{ label: "Small", value: "small" },
+		{ label: "Medium", value: "medium" },
+		{ label: "Large", value: "large" },
+		{ label: "Extra Large", value: "xlarge" },
+	];
 
 	createEffect(() => {
 		if (settings.projectionBounds) {
@@ -170,7 +157,7 @@ export function AppSettingsDialog() {
 			// Only auto-update bounds when not using custom bounds
 			if (!settings.useCustomProjectionBounds) {
 				updateDisplayBounds(updateSettings, {
-					...externalDisplay.workArea,
+					...externalDisplay.bounds,
 				});
 			}
 			updateProjectionDisplayId(updateSettings, externalDisplay.id);
@@ -206,7 +193,7 @@ export function AppSettingsDialog() {
 	function handleDisplayChange(details: SelectValueChangeDetails) {
 		// Only auto-update bounds when not using custom bounds
 		if (!settings.useCustomProjectionBounds) {
-			updateDisplayBounds(updateSettings, { ...details.items[0].workArea });
+			updateDisplayBounds(updateSettings, { ...details.items[0].bounds });
 		}
 		updateProjectionDisplayId(updateSettings, details.items[0].id);
 	}
@@ -227,602 +214,402 @@ export function AppSettingsDialog() {
 			<Dialog.Positioner>
 				<Dialog.Content minW="550px" maxW="650px">
 					<Dialog.Header pb={2}>
-						<HStack gap={3}>
-							<Box
-								p={2}
-								bg={`${defaultPalette}.900/30`}
-								rounded="lg"
-								color={`${defaultPalette}.400`}
-							>
-								<TbSettings size={22} />
-							</Box>
-							<VStack alignItems="flex-start" gap={0}>
-								<Dialog.Title fontSize="xl">Settings</Dialog.Title>
-								<Text fontSize="xs" color="gray.500">
-									Configure your Crater experience
-								</Text>
-							</VStack>
-						</HStack>
+						<Dialog.Title>
+							<HStack gap={2} alignItems="center">
+								<TbSettings size={20} />
+								<Text>App Settings</Text>
+							</HStack>
+						</Dialog.Title>
 					</Dialog.Header>
-					<Dialog.Body pt={2}>
+					<Dialog.Body>
 						<Tabs.Root defaultValue="display" variant="line">
 							<Tabs.List>
 								<Tabs.Trigger value="display">
-									<HStack gap={2}>
-										<TbDeviceDesktop size={16} />
-										<span>Display</span>
-									</HStack>
-								</Tabs.Trigger>
-								<Tabs.Trigger value="appearance">
-									<HStack gap={2}>
-										<TbPalette size={16} />
-										<span>Appearance</span>
-									</HStack>
+									<TbDeviceDesktop size={14} />
+									Display
 								</Tabs.Trigger>
 								<Tabs.Trigger value="scripture">
-									<HStack gap={2}>
-										<TbBook size={16} />
-										<span>Scripture</span>
-									</HStack>
+									<TbBook size={14} />
+									Scripture
 								</Tabs.Trigger>
 								<Tabs.Trigger value="songs">
-									<HStack gap={2}>
-										<TbMusic size={16} />
-										<span>Songs</span>
-									</HStack>
+									<TbMusic size={14} />
+									Songs
+								</Tabs.Trigger>
+								<Tabs.Trigger value="ndi">
+									<TbBroadcast size={14} />
+									NDI
 								</Tabs.Trigger>
 								<Tabs.Trigger value="remote">
-									<HStack gap={2}>
-										<TbWifi size={16} />
-										<span>Remote</span>
-									</HStack>
+									<TbWifi size={14} />
+									Remote
 								</Tabs.Trigger>
-								<Tabs.Trigger value="streaming">
-									<HStack gap={2}>
-										<TbBroadcast size={16} />
-										<span>Streaming</span>
-									</HStack>
+								<Tabs.Trigger value="appearance">
+									<TbPalette size={14} />
+									Appearance
 								</Tabs.Trigger>
 							</Tabs.List>
 
 							{/* Display Settings Tab */}
-							<Tabs.Content value="display" pt={6} pb={4}>
-								<Stack gap={6}>
-									<SectionHeader
-										icon={TbDeviceDesktop}
-										title="Projection Display"
-										description="Choose which screen to use for projection output"
-									/>
+							<Tabs.Content value="display">
+								<Stack gap={6} py={4}>
+									<Box>
+										<SectionHeader
+											icon={TbDeviceDesktop}
+											title="Projection Display"
+											description="Configure which display is used for projection output"
+										/>
 
-									<Box bg="gray.900/50" rounded="xl" p={4}>
-										<HStack gap={3} mb={4}>
-											<Select.Root
-												collection={displayCollection()}
-												width="full"
-												value={[settings.projectionDisplayId.toString()]}
-												onValueChange={handleDisplayChange}
-											>
-												<Select.HiddenSelect />
-												<Select.Control>
-													<Select.Trigger>
-														<Select.ValueText placeholder="Select a display" />
-													</Select.Trigger>
-													<Select.IndicatorGroup>
-														<Select.Indicator>
-															<TbChevronDown />
-														</Select.Indicator>
-													</Select.IndicatorGroup>
-												</Select.Control>
+										<Stack gap={4}>
+											<GenericField label="Projection Display">
+												<HStack gap={2}>
+													<Select.Root
+														collection={displayCollection}
+														onValueChange={handleDisplayChange}
+														value={[
+															settings.projectionDisplayId?.toString() ?? "",
+														]}
+														width="full"
+													>
+														<Select.Control>
+															<Select.Trigger>
+																<Select.ValueText placeholder="Select display" />
+																<TbChevronDown />
+															</Select.Trigger>
+														</Select.Control>
+														<Select.Positioner>
+															<Select.Content>
+																<For each={displayCollection.items}>
+																	{(display) => (
+																		<Select.Item item={display}>
+																			<Select.ItemText>
+																				<VStack alignItems="flex-start" gap={0}>
+																					<Text fontSize="sm">{display.label}</Text>
+																					<Text fontSize="2xs" color="gray.500">
+																						{(display as any).workArea?.width}x
+																						{(display as any).workArea?.height}
+																					</Text>
+																				</VStack>
+																			</Select.ItemText>
+																			<Select.ItemIndicator>
+																				<TbCheck />
+																			</Select.ItemIndicator>
+																		</Select.Item>
+																	)}
+																</For>
+															</Select.Content>
+														</Select.Positioner>
+													</Select.Root>
+													<Button
+														size="sm"
+														variant="ghost"
+														colorPalette="gray"
+														onClick={refreshDisplays}
+														disabled={isRefreshing()}
+													>
+														<TbRefresh
+															size={16}
+															class={isRefreshing() ? css({ animation: "spin 1s linear infinite" }) : ""}
+														/>
+													</Button>
+												</HStack>
+											</GenericField>
 
-												<Select.Positioner>
-													<Select.Content>
-														<For each={displayCollection().items}>
-															{(display) => {
-																const displayData =
-																	display as BasicSelectOption & {
-																		workArea?: {
-																			width: number;
-																			height: number;
-																		};
-																	};
-																return (
-																	<Select.Item item={display}>
-																		<HStack justify="space-between" w="full">
-																			<Text>{display.label}</Text>
-																			<Text fontSize="xs" color="gray.500">
-																				{displayData.workArea?.width}x
-																				{displayData.workArea?.height}
-																			</Text>
-																		</HStack>
-																		<Select.ItemIndicator>
-																			<TbCheck />
-																		</Select.ItemIndicator>
-																	</Select.Item>
-																);
+											<Box>
+												<HStack justify="space-between" mb={2}>
+													<Checkbox.Root
+														checked={settings.useCustomProjectionBounds}
+														onCheckedChange={() =>
+															toggleUseCustomProjectionBounds(updateSettings)
+														}
+													>
+														<Checkbox.Label>
+															<Text fontSize="sm" fontWeight="medium">
+																{settings.useCustomProjectionBounds ? "Custom Projection Bounds" : "Display Bounds (Read-only)"}
+															</Text>
+														</Checkbox.Label>
+														<Checkbox.HiddenInput />
+														<Checkbox.Control />
+													</Checkbox.Root>
+												</HStack>
+												<HStack gap={2}>
+													<GenericField label="X">
+														<Input
+															type="number"
+															value={settings.projectionBounds?.x}
+															onChange={(e) => {}}
+															disabled={!settings.useCustomProjectionBounds}
+															onInput={(e) => {
+																updateDisplayBounds(updateSettings, {
+																	...settings.projectionBounds,
+																	x: parseInt(e.currentTarget.value),
+																});
 															}}
-														</For>
-													</Select.Content>
-												</Select.Positioner>
-											</Select.Root>
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={refreshDisplays}
-												disabled={isRefreshing()}
+														/>
+													</GenericField>
+													<GenericField label="Y">
+														<Input
+															type="number"
+															value={settings.projectionBounds?.y}
+															onChange={(e) => {}}
+															disabled={!settings.useCustomProjectionBounds}
+															onInput={(e) => {
+																updateDisplayBounds(updateSettings, {
+																	...settings.projectionBounds,
+																	y: parseInt(e.currentTarget.value),
+																});
+															}}
+														/>
+													</GenericField>
+													<GenericField label="Width">
+														<Input
+															type="number"
+															value={settings.projectionBounds?.width}
+															onChange={(e) => {}}
+															disabled={!settings.useCustomProjectionBounds}
+															onInput={(e) => {
+																updateDisplayBounds(updateSettings, {
+																	...settings.projectionBounds,
+																	width: parseInt(e.currentTarget.value),
+																});
+															}}
+														/>
+													</GenericField>
+													<GenericField label="Height">
+														<Input
+															type="number"
+															value={settings.projectionBounds?.height}
+															onChange={(e) => {}}
+															disabled={!settings.useCustomProjectionBounds}
+															onInput={(e) => {
+																updateDisplayBounds(updateSettings, {
+																	...settings.projectionBounds,
+																	height: parseInt(e.currentTarget.value),
+																});
+															}}
+														/>
+													</GenericField>
+												</HStack>
+											</Box>
+										</Stack>
+									</Box>
+
+									<Box>
+										<SectionHeader
+											icon={TbDeviceDesktop}
+											title="General"
+										/>
+										<Stack gap={0} divideY="1px" divideColor="gray.800">
+											<SettingRow
+												label="Keep Projection on Top"
+												description="Bring projection window to top when controls window is focused (only when on different displays)"
 											>
-												<TbRefresh
-													size={16}
-													class={css({
-														animation: isRefreshing()
-															? "spin 1s linear infinite"
-															: "none",
-													})}
-												/>
-											</Button>
-										</HStack>
-
-										<Divider my={4} borderColor="gray.800" />
-
-										<SettingRow
-											label="Use Custom Dimensions"
-											description="Set custom window size instead of using full display"
-										>
-											<Checkbox
-												colorPalette={defaultPalette}
-												checked={settings.useCustomProjectionBounds}
-												onCheckedChange={() =>
-													toggleUseCustomProjectionBounds(updateSettings)
-												}
-											/>
-										</SettingRow>
-
-										<Divider my={2} borderColor="gray.800" />
-
-										<Text fontSize="xs" color="gray.500" mb={3}>
-											{settings.useCustomProjectionBounds ? "Custom Projection Bounds" : "Display Bounds (Read-only)"}
-										</Text>
-										<HStack gap={3} width="full">
-											<GenericField label="Left">
-												<Input
-													placeholder="0"
-													type="number"
-													value={settings.projectionBounds?.x}
-													variant="outline"
-													size="sm"
-													disabled={!settings.useCustomProjectionBounds}
-													onInput={(e) => {
-														const val = parseInt(e.currentTarget.value) || 0;
-														updateDisplayBounds(updateSettings, {
-															...settings.projectionBounds,
-															x: val,
-														});
-													}}
-												/>
-											</GenericField>
-											<GenericField label="Top">
-												<Input
-													placeholder="0"
-													type="number"
-													value={settings.projectionBounds?.y}
-													variant="outline"
-													size="sm"
-													disabled={!settings.useCustomProjectionBounds}
-													onInput={(e) => {
-														const val = parseInt(e.currentTarget.value) || 0;
-														updateDisplayBounds(updateSettings, {
-															...settings.projectionBounds,
-															y: val,
-														});
-													}}
-												/>
-											</GenericField>
-											<GenericField label="Width">
-												<Input
-													placeholder="1920"
-													type="number"
-													value={settings.projectionBounds?.width}
-													variant="outline"
-													size="sm"
-													disabled={!settings.useCustomProjectionBounds}
-													onInput={(e) => {
-														const val = parseInt(e.currentTarget.value) || 0;
-														updateDisplayBounds(updateSettings, {
-															...settings.projectionBounds,
-															width: val,
-														});
-													}}
-												/>
-											</GenericField>
-											<GenericField label="Height">
-												<Input
-													placeholder="1080"
-													type="number"
-													value={settings.projectionBounds?.height}
-													variant="outline"
-													size="sm"
-													disabled={!settings.useCustomProjectionBounds}
-													onInput={(e) => {
-														const val = parseInt(e.currentTarget.value) || 0;
-														updateDisplayBounds(updateSettings, {
-															...settings.projectionBounds,
-															height: val,
-														});
-													}}
-												/>
-											</GenericField>
-										</HStack>
-									</Box>
-
-									<Box bg="gray.900/50" rounded="xl" p={4}>
-										<SettingRow
-											label="Authoritative Overlay"
-											description="Bring projection window to front when controls are focused"
-										>
-											<Checkbox
-												colorPalette={defaultPalette}
-												checked={settings.authoritativeOverlay}
-												onCheckedChange={() =>
-													toggleAuthoritativeOverlay(updateSettings)
-												}
-											/>
-										</SettingRow>
-									</Box>
-								</Stack>
-							</Tabs.Content>
-
-							{/* Appearance Settings Tab */}
-							<Tabs.Content value="appearance" pt={6} pb={4}>
-								<Stack gap={6}>
-									<SectionHeader
-										icon={TbPalette}
-										title="Theme & Appearance"
-										description="Customize how Crater looks"
-									/>
-
-									<Box bg="gray.900/50" rounded="xl" p={4}>
-										<SettingRow
-											label="Dark Mode"
-											description="Switch between light and dark themes"
-										>
-											<HStack gap={2}>
-												<TbSun
-													size={16}
-													class={css({
-														color:
-															settings.theme === "light"
-																? "yellow.400"
-																: `${neutralPalette}.600`,
-													})}
-												/>
 												<GenericSwitch
-													colorPalette={defaultPalette}
-													checked={settings.theme === "dark"}
-													onCheckedChange={handleThemeToggle}
+													checked={settings.authoritativeOverlay}
+													onCheckedChange={() =>
+														toggleAuthoritativeOverlay(updateSettings)
+													}
 												/>
-												<TbMoon
-													size={16}
-													class={css({
-														color:
-															settings.theme === "dark"
-																? `${defaultPalette}.400`
-																: `${neutralPalette}.600`,
-													})}
-												/>
-											</HStack>
-										</SettingRow>
-
-										<Divider my={2} borderColor="gray.800" />
-
-										<SettingRow
-											label="Projection Font Size"
-											description="Default text size for projected content"
-										>
-											<Select.Root
-												collection={fontSizeCollection()}
-												width="140px"
-												size="sm"
-												value={[settings.fontSize]}
-												onValueChange={(details) => {
-													updateFontSize(
-														updateSettings,
-														details.value[0] as
-															| "small"
-															| "medium"
-															| "large"
-															| "xlarge",
-													);
-												}}
-											>
-												<Select.HiddenSelect />
-												<Select.Control>
-													<Select.Trigger>
-														<Select.ValueText />
-													</Select.Trigger>
-													<Select.IndicatorGroup>
-														<Select.Indicator>
-															<TbChevronDown />
-														</Select.Indicator>
-													</Select.IndicatorGroup>
-												</Select.Control>
-												<Select.Positioner>
-													<Select.Content>
-														<For each={fontSizeCollection().items}>
-															{(item) => (
-																<Select.Item item={item}>
-																	{item.label}
-																	<Select.ItemIndicator>
-																		<TbCheck />
-																	</Select.ItemIndicator>
-																</Select.Item>
-															)}
-														</For>
-													</Select.Content>
-												</Select.Positioner>
-											</Select.Root>
-										</SettingRow>
+											</SettingRow>
+										</Stack>
 									</Box>
 								</Stack>
 							</Tabs.Content>
 
 							{/* Scripture Settings Tab */}
-							<Tabs.Content value="scripture" pt={6} pb={4}>
-								<Stack gap={6}>
-									<SectionHeader
-										icon={TbBook}
-										title="Scripture Settings"
-										description="Configure Bible display preferences"
-									/>
-
-									<Box bg="gray.900/50" rounded="xl" p={4}>
-										<SettingRow
-											label="Default Translation"
-											description="Bible version to use when loading scriptures"
-										>
-											<Select.Root
-												collection={translationCollection()}
-												width="200px"
-												size="sm"
-												value={[settings.defaultTranslation]}
-												onValueChange={(details) => {
-													updateDefaultTranslation(
-														updateSettings,
-														details.value[0],
-													);
-												}}
+							<Tabs.Content value="scripture">
+								<Stack gap={6} py={4}>
+									<Box>
+										<SectionHeader
+											icon={TbBook}
+											title="Scripture Display"
+										/>
+										<Stack gap={0} divideY="1px" divideColor="gray.800">
+											<SettingRow
+												label="Show Verse Numbers"
 											>
-												<Select.HiddenSelect />
-												<Select.Control>
-													<Select.Trigger>
-														<Select.ValueText />
-													</Select.Trigger>
-													<Select.IndicatorGroup>
-														<Select.Indicator>
-															<TbChevronDown />
-														</Select.Indicator>
-													</Select.IndicatorGroup>
-												</Select.Control>
-												<Select.Positioner>
-													<Select.Content>
-														<For each={translationCollection().items}>
-															{(item) => (
-																<Select.Item item={item}>
-																	{item.label}
-																	<Select.ItemIndicator>
-																		<TbCheck />
-																	</Select.ItemIndicator>
-																</Select.Item>
-															)}
-														</For>
-													</Select.Content>
-												</Select.Positioner>
-											</Select.Root>
-										</SettingRow>
-
-										<Divider my={2} borderColor="gray.800" />
-
-										<SettingRow
-											label="Show Verse Numbers"
-											description="Display verse numbers in projection"
-										>
-											<Checkbox
-												colorPalette={defaultPalette}
-												checked={settings.showVerseNumbers}
-												onCheckedChange={() =>
-													toggleShowVerseNumbers(updateSettings)
-												}
-											/>
-										</SettingRow>
-
-										<Divider my={2} borderColor="gray.800" />
-
-										<SettingRow
-											label="Show Reference"
-											description="Display book, chapter and verse reference"
-										>
-											<Checkbox
-												colorPalette={defaultPalette}
-												checked={settings.showScriptureReference}
-												onCheckedChange={() =>
-													toggleShowScriptureReference(updateSettings)
-												}
-											/>
-										</SettingRow>
-
-										<Divider my={2} borderColor="gray.800" />
-
-										<SettingRow
-											label="Use Crater Input Mode"
-											description="Enable smart scripture parsing and navigation"
-										>
-											<Checkbox
-												colorPalette={defaultPalette}
-												checked={settings.scriptureInputMode === "crater"}
-												onCheckedChange={() =>
-													toggleScriptureInputMode(updateSettings)
-												}
-											/>
-										</SettingRow>
-
-										<Divider my={2} borderColor="gray.800" />
-
-										<SettingRow
-											label="Show Strong's Tab"
-											description="Show the Strong's concordance tab in the main interface"
-										>
-											<Checkbox
-												colorPalette={defaultPalette}
-												checked={settings.showStrongsTab}
-												onCheckedChange={() =>
-													toggleShowStrongsTab(updateSettings)
-												}
-											/>
-										</SettingRow>
+												<GenericSwitch
+													checked={settings.showVerseNumbers}
+													onCheckedChange={() =>
+														toggleShowVerseNumbers(updateSettings)
+													}
+												/>
+											</SettingRow>
+											<SettingRow
+												label="Show Scripture Reference"
+											>
+												<GenericSwitch
+													checked={settings.showScriptureReference}
+													onCheckedChange={() =>
+														toggleShowScriptureReference(updateSettings)
+													}
+												/>
+											</SettingRow>
+											<SettingRow
+												label="Show Strong's Tab"
+											>
+												<GenericSwitch
+													checked={settings.showStrongsTab}
+													onCheckedChange={() =>
+														toggleShowStrongsTab(updateSettings)
+													}
+												/>
+											</SettingRow>
+											<SettingRow
+												label="Scripture Input Mode"
+												description="'Crater' uses keyboard shortcut navigation; 'Controlled' uses separate fields"
+											>
+												<GenericSwitch
+													checked={settings.scriptureInputMode === "controlled"}
+													onCheckedChange={() =>
+														toggleScriptureInputMode(updateSettings)
+													}
+												/>
+											</SettingRow>
+										</Stack>
 									</Box>
 
-									<Box bg="gray.900/50" rounded="xl" p={4}>
-										<Text
-											fontSize="sm"
-											fontWeight="medium"
-											color="gray.300"
-											mb={3}
-										>
-											Search Index
-										</Text>
-										<HStack justify="space-between">
-											<VStack alignItems="flex-start" gap={0.5}>
-												<Text fontSize="xs" color="gray.500">
-													Rebuild the scripture search index if search isn't
-													working properly
-												</Text>
-											</VStack>
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() => {
-													window.electronAPI.rebuildScripturesFtsIndex();
-												}}
-											>
-												<TbRefresh size={14} />
-												Rebuild Index
-											</Button>
-										</HStack>
+									<Box>
+										<SectionHeader
+											icon={TbBook}
+											title="Scripture Defaults"
+										/>
+										<Stack gap={4}>
+											<GenericField label="Default Translation">
+												<Input
+													value={settings.defaultTranslation}
+													onInput={(e) =>
+														updateDefaultTranslation(
+															updateSettings,
+															e.currentTarget.value,
+														)
+													}
+												/>
+											</GenericField>
+										</Stack>
 									</Box>
 								</Stack>
 							</Tabs.Content>
 
 							{/* Songs Settings Tab */}
-							<Tabs.Content value="songs" pt={6} pb={4}>
-								<Stack gap={6}>
-									<SectionHeader
-										icon={TbMusic}
-										title="Song Settings"
-										description="Configure song display and import preferences"
-									/>
-
-									<Box bg="gray.900/50" rounded="xl" p={4}>
-										<SettingRow
-											label="Show Song Author"
-											description="Display author/artist below song title"
-										>
-											<Checkbox
-												colorPalette={defaultPalette}
-												checked={settings.showSongAuthor}
-												onCheckedChange={() =>
-													toggleShowSongAuthor(updateSettings)
-												}
-											/>
-										</SettingRow>
-
-										<Divider my={2} borderColor="gray.800" />
-
-										<SettingRow
-											label="Show CCLI Number"
-											description="Display CCLI license number on songs"
-										>
-											<Checkbox
-												colorPalette={defaultPalette}
-												checked={settings.showCcliNumber}
-												onCheckedChange={() =>
-													toggleShowCcliNumber(updateSettings)
-												}
-											/>
-										</SettingRow>
-
-										<Divider my={2} borderColor="gray.800" />
-
-										<SettingRow
-											label="Auto-advance Slides"
-											description="Automatically move to next slide during playback"
-										>
-											<Checkbox
-												colorPalette={defaultPalette}
-												checked={settings.autoAdvanceSlides}
-												onCheckedChange={() =>
-													toggleAutoAdvanceSlides(updateSettings)
-												}
-											/>
-										</SettingRow>
-									</Box>
-
-									<Box bg="gray.900/50" rounded="xl" p={4}>
-										<Text
-											fontSize="sm"
-											fontWeight="medium"
-											color="gray.300"
-											mb={3}
-										>
-											Search Index
-										</Text>
-										<HStack justify="space-between">
-											<VStack alignItems="flex-start" gap={0.5}>
-												<Text fontSize="xs" color="gray.500">
-													Rebuild the song search index if search isn't working
-													properly
-												</Text>
-											</VStack>
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() => {
-													window.electronAPI.rebuildSongsFtsIndex();
-												}}
-											>
-												<TbRefresh size={14} />
-												Rebuild Index
-											</Button>
-										</HStack>
+							<Tabs.Content value="songs">
+								<Stack gap={6} py={4}>
+									<Box>
+										<SectionHeader
+											icon={TbMusic}
+											title="Song Display"
+										/>
+										<Stack gap={0} divideY="1px" divideColor="gray.800">
+											<SettingRow label="Show Song Author">
+												<GenericSwitch
+													checked={settings.showSongAuthor}
+													onCheckedChange={() =>
+														toggleShowSongAuthor(updateSettings)
+													}
+												/>
+											</SettingRow>
+											<SettingRow label="Show CCLI Number">
+												<GenericSwitch
+													checked={settings.showCcliNumber}
+													onCheckedChange={() =>
+														toggleShowCcliNumber(updateSettings)
+													}
+												/>
+											</SettingRow>
+											<SettingRow label="Auto-Advance Slides">
+												<GenericSwitch
+													checked={settings.autoAdvanceSlides}
+													onCheckedChange={() =>
+														toggleAutoAdvanceSlides(updateSettings)
+													}
+												/>
+											</SettingRow>
+										</Stack>
 									</Box>
 								</Stack>
 							</Tabs.Content>
 
-							{/* Remote Control Tab */}
-							<Tabs.Content value="remote" pt={6} pb={4}>
-								<RemoteControlSettings />
+							{/* NDI Settings Tab */}
+							<Tabs.Content value="ndi">
+								<Stack gap={6} py={4}>
+									<NDISettings />
+								</Stack>
 							</Tabs.Content>
 
-							{/* Streaming / NDI Tab */}
-							<Tabs.Content value="streaming" pt={6} pb={4}>
-								<NDISettings />
+							{/* Remote Control Settings Tab */}
+							<Tabs.Content value="remote">
+								<Stack gap={6} py={4}>
+									<RemoteControlSettings />
+								</Stack>
+							</Tabs.Content>
+
+							{/* Appearance Settings Tab */}
+							<Tabs.Content value="appearance">
+								<Stack gap={6} py={4}>
+									<Box>
+										<SectionHeader
+											icon={TbPalette}
+											title="Theme"
+										/>
+										<Stack gap={0} divideY="1px" divideColor="gray.800">
+											<SettingRow label="Dark Mode">
+												<HStack gap={2}>
+													<TbSun size={16} />
+													<GenericSwitch
+														checked={settings.theme === "dark"}
+														onCheckedChange={handleThemeToggle}
+													/>
+													<TbMoon size={16} />
+												</HStack>
+											</SettingRow>
+											<SettingRow
+												label="Font Size"
+												description="Controls the font size of the app interface (not the projection)"
+											>
+												<Select.Root
+													collection={useListCollection({ initialItems: fontSizeOptions }).collection}
+													onValueChange={(details) =>
+														updateFontSize(
+															updateSettings,
+															details.value[0] as "small" | "medium" | "large" | "xlarge",
+														)
+													}
+													value={[settings.fontSize]}
+													width="150px"
+										>
+													<Select.Control>
+														<Select.Trigger>
+															<Select.ValueText />
+															<TbChevronDown />
+														</Select.Trigger>
+													</Select.Control>
+													<Select.Positioner>
+														<Select.Content>
+															<For each={fontSizeOptions}>
+																{(option) => (
+																	<Select.Item item={option}>
+																		<Select.ItemText>{option.label}</Select.ItemText>
+																		<Select.ItemIndicator>
+																			<TbCheck />
+																		</Select.ItemIndicator>
+																	</Select.Item>
+																)}
+															</For>
+														</Select.Content>
+													</Select.Positioner>
+												</Select.Root>
+											</SettingRow>
+										</Stack>
+									</Box>
+								</Stack>
 							</Tabs.Content>
 						</Tabs.Root>
 					</Dialog.Body>
-					<Dialog.Footer pt={4}>
-						<HStack gap={3}>
-							<Button
-								variant="outline"
-								onClick={() => setAppStore("openSettings", false)}
-							>
-								Cancel
-							</Button>
-							<Button
-								colorPalette={defaultPalette}
-								onClick={() => setAppStore("openSettings", false)}
-							>
-								Done
-							</Button>
-						</HStack>
+					<Dialog.Footer>
+						<Dialog.ActionTrigger asChild>
+							<Button variant="outline">Close</Button>
+						</Dialog.ActionTrigger>
 					</Dialog.Footer>
-					<Dialog.CloseTrigger />
 				</Dialog.Content>
 			</Dialog.Positioner>
 		</Dialog.Root>
