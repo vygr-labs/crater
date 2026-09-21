@@ -1,187 +1,91 @@
-# Working with Songs
-
-Crater includes a complete song library for managing and displaying worship lyrics. This guide covers browsing, adding, editing, and displaying songs.
-
-## Accessing the Song Library
-
-1. Click on the **Songs** tab at the bottom of the control window
-2. You'll see your song library with all available songs
-
-## Browsing Songs
-
-### Viewing All Songs
-
-The Songs tab displays your complete song library. Songs are listed by title, making it easy to find what you need.
-
-### Searching for Songs
-
-To find a specific song:
-
-1. Click in the search box at the top of the Songs tab
-2. Start typing the song title
-3. The list filters as you type
-4. Click on the song you want
-
-You can search by:
-
-- Song title
-- Partial title (e.g., \"Amazing\" will find \"Amazing Grace\")
-
-## Selecting and Displaying Songs
-
-### Preview a Song
-
-1. **Single-click** on a song title
-2. The song lyrics appear in the Preview Panel
-3. You can review all verses before displaying
-
-### Display a Song Live
-
-1. **Double-click** on a song title
-2. The first verse/section appears in the Live Panel
-3. The lyrics are shown on the projection screen
-
-### Navigating Through Song Lyrics
-
-While a song is live:
-
-1. Use **Arrow Down** to go to the next verse/section
-2. Use **Arrow Up** to go to the previous verse/section
-3. The current section is highlighted in the Live Panel
-
-## Song Structure
-
-Songs in Crater are divided into sections such as:
-
-- **Verse 1, Verse 2, etc.** - The main verses
-- **Chorus** - The repeated chorus section
-- **Bridge** - Bridge sections
-- **Pre-Chorus** - Lead-in to the chorus
-- **Tag** - Short repeated phrases
-
-Each section has a label and the lyrics for that section.
-
-## Adding a New Song
-
-To add a new song to your library:
-
-1. Click the **Add (+)** button in the Songs tab
-2. The Song Editor opens
-3. Enter the song details:
-   - **Title**: The name of the song
-   - **Lyrics**: Add each section of the song
-
-### Adding Song Sections
-
-In the Song Editor:
-
-1. Each row represents a song section
-2. Enter the **label** (e.g., "Verse 1", "Chorus")
-3. Enter the **lyrics** for that section
-4. Press Enter to add a new section
-5. Continue until all sections are added
-
-### Saving the Song
-
-1. Enter a title for the song
-2. Click **Save** to add the song to your library
-3. The song will appear in your song list
-
-## Editing Existing Songs
-
-To edit a song:
-
-1. Right-click on the song in the Songs tab
-2. Select **Edit**
-3. The Song Editor opens with the song's content
-4. Make your changes
-5. Click **Save** to update the song
-
-### What You Can Edit
-
-- Song title
-- Section labels
-- Lyrics text
-- Add or remove sections
-
-## Deleting Songs
-
-To remove a song from your library:
-
-1. Right-click on the song
-2. Select **Delete**
-3. Confirm the deletion
-
-**Warning:** Deleted songs cannot be recovered. Make sure you really want to delete.
-
-## Organizing Songs
-
-### Collections
-
-You can organize songs into collections for easy access:
-
-1. Create collections for different purposes (e.g., "Christmas Songs", "Hymns")
-2. Add songs to collections
-3. Filter by collection to find songs faster
-
-### Favorites
-
-Mark frequently used songs as favorites for quick access.
-
-## Song Display Themes
-
-The appearance of song lyrics on screen is controlled by themes:
-
-1. Go to the **Themes** tab
-2. Select a song theme
-3. The theme applies to all song displays
-
-See [Working with Themes](themes.md) for more details.
-
-## Tips for Song Operators
-
-### Before Service
-
-1. **Prepare your songs** - Add all songs to the schedule in order
-2. **Check lyrics** - Review each song for accuracy
-3. **Test display** - Make sure songs look good on screen
-
-### During Service
-
-1. **Follow the worship leader** - Watch for cues
-2. **Stay ahead** - Preview the next section
-3. **Be ready to repeat** - Know how to jump back to chorus
-
-### Best Practices
-
-- Keep section labels consistent (always "Verse 1" not "V1" or "1st Verse")
-- Break long verses into smaller sections if needed
-- Include chord charts in separate notes if needed
-- Double-check spelling before service
-
-## Common Issues
-
-### Song not found
-
-- Check spelling of the search term
-- Clear the search and browse manually
-- Make sure the song was added to the library
-
-### Wrong lyrics displayed
-
-- Edit the song to correct the lyrics
-- Save your changes
-- Re-select the song
-
-### Sections out of order
-
-- Edit the song
-- Reorder sections as needed
-- Save changes
-
+---
+title: Songs
+description: Search, organise and project worship songs in Crater. Search modes, favourites, collections and song display options.
 ---
 
-**Related Guides:**
-- [Managing Songs (Detailed Guide)](../guides/managing-songs.md)
-- [Displaying Content](../guides/displaying-content.md)
-- [Creating Themes](../guides/creating-themes.md)
+# Songs
+
+The **Songs** tab (**Ctrl + 1**) holds your church's song library. Songs you add here can be searched, organised into collections, added to the schedule and sent to the screen.
+
+To add, edit or format songs, see [Managing Songs](../guides/managing-songs.md). To bring songs across from EasyWorship, see [Importing from EasyWorship](../guides/importing-songs.md).
+
+## Finding a song
+
+Type in the search box at the top of the sidebar. The button at the left of the box picks what to search:
+
+| Mode | Searches |
+|------|----------|
+| **All** (default) | Titles, authors and lyrics together, with title matches ranked first |
+| **Title** | Song titles only |
+| **Lyrics** | Lyrics only |
+| **Author** | Author names only |
+
+Search tips:
+
+- **Part of a word is enough.** `grac` finds *Amazing Grace*.
+- **Put a phrase in quotes** to match it exactly: `"how great thou art"`.
+- **Put `-` in front of a word** to leave out songs that contain it.
+- **Apostrophes don't matter.** `its` finds *It's*.
+- **Typos are forgiven.** In **All** mode, if nothing matches exactly, Crater looks for titles and authors spelt similarly and says *songs similar to…* above the results.
+- **Search needs three letters.** In **All** and **Lyrics** modes, words shorter than three letters are skipped.
+
+While you search, each result shows the line of lyrics that matched, with your words highlighted. You can turn both off in **Settings > Search**.
+
+When the search box is empty, a **Recent** button lists your last few searches in this session.
+
+## Sorting
+
+Open the gear menu above the song list and choose **Sort by Name**, **Sort by Most Recent** (last edited), **Sort by Newest** or **Sort by Oldest**.
+
+## Favourites and collections
+
+The sidebar groups your songs:
+
+- **All Songs** shows the whole library.
+- **My Favorites** shows songs you've marked with a heart. Right-click a song and choose **Add to Favorites**.
+- **My Collections** expands to show your collections, such as *Christmas*, *Communion* or *Youth Sunday*. Click a collection to show only its songs.
+
+A song can be in as many collections as you like. See [Managing Songs](../guides/managing-songs.md#collections) to create and manage them.
+
+## Showing a song
+
+| Action | Result |
+|--------|--------|
+| Click a song | Loads it into Preview |
+| **Up** / **Down** in the search box | Moves through the list, loading each song into Preview |
+| Double-click, or **Enter** | Sends it live |
+| Right-click > **Push to Live** | Sends it live |
+| Right-click > **Add to Schedule**, or **Ctrl + T** | Adds it to the schedule |
+
+Each **section** of the song (Verse 1, Chorus, Bridge and so on) becomes one slide, in the order you wrote them. The section label appears on the slide cards in Preview and Live so you can find the chorus at a glance. Long sections shrink to fit the text box in your theme.
+
+A red **LIVE** badge marks the song that's currently on screen.
+
+## Right-click menu
+
+- **Edit Song** opens the song editor.
+- **Duplicate Song** makes a copy called *(copy)*, handy for a special arrangement.
+- **Add to Schedule** and **Push to Live**.
+- **Add to Favorites** or **Remove from Favorites**.
+- **Add to Collection…** adds it to an existing collection or a new one.
+- **Remove from Collection** appears while you're viewing a collection.
+- **Delete Song** removes it from the library after asking you to confirm.
+
+## How songs look
+
+Songs use your default **song theme** unless you pick a different one:
+
+- For every song: **Settings > Song > Default theme**, or right-click a theme on the **Themes** tab and set it as the default.
+- For one song: choose a theme in the song editor.
+- For one service: right-click the song in the schedule and choose **Theme…**.
+
+See [Themes](themes.md) for how to design one.
+
+## Song settings
+
+In **Settings > Song**:
+
+- **Auto-advance slides**, **Advance after** and **Loop at end** move through slides automatically. See [Running a Service](../guides/displaying-content.md#advancing-automatically).
+- **Show author** and **Show CCLI number** control whether the author and CCLI number appear under songs in the schedule.
+
+In **Settings > Appearance**, **Show CCLI badges** shows the CCLI number beside each song in the library. Author and CCLI details come in with songs imported from EasyWorship.

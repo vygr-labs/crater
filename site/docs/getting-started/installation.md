@@ -1,60 +1,82 @@
-# Installation Guide
+---
+title: Installation
+description: Install Crater on Windows or macOS and keep it up to date.
+---
 
-Getting Crater installed on your computer is quick and easy. Follow these simple steps.
+# Installation
 
-## System Requirements
+Crater takes a couple of minutes to install. Get the right file from the [Downloads](../downloads.md) page first.
 
-Before installing, make sure your computer meets these requirements:
+## Windows
 
-- **Operating System**: Windows 10 or later (Windows 11 recommended)
-- **RAM**: At least 4GB (8GB recommended)
-- **Storage**: At least 500MB free space
-- **Display**: A secondary monitor or projector for projection output
+### Using the installer (recommended)
 
-## Download Crater
+1. **Run the installer.** Double-click the installer in your Downloads folder. It's named after the version, like `Crater-Setup-0.7.2.exe`.
+2. **Get past SmartScreen.** Crater isn't code-signed yet, so Windows may show *"Windows protected your PC"*. Click **More info**, then **Run anyway**.
+3. **Allow the installer to make changes.** Crater installs for every user on the computer, so Windows asks for permission. Click **Yes**.
+4. **Follow the wizard.** Crater installs to `C:\Program Files\Crater`. Leave **Create a desktop shortcut** ticked if you want one.
+5. **Launch Crater** from the last page of the wizard, the Start menu or the desktop shortcut.
 
-1. Go to the [Crater Releases Page](https://github.com/CodeKing12/crater/releases)
-2. Find the latest release at the top of the page
-3. Download the file ending in `.exe` (for example: `Crater-Bible-Project-Setup-1.0.0.exe`)
+The installer also sets up the Microsoft Visual C++ runtime if your computer doesn't already have it.
 
-![Download Button](../images/download-release.png)
+### Using the portable zip
 
-## Install Crater
+1. Unzip the portable zip (like `Crater-0.7.2-win64.zip`) to any folder, for example on a USB drive.
+2. Run `crater.exe` from that folder.
+3. If Windows reports a missing `VCRUNTIME140.dll` or `MSVCP140.dll`, run `vc_redist.x64.exe` from the same folder once, then start Crater again.
 
-1. **Locate the downloaded file**
-   - Open your Downloads folder
-   - Find the Crater installer file you just downloaded
+!!! info
+    The in-app updater always installs the Windows installer version. If you use the portable zip, download new versions from the [Downloads](../downloads.md) page instead.
 
-2. **Run the installer**
-   - Double-click the installer file
-   - If Windows shows a security warning, click "More info" then "Run anyway"
+## macOS
 
-3. **Follow the installation wizard**
-   - Click "Next" to proceed through the installation
-   - Choose your installation folder (the default is usually fine)
-   - Click "Install" to begin installation
-   - Wait for the installation to complete
+1. Open the disk image you downloaded (like `Crater-0.7.2-macos.dmg`).
+2. Drag **crater** onto the **Applications** shortcut in the window that appears.
+3. Eject the disk image.
+4. Open Crater from Applications.
 
-4. **Launch Crater**
-   - Check the "Launch Crater" box
-   - Click "Finish"
+### Opening Crater the first time
 
-## First Time Launch
+Crater isn't signed with an Apple Developer ID yet, so macOS blocks it on the first launch. You only need to do this once.
 
-When Crater opens for the first time, it may take a moment to set up the database. This is normal.
+=== "macOS 15 Sequoia and later"
 
-Once loaded, you'll see the main control window. Head over to [First Launch](first-launch.md) to set up your projection display.
+    1. Try to open Crater. When macOS says it can't be opened, click **Done**.
+    2. Open **System Settings > Privacy & Security**.
+    3. Scroll down to the message about Crater and click **Open Anyway**.
+    4. Confirm with your password or Touch ID, then click **Open**.
+
+=== "macOS 14 Sonoma"
+
+    1. In Finder, open **Applications**.
+    2. Hold **Control** and click **crater**, then choose **Open**.
+    3. Click **Open** in the warning dialog.
+
+## The first launch
+
+The first time Crater starts, it sets up its Bible library. This takes a few seconds and happens once. Then the console appears. Continue with [First Launch](first-launch.md) to choose your projection screen.
 
 ## Updating Crater
 
-When a new version is available:
+Crater checks for a new version once a day, shortly after it opens. When one is available, a small dot appears on the **Settings** gear in the top bar.
 
-1. Download the latest installer from the [releases page](https://github.com/CodeKing12/crater/releases)
-2. Run the new installer
-3. It will automatically update your existing installation
+1. Open **Settings > Updates**. You'll see what's new in the release.
+2. Click **Download**. Crater checks the download against the release's published SHA-256 checksum and deletes it if it doesn't match.
+3. Install it:
+    - **Windows:** click **Install and restart**, then **Close and install**. Windows asks for permission to run the installer, and Crater reopens by itself when it's done. The projection screen goes dark while this happens, so don't update in the middle of a service.
+    - **macOS:** click **Open the disk image** and drag Crater onto Applications, replacing the copy already there.
 
-Your songs, themes, and settings will be preserved during updates.
+You can also click **Check now** at any time, or turn off **Check for updates automatically**. Nothing downloads or installs without you clicking.
+
+Your songs, themes, schedules, media and settings are kept when you update.
+
+## Uninstalling
+
+- **Windows:** use **Settings > Apps > Installed apps > Crater > Uninstall**, or **Uninstall Crater** in the Start menu.
+- **macOS:** drag Crater from Applications to the Trash.
+
+Uninstalling leaves your data behind so that a reinstall picks up where you left off. To remove it as well, delete the data folder listed under [Where Crater keeps your data](../reference/troubleshooting.md#where-crater-keeps-your-data).
 
 ---
 
-**Next Step:** [First Launch Setup](first-launch.md)
+**Next:** [First Launch](first-launch.md)

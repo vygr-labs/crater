@@ -1,21 +1,63 @@
 # mkdocs.yml
-site_name: "Crater Bible Project"
+site_name: "Crater"
 site_url: https://crater.voyagerlabs.tech/
 site_author: Eyetu Kingsley
-site_description: Open Source Scripture Projection Software for Churches
+site_description: Free, open-source worship projection software for churches. Scripture, songs, media, presentations and themes on Windows and macOS.
 theme:
   name: shadcn
   show_title: true
   show_stargazers: true
   pygments_style:
         light: shadcn-light
-        dark: github-dark 
+        dark: github-dark
   icon: img/logo-black.svg
   topbar_sections: false
-  katex_options:
-    macros: # example of macros
-      "\\RR": "\\mathbb{R}" 
-      "\\dx": "\\mathrm{d}x"
-  show_datetime: false 
-repo_name: crater
-repo_url: https://github.com/CodeKing12/crater
+  show_datetime: false
+repo_name: crater-v2
+repo_url: https://github.com/vygr-labs/crater-v2
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  # The shadcn theme styles (and scrolls) code blocks by the .codehilite class.
+  - pymdownx.highlight:
+      css_class: codehilite
+  - pymdownx.superfences
+  - pymdownx.tabbed
+
+extra_css:
+  - css/extra.css
+
+extra_javascript:
+  - js/latest-release.js
+
+nav:
+  - Home: index.md
+  - Downloads: downloads.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - First Launch: getting-started/first-launch.md
+      - Interface Overview: getting-started/interface-overview.md
+  - Features:
+      - Scripture: features/scriptures.md
+      - Strong's Concordance: features/strongs.md
+      - Songs: features/songs.md
+      - Media: features/media.md
+      - Presentations: features/presentations.md
+      - Themes: features/themes.md
+      - Schedules: features/schedules.md
+      - Outputs and Stage Display: features/outputs.md
+      - NDI Streaming: features/ndi-streaming.md
+  - Guides:
+      - Running a Service: guides/displaying-content.md
+      - Global Search: guides/quick-search.md
+      - Managing Songs: guides/managing-songs.md
+      - Importing from EasyWorship: guides/importing-songs.md
+      - Designing Themes: guides/creating-themes.md
+  - Reference:
+      - Keyboard Shortcuts: reference/keyboard-shortcuts.md
+      - Settings: reference/settings.md
+      - Troubleshooting: reference/troubleshooting.md
+  - FAQ: faq.md

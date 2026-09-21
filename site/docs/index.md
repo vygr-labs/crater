@@ -1,63 +1,63 @@
+---
+title: Crater
+description: Free, open-source worship projection software for churches. Put scripture, songs, media and sermon slides on the screen from one simple console.
+---
+
 # Welcome to Crater
 
-**Crater** is a free, open-source scripture projection software designed specifically for churches. Display Bible verses, song lyrics, images, and videos on your projector or secondary display during worship services.
+**Crater** is free, open-source worship projection software for churches. It puts Bible verses, song lyrics, pictures, videos, PDFs and sermon slides on your projector, TV or live stream, all from one console that a volunteer can learn in an afternoon.
 
-## Why Crater?
-
-- **100% Free** - No subscription fees or hidden costs
-- **Easy to Use** - Designed for church volunteers of all technical levels
-- **High Performance** - Built to be fast and responsive, even on modest hardware
-- **Runs Anywhere** - Works on any device that can run Chrome
-- **Multiple Bible Translations** - Access various Bible versions
-- **Song Library** - Store and organize your worship songs
-- **Custom Themes** - Make your projections beautiful with custom designs
-- **Service Schedules** - Plan your entire service in advance
+Crater starts quickly, stays light on memory and is built to run well on the modest laptops most churches already have in the sound booth.
 
 ## Download
 
-Get Crater for your platform:
+Latest version: <span data-crater-version>v0.7.2</span>
 
-| Platform | Download |
-|----------|----------|
-| **Windows** | [Download for Windows](downloads.md#windows) |
-| **macOS** | [Download for macOS](downloads.md#macos) |
-| **Linux** | [Download for Linux](downloads.md#linux) |
+- **Windows 10 and 11:** [Download the Windows installer](https://github.com/vygr-labs/crater-v2/releases/download/v0.7.2/Crater-Setup-0.7.2.exe){ data-crater-asset="win-setup" }
+- **macOS 14 Sonoma or later** (Intel and Apple Silicon): [Download the macOS disk image](https://github.com/vygr-labs/crater-v2/releases/download/v0.7.2/Crater-0.7.2-macos.dmg){ data-crater-asset="mac-dmg" }
 
-[View all downloads](downloads.md) for all architectures and previous versions.
+See [all downloads](downloads.md) for the portable Windows zip, the macOS zip and checksums.
 
-## About the Creator
+## What Crater does
 
-Crater Bible Project is developed by **Eyetu Kingsley**, a software developer based in Lagos, Nigeria.
+- **Scripture.** 14 Bible translations come built in. Type `jn 3:16` or a few words you remember and the verse is ready to show. Select a range of verses, switch translation with one click, and project Strong's Greek and Hebrew definitions.
+- **Songs.** Keep your whole song library in one place, with bold, italic, underline and coloured lyrics. Search by title, author or any line of lyrics, even with a typo. Bring your songs across from EasyWorship 6 and 7.
+- **Media.** Show pictures, videos and PDF pages, with per-item crop, fit, loop and mute.
+- **Presentations.** Write sermon slides and speaker notes right inside Crater. The congregation sees the slides and the preacher sees the notes on a stage monitor.
+- **Themes.** Design how every slide looks in a full visual editor with layers, gradients, shadows and your own fonts. You can share a theme with another church as a single file, or have an AI assistant draft one for you.
+- **Schedules.** Plan the whole order of service during the week. Crater saves as you go, and you can keep a saved schedule for every Sunday.
+- **Several screens at once.** Send the service to the projector, a stage monitor for the band or preacher, and extra mirror screens, each on its own display.
+- **Live streaming.** Send exactly what is on the wall to OBS, vMix or any NDI receiver over your network, with no capture card.
+- **Your language.** The console is available in 21 languages.
 
-## Quick Start
+## Quick start
 
-New to Crater? Start here:
+1. [Download Crater](downloads.md) and [install it](getting-started/installation.md).
+2. Follow [First Launch](getting-started/first-launch.md) to choose your projection screen.
+3. Take the [Interface Overview](getting-started/interface-overview.md) to learn the console.
+4. Read [Running a Service](guides/displaying-content.md) to see how content goes from Preview to Live.
 
-1. [Download Crater](downloads.md) - Get the latest version for your platform
-2. [Installation Guide](getting-started/installation.md) - Download and install Crater
-3. [First Launch](getting-started/first-launch.md) - Set up your projection display
-4. [Interface Overview](getting-started/interface-overview.md) - Learn the main controls
+## Common tasks
 
-## Common Tasks
+- [Show a Bible verse](features/scriptures.md)
+- [Add and edit songs](guides/managing-songs.md)
+- [Import songs from EasyWorship](guides/importing-songs.md)
+- [Build a service schedule](features/schedules.md)
+- [Write sermon slides with speaker notes](features/presentations.md)
+- [Set up a stage monitor](features/outputs.md)
+- [Stream to OBS with NDI](features/ndi-streaming.md)
+- [Design a theme](guides/creating-themes.md)
 
-- [Displaying Scripture](features/scriptures.md) - Show Bible verses on screen
-- [Displaying Songs](features/songs.md) - Project song lyrics
-- [Using Media](features/media.md) - Show images and videos
-- [Creating a Service Schedule](features/schedules.md) - Plan your service
+## Getting help
 
-## Getting Help
+- [Keyboard shortcuts](reference/keyboard-shortcuts.md)
+- [Troubleshooting](reference/troubleshooting.md)
+- [Frequently asked questions](faq.md)
+- [Report a bug or ask for a feature on GitHub](https://github.com/vygr-labs/crater-v2/issues)
+- Email the developer at eyetukingsley330@gmail.com
 
-- [Keyboard Shortcuts](reference/keyboard-shortcuts.md) - Quick navigation reference
-- [Troubleshooting](reference/troubleshooting.md) - Common issues and solutions
-- [FAQ](faq.md) - Frequently asked questions
+## About
 
-## Need More Help?
+Crater is made by **Eyetu Kingsley**, a software developer in Lagos, Nigeria, and is free under the GPL-3.0 licence. There are no accounts and no tracking. Everything about your services stays on your own computer.
 
-If you encounter any issues or have suggestions:
-
-- [Open an issue on GitHub](https://github.com/CodeKing12/crater/issues) - Report bugs or request features
-- Contact the developer: eyetukingsley330@gmail.com
-
----
-
-*Crater is developed with love for the Church. Star the repository on GitHub to support this project!*
+*If Crater helps your church, [star the project on GitHub](https://github.com/vygr-labs/crater-v2) so others can find it.*

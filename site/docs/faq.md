@@ -1,240 +1,141 @@
+---
+title: FAQ
+description: Answers to common questions about Crater, the free worship projection software for churches.
+---
+
 # Frequently Asked Questions
 
-Find answers to common questions about using Crater for church projection.
-
-## General Questions
+## General
 
 ### What is Crater?
 
-Crater is a free, open-source scripture projection software designed for churches. It allows you to display Bible verses, song lyrics, images, and videos on a projector or secondary screen during worship services.
+Crater is free, open-source worship projection software. It shows Bible verses, song lyrics, pictures, videos, PDFs and sermon slides on a projector, TV or live stream during church services.
 
-### Is Crater really free?
+### Is it really free?
 
-Yes! Crater is 100% free to download, install, and use. There are no subscription fees, no premium features behind a paywall, and no hidden costs. It's open-source software built for the church community.
+Yes. There's no licence to buy, no subscription and no trial period. Install it on every computer in the church. Crater is open source under the GPL-3.0 licence, and anyone can [read the code](https://github.com/vygr-labs/crater-v2).
 
-### What operating systems does Crater support?
+### Which computers does it run on?
 
-Currently, Crater is available for Windows (Windows 10 and later). Future versions may support macOS and Linux.
+Windows 10 and 11 (64-bit), and macOS 14 Sonoma or later on both Intel and Apple Silicon Macs. There's no Linux version yet. See [system requirements](downloads.md#system-requirements).
 
-### Do I need an internet connection to use Crater?
+### Will it run on our old church laptop?
 
-No, Crater works completely offline. Once installed, you don't need an internet connection to use it during services.
+Very likely. Crater is built to run well on modest hardware: 4 GB of RAM and the kind of integrated graphics found in laptops from around 2012 onwards.
 
----
+### Does it need the internet?
 
-## Setup Questions
+No. Everything works offline. Crater only goes online if you allow it to check for updates (once a day, which you can turn off in **Settings > Updates**) or when you choose to send logs to the developer.
 
-### How do I connect to my projector?
+### Is our information private?
 
-1. Connect your projector to your computer using HDMI, VGA, or another display cable
-2. Set Windows to "Extend" mode (press Windows + P)
-3. Open Crater Settings and select the projector from the display list
-4. Click the projection button to open the projection window
+Yes. There are no accounts, no analytics and no tracking. Your songs, schedules and media stay on your computer.
 
-See [First Launch Setup](getting-started/first-launch.md) for detailed instructions.
+### Is Crater available in my language?
 
-### Can I use Crater with one screen?
+The console is available in 21 languages, including Spanish, French, Portuguese, German, Swahili, Hindi, Chinese, Korean, Japanese and Arabic. Crater picks your computer's language automatically, and you can change it in **Settings > Appearance > Language**.
 
-While Crater is designed for dual-screen setups (control + projection), you can technically run it on one screen. However, you'd see the control window and projection window overlapping, which isn't ideal for services.
+## Moving to Crater
 
-### How do I know which display is which?
+### Can we bring our songs over from EasyWorship?
 
-In Windows Display Settings, you can identify displays by clicking the "Identify" button. Numbers will appear on each screen showing their ID.
+Yes, from EasyWorship 6 and 7. Crater imports titles, authors, copyright, CCLI numbers and lyrics split into sections. See [Importing from EasyWorship](guides/importing-songs.md).
 
----
+### What about ProPresenter, OpenLP or other programs?
 
-## Scripture Questions
+Only EasyWorship imports are supported at the moment. Songs from other programs can be pasted into the song editor's **Raw text** view, a whole song at a time.
 
-### What Bible translations are included?
+## Setup
 
-Crater comes with several popular translations including NKJV and KJV. The available translations are shown in the Scripture tab's translation selector.
+### Can I use Crater with only one screen?
 
-### Can I add more Bible translations?
+Yes. The projection shows as a small preview in the corner, or full size behind the console if you turn on **Settings > Projection > Single display: full-size projection behind the console**. This is handy for preparing a service at home.
 
-Currently, you use the translations that come with Crater. Future updates may include additional translations.
+### Can I use more than two screens?
 
-### How do I search for a specific verse?
+Yes. Besides the main projection, you can add a stage monitor and as many mirror screens as your computer can drive, each on its own display. See [Outputs and Stage Display](features/outputs.md).
 
-Use the quick search feature:
+### Can the preacher see their notes?
 
-1. Go to the Scripture tab
-2. Make sure quick search mode is active (tree icon)
-3. Type the reference (e.g., "John 3:16")
-4. Press Enter
+Yes. Write speaker notes on your [presentation](features/presentations.md) slides and turn on a [stage monitor](features/outputs.md#stage-monitor). The notes, the next slide and a clock show on the stage screen and never on the congregation's screen.
 
-See [Quick Scripture Search](guides/quick-search.md) for more details.
+### Can we send the screen to our live stream?
 
----
+Yes, over your network with NDI, into OBS, vMix, Streamlabs and other streaming software. You can even give the stream its own look, like a lower third. See [NDI Streaming](features/ndi-streaming.md). NDI is available on Windows.
 
-## Song Questions
+### Can I control Crater from my phone?
 
-### How do I add songs to the library?
+Not yet. Phone remote control is planned. For now, you can show the live projection in a phone or TV browser with **Cast to TV browser**. See [Casting to a TV browser](features/outputs.md#casting-to-a-tv-browser).
 
-1. Go to the Songs tab
-2. Click the Add (+) button
-3. Enter the song title
-4. Add each section (verse, chorus, etc.) with lyrics
-5. Click Save
+## Scripture
 
-See [Managing Songs](guides/managing-songs.md) for detailed instructions.
+### Which Bible translations are included?
 
-### Can I import songs from other software?
+Fourteen English translations: AMPC, ASV, CEV, ESV, GNT, KJV, MSG, NASB2020, NIV, NKJV, NLT, RSV, TLV and TPT. See [Scripture](features/scriptures.md#included-translations).
 
-Currently, songs need to be entered manually. Copy/paste from lyrics websites works well.
+### Can I add other translations?
 
-### How should I format song sections?
+Not yet. Adding your own translations isn't supported.
 
-Use clear labels like:
+### What's the fastest way to show a verse someone calls out?
 
-- Verse 1, Verse 2, Verse 3
-- Chorus
-- Bridge
-- Pre-Chorus
-- Tag
+On the Scripture tab, type the reference (`rom 8 28` works) and press **Enter**. From any other tab, press **Ctrl + K**, type the reference and press **Enter** to load it into Preview.
 
-Keep lines short enough to fit on the projection screen comfortably.
+## Songs
 
----
+### How do I add songs?
 
-## Theme Questions
+Click **+** on the Songs tab. Type or paste the lyrics, one section per slide. See [Managing Songs](guides/managing-songs.md).
 
-### What's the difference between a song theme and scripture theme?
+### Can I make parts of a lyric bold or coloured?
 
-**Song themes** are designed to display lyrics with section labels.
-**Scripture themes** are designed to display verses with book/chapter/verse references.
+Yes. Select the words and use the bold, italic, underline and colour buttons in the song editor.
 
-Each type is optimized for its content.
+### Can I change a song for one service only?
 
-### How do I create a custom theme?
+Yes. Right-click the song in the schedule and choose **Edit…**, then **Save to Schedule**. The library copy stays as it was. See [Schedules](features/schedules.md#editing-an-item-without-changing-the-library).
 
-1. Go to the Themes tab
-2. Click the Add (+) button
-3. Choose the theme type
-4. Design using the Theme Editor
-5. Save with a name
+## During the service
 
-See [Creating Themes](guides/creating-themes.md) for the complete guide.
+### How do I move to the next slide?
 
-### Why does my text look small on the projection?
-
-Edit your theme and increase the font size. For projection, text should typically be 48pt or larger. Test from the back of your room to ensure readability.
-
----
-
-## During Service Questions
-
-### How do I advance to the next verse/slide?
-
-Once content is in the Live Panel:
-
-- Press the **Down Arrow** key to advance
-- Press the **Up Arrow** key to go back
+Click the slide in the Live panel, or click in the Live panel and press **Down**. To find a slide without showing the ones in between, hold **Ctrl** and press **Up** or **Down**, then let go of **Ctrl**.
 
 ### How do I quickly clear the screen?
 
-Click the **Clear** button in the menu bar. Click again to restore the content.
+Click **Clear** or press **Ctrl + C**. The text disappears and the background stays. Press it again to bring the text back. **Logo** (**Ctrl + L**) shows your logo instead.
 
 ### What if the worship leader repeats a section?
 
-Press the **Up Arrow** key to go back to previous sections. You can repeat any section as many times as needed.
+Click that section in the Live panel. Each section of a song is a separate slide, labelled with its name.
 
-### What if someone calls out an unplanned scripture?
+## Data
 
-1. Quickly go to the Scripture tab
-2. Use quick search to type the reference
-3. Double-click to display immediately
+### Where does Crater store our songs and settings?
 
----
+In a data folder on your computer. See [Where Crater keeps your data](reference/troubleshooting.md#where-crater-keeps-your-data).
 
-## Technical Questions
+### Will updating delete our songs?
 
-### Where does Crater store my data?
+No. Updates keep your songs, themes, schedules, media and settings.
 
-Crater stores songs, themes, and settings in a local database on your computer. This data persists between sessions and updates.
+### How do we back up?
 
-### Will updates delete my songs and settings?
+Close Crater and copy its data folder somewhere safe. See [Backing up](reference/troubleshooting.md#backing-up).
 
-No, updates preserve your data. However, it's always good practice to note your important songs and settings.
+## Help and support
 
-### How do I backup my data?
+### Where do I report a bug or suggest a feature?
 
-Currently, manual backup involves copying the app data folder. Look for the Crater folder in your AppData directory.
-
-### Crater is running slowly. What can I do?
-
-1. Close other applications
-2. Restart Crater
-3. Avoid importing very large media files
-4. Ensure your computer meets the minimum requirements
-
----
-
-## Troubleshooting Questions
-
-### The projection window won't open
-
-1. Check your display connection
-2. Verify the display is selected in Settings
-3. Restart Crater
-4. Try pressing Windows + P and selecting "Extend"
-
-### Songs/scripture won't display
-
-1. Make sure you double-clicked (not single-clicked)
-2. Check that the Logo mode isn't active
-3. Ensure a theme is set for that content type
-4. Verify the projection window is open
-
-### I can't find a verse
-
-1. Check your spelling
-2. Try abbreviations (Jn for John, Matt for Matthew)
-3. Verify the format: `Book Chapter:Verse`
-4. Make sure you're using the right translation
-
-See [Troubleshooting](reference/troubleshooting.md) for more solutions.
-
----
-
-## Getting More Help
-
-### Where can I report bugs?
-
-Open an issue on the [GitHub repository](https://github.com/CodeKing12/crater/issues). Include:
-
-- What you were doing
-- What happened
-- Steps to reproduce the issue
-
-### How can I suggest features?
-
-Feature suggestions are welcome! Open an issue on GitHub and describe your idea.
+[Open an issue on GitHub](https://github.com/vygr-labs/crater-v2/issues). For a bug, you can also send your log from **Settings > Diagnostics**.
 
 ### How can I contact the developer?
 
-Email: eyetukingsley330@gmail.com
+Email eyetukingsley330@gmail.com.
 
-### How can I support this project?
+### How can we support the project?
 
-- Star the repository on GitHub
-- Report bugs and suggest improvements
-- Share Crater with other churches
-- Contribute to the code if you're a developer
-
----
-
-## Quick Reference
-
-| Task | How To |
-|------|--------|
-| Display content | Double-click |
-| Preview content | Single-click |
-| Next verse/section | Arrow Down |
-| Previous verse/section | Arrow Up |
-| Clear screen | Click Clear button |
-| Show logo | Click Logo button |
-| Quick scripture search | Type "John 3:16" format |
-
----
-
-*Have a question not answered here? [Open an issue](https://github.com/CodeKing12/crater/issues) or email eyetukingsley330@gmail.com*
+- [Star the repository on GitHub](https://github.com/vygr-labs/crater-v2) so other churches can find it.
+- Tell other churches about Crater.
+- Report bugs and suggest improvements.
+- Contribute code or translations.

@@ -1,197 +1,102 @@
-# Working with Media
-
-Crater allows you to display images and videos as part of your service. Use media for announcements, backgrounds, video clips, and more.
-
-## Accessing Media
-
-1. Click on the **Media** tab at the bottom of the control window
-2. You'll see your media library with imported images and videos
-
-## Media Types
-
-Crater supports two types of media:
-
-### Images
-- Announcement slides
-- Background images
-- Photo slideshows
-- Logo images
-
-### Videos
-- Video announcements
-- Worship video clips
-- Background videos
-
-## Browsing Media
-
-### Filtering by Type
-
-The Media tab has category filters:
-
-- **Images** - Show only image files
-- **Videos** - Show only video files
-
-Click on a category to filter the display.
-
-### Searching Media
-
-1. Use the search box at the top
-2. Type part of the media filename
-3. Results filter as you type
-
-## Importing Media
-
-### Adding Images
-
-1. Click the **Add (+)** button in the Media tab
-2. Select "Import Images" from the menu
-3. Browse to find your image files
-4. Select one or more images
-5. Click "Open" to import
-
-### Adding Videos
-
-1. Click the **Add (+)** button
-2. Select "Import Videos" from the menu
-3. Browse to find your video files
-4. Select one or more videos
-5. Click "Open" to import
-
-### Supported Formats
-
-**Images:**
-- JPEG (.jpg, .jpeg)
-- PNG (.png)
-- GIF (.gif)
-- WebP (.webp)
-
-**Videos:**
-- MP4 (.mp4)
-- WebM (.webm)
-- MOV (.mov)
-
-## Displaying Media
-
-### Displaying an Image
-
-1. **Single-click** an image to preview it
-2. **Double-click** to display it on the projection screen
-3. The image fills the projection display
-
-### Displaying a Video
-
-1. **Single-click** a video to preview it
-2. **Double-click** to play it on the projection screen
-3. The video plays on the projection display
-
-### Controlling Video Playback
-
-When a video is playing:
-- Video plays automatically when sent live
-- Use the Live Panel controls for playback options
-
-## Using Logo/Background
-
-Crater has a special logo feature for displaying a default background when no other content is showing.
-
-### Setting a Logo Image
-
-1. Right-click on an image in the Media tab
-2. Select "Set as Logo"
-3. This image becomes your default background
-
-### Showing/Hiding the Logo
-
-Use the **Logo** button in the menu bar to:
-
-- Show the logo (hides current content, shows background)
-- Hide the logo (returns to current content)
-
-This is useful for:
-
-- Covering the screen between songs
-- Showing a default church logo
-- Quick transitions
-
-## Adding Media to Schedule
-
-To add media to your service schedule:
-
-1. Find the image or video in the Media tab
-2. Right-click on it
-3. Select "Add to Schedule"
-4. It will appear in your Schedule Panel
-
-## Tips for Media
-
-### Image Preparation
-
-- **Resolution**: Use images that match your projector resolution (typically 1920x1080)
-- **Aspect Ratio**: Use 16:9 aspect ratio for widescreen projectors
-- **File Size**: Optimize images to reduce loading time
-
-### Video Preparation
-
-- **Format**: MP4 with H.264 encoding works best
-- **Resolution**: Match your projection resolution
-- **Audio**: Consider if audio should play or be muted
-
-### Organization
-
-- Use clear, descriptive filenames
-- Organize files into folders before importing
-- Delete unused media to keep the library clean
-
-## Common Uses
-
-### Announcement Slides
-
-1. Create slides in PowerPoint or similar software
-2. Export as images (one per slide)
-3. Import into Crater
-4. Add to schedule in order
-
-### Countdown Timers
-
-1. Create or download a countdown video
-2. Import into Crater
-3. Play before service starts
-
-### Background Images
-
-1. Import a subtle background image
-2. Set as logo
-3. Use as default display between content
-
-### Video Announcements
-
-1. Create or receive announcement videos
-2. Import into Crater
-3. Add to schedule at the appropriate time
-4. Double-click to play during service
-
-## Troubleshooting Media
-
-### Image not displaying
-
-- Check that the file format is supported
-- Try reimporting the image
-- Check file isn't corrupted
-
-### Video not playing
-
-- Ensure format is supported (MP4 recommended)
-- Check that video codec is compatible
-- Try converting to MP4 format
-
-### Media looks stretched or distorted
-
-- Check the source resolution
-- Use images/videos with correct aspect ratio
-- Ensure projector settings match source
-
+---
+title: Media
+description: Show pictures, videos and PDFs in Crater, with per-item fit, crop, loop and mute options.
 ---
 
-**Related Guides:**
-- [Displaying Content](../guides/displaying-content.md)
-- [Creating a Schedule](schedules.md)
+# Media
+
+The **Media** tab holds the pictures, videos and PDFs you show during services: announcement slides, countdown videos, sermon illustrations, song backgrounds and your church logo.
+
+## Supported files
+
+| Type | Formats |
+|------|---------|
+| Pictures | PNG, JPEG, GIF, BMP, WebP |
+| Videos | MP4, MOV, M4V, WebM, MKV, AVI |
+| Documents | PDF (each page becomes a slide) |
+
+Files can be up to 4 GB each.
+
+## Adding media
+
+- **Drag and drop** files from File Explorer or Finder onto the Media tab. This works for every type, including PDFs.
+- Or click the **+** button (or **Import media** in an empty library) and pick pictures or videos.
+
+Crater **copies** each file into its own data folder, so the item keeps working even if you later move or delete the original. The item is named after the file, and you can rename it.
+
+!!! info "Password-protected PDFs"
+    Crater can't open encrypted or password-protected PDFs. Save an unprotected copy first.
+
+## Finding media
+
+- The sidebar filters by **All Media**, **Images**, **Videos** and **Favorites**.
+- Type in the search box to filter by name.
+- Switch between **grid** and **list** view with the button above the items, and choose how many grid columns to show.
+- Sort by **Name**, **Date added** or **Type**. Choosing the same sort again reverses the order.
+
+Tiles show a **LIVE** or **PREVIEW** badge when the item is on screen or staged, and videos show their length.
+
+## Showing media
+
+| Action | Result |
+|--------|--------|
+| Click an item | Loads it into Preview |
+| Double-click, or **Enter** | Sends it live |
+| Right-click > **Push to Live** | Sends it live |
+| Right-click > **Add to Schedule**, or **Ctrl + T** | Adds it to the schedule |
+
+- **Videos** start playing as soon as they go live, and loop unless you turn looping off. Their sound plays while they're live.
+- **PDFs** appear one page per slide (*Page 1*, *Page 2* and so on). Step through them in Preview and Live like any other slides.
+
+## Fit: how media fills the screen
+
+| Option | What it does |
+|--------|--------------|
+| **Contain** | Shows the whole picture. Black bars fill any gap at the sides or top. |
+| **Cover** | Fills the screen and crops whatever spills over the edges. |
+| **Stretch** | Fills the screen exactly, ignoring the picture's shape. |
+| **Default** | Follows **Settings > Media > Default fit** (Contain unless you change it). |
+
+Change it for one item in any of these places:
+
+- Right-click the item > **Fit**.
+- The **Contain / Cover / Stretch** buttons under a picture or video in the Preview panel.
+- The item's **Edit…** dialog.
+
+## Editing a picture or video
+
+Right-click it and choose **Edit…**:
+
+- **Title.** Rename the item.
+- **Fit.** As above.
+- **Loop video** and **Mute audio** (videos only). Loop is on by default.
+- **Crop.** Drag on the picture (or the video's first frame) to choose the part to show. The crop box keeps a 16:9 shape so it fills a widescreen projector. Hold **Shift** while dragging a corner for any shape, or drag an edge to resize freely. Arrow keys nudge the box, and **Reset crop** goes back to the whole picture.
+- **Duplicate** saves your changes and makes a copy, useful for keeping two crops of the same picture.
+
+Click **Save**. Changes show the next time the item goes live.
+
+## Showing part of a PDF page
+
+PDF pages can be cropped right in the Preview panel, which is handy for zooming in on a chart or a paragraph:
+
+1. Load the PDF into Preview and pick the page.
+2. Drag a rectangle over the part you want.
+3. Press **Enter** to send just that part live.
+
+## Your logo
+
+Right-click a picture or video and choose **Set as Logo Background**. Clicking **Logo** in the top bar (or **Ctrl + L**) then fades out whatever is live and shows it. To have the logo on screen every time Crater starts, turn on **Settings > Projection > Show logo by default**.
+
+## Other options
+
+Right-click an item for:
+
+- **Rename** and **Duplicate**.
+- **Add to Favorites** or **Remove from Favorites**.
+- **Delete**, which also removes Crater's copy of the file.
+
+To delete several items at once, **Ctrl + click** (or **Shift + click** for a range) to select them, then click **Delete**.
+
+## Using media in themes and slides
+
+Pictures and videos from the Media tab can also be used as theme backgrounds (see [Designing Themes](../guides/creating-themes.md)) and as pictures on presentation slides (see [Presentations](presentations.md)).

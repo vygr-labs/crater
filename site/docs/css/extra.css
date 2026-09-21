@@ -1,0 +1,4 @@
+/* The theme's roomy line height leaves gaps in box-drawing diagrams. */
+.codehilite pre {
+	line-height: 1.3;
+}
