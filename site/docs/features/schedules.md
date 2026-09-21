@@ -1,173 +1,84 @@
-# Working with Schedules
-
-The Schedule Panel helps you organize your entire service in advance. Add songs, scriptures, and media in order, then simply click through during the service.
-
-## What is the Schedule?
-
-The Schedule is your service "playlist" - a list of items in the order you'll present them. It appears in the left panel of the control window.
-
-Benefits of using a schedule:
-- **Preparation** - Set up everything before service
-- **Organization** - Keep content in order
-- **Speed** - Quick access during service
-- **Confidence** - Know exactly what's next
-
-## Adding Items to the Schedule
-
-### Adding Scripture
-
-1. Go to the **Scripture** tab
-2. Find the verse you want
-3. Right-click on the verse
-4. Select "Add to Schedule"
-
-### Adding Songs
-
-1. Go to the **Songs** tab
-2. Find the song you want
-3. Right-click on the song
-4. Select "Add to Schedule"
-
-### Adding Media
-
-1. Go to the **Media** tab
-2. Find the image or video
-3. Right-click on the item
-4. Select "Add to Schedule"
-
-## Using the Schedule
-
-### Previewing Items
-
-1. **Single-click** an item in the Schedule Panel
-2. The content loads in the Preview Panel
-3. Review it before displaying
-
-### Displaying Items
-
-1. **Double-click** an item in the Schedule Panel
-2. The content goes live on the projection
-3. Navigate within the item using arrow keys
-
-### Moving Through Your Schedule
-
-During service:
-
-1. Double-click the first item to start
-2. Navigate through verses/lyrics with arrow keys
-3. When finished, double-click the next item
-4. Continue through your schedule
-
-## Viewing Schedule Items
-
-Each item in the schedule shows:
-
-- **Icon** - Indicates the type (scripture, song, media)
-- **Title** - The item name or reference
-- **Preview** - Small theme preview (for songs/scriptures)
-
-## Organizing Your Schedule
-
-### Reordering Items
-
-Items appear in the order you'll use them:
-
-- Drag and drop to reorder items
-- Move items up or down as needed
-
-### Removing Items
-
-To remove an item from the schedule:
-1. Right-click on the item
-2. Select "Remove from Schedule"
-
-**Note:** This only removes it from the schedule, not from your library.
-
-## Creating a Service Schedule
-
-Here's a typical workflow for preparing a service:
-
-### Before Service
-
-1. **Get the service order** - Know what songs, scriptures, and media you need
-2. **Add songs** - Add each song to the schedule in order
-3. **Add scriptures** - Add sermon passages and any scripture readings
-4. **Add media** - Add announcement slides, videos, etc.
-5. **Test everything** - Click through the schedule to verify
-
-### Example Service Order
-
-| Order | Type | Item |
-|-------|------|------|
-| 1 | Media | Welcome slide |
-| 2 | Song | "Amazing Grace" |
-| 3 | Song | "How Great Thou Art" |
-| 4 | Scripture | Matthew 5:1-12 |
-| 5 | Song | "Blessed Assurance" |
-| 6 | Scripture | John 3:16 |
-| 7 | Song | "It Is Well" |
-| 8 | Media | Announcement slides |
-| 9 | Media | Closing slide |
-
-## Tips for Schedule Success
-
-### Preparation Tips
-
-- **Arrive early** - Set up at least 30 minutes before service
-- **Print a backup** - Have a paper copy of the service order
-- **Test display** - Run through key items on the projector
-- **Check spellings** - Review song lyrics and scripture references
-
-### During Service Tips
-
-- **Stay one step ahead** - Preview the next item while current is displayed
-- **Watch the leader** - Follow cues from pastors and worship leaders
-- **Be ready to adapt** - Services don't always follow the plan exactly
-- **Stay calm** - If something goes wrong, fix it calmly
-
-### After Service Tips
-
-- **Save your schedule** - Keep for future reference
-- **Note any issues** - Remember to fix problems for next time
-- **Update content** - Correct any errors you noticed
-
-## Schedule Shortcuts
-
-| Action | Method |
-|--------|--------|
-| Preview item | Single-click |
-| Go live | Double-click |
-| Move through content | Arrow keys |
-| Next item | Click next in schedule |
-
-## Common Situations
-
-### Song Added at Last Minute
-
-1. Quickly search in the Songs tab
-2. Right-click and add to schedule
-3. Drag to the correct position
-
-### Wrong Item Displayed
-
-1. Click the correct item in the schedule
-2. Double-click to send it live
-3. Continue as normal
-
-### Need to Repeat a Song
-
-1. Find the song in your schedule (or Songs tab)
-2. Double-click to display it again
-3. Navigate to the needed section
-
-### Spontaneous Scripture
-
-1. Use quick search in the Scripture tab
-2. Type the reference quickly
-3. Double-click to display
-
+---
+title: Schedules
+description: Plan your order of service in Crater. Add, reorder and edit items, keep saved schedules, and rely on automatic saving.
 ---
 
-**Related Guides:**
-- [Displaying Content](../guides/displaying-content.md)
-- [Keyboard Shortcuts](../reference/keyboard-shortcuts.md)
+# Schedules
+
+The **Schedule** panel on the left of the console is your order of service: the songs, readings, media and presentations for today, in the order you'll use them. Build it during the week and run the service from it on Sunday.
+
+## Adding items
+
+Every library tab can add to the schedule:
+
+- Right-click a song, verse, media item or presentation and choose **Add to Schedule**.
+- Or highlight it and press **Ctrl + T**.
+- Or find it with [global search](../guides/quick-search.md) (**Ctrl + K**) and press **Shift + Enter**. The search stays open so you can add several items in a row.
+
+New items go to the end of the schedule and are loaded into Preview.
+
+A schedule row keeps its own copy of the item, so a schedule can mix songs, a multi-verse reading, a PDF, a video and a sermon deck.
+
+## Working with the schedule
+
+| To... | Do this |
+|-------|---------|
+| Preview an item | Click the row |
+| Send it live | Double-click the row, or right-click > **Send to Live** (this also opens the projection window) |
+| Reorder | Drag the grip handle on the left of a row. A line shows where it will land. |
+| Select several rows | **Ctrl + click** to add rows, **Shift + click** for a range |
+| Remove rows | Right-click > **Remove**, or select them and press **Delete** or click the trash button |
+| Clear the selection | **Esc** |
+
+The header shows the schedule's name, the number of items, and how many are selected.
+
+## Right-click menu
+
+- **Send to Live**
+- **Edit…** changes this schedule item only (see below). For pictures and videos it opens the media editor.
+- **Change passage…** picks different verses for a scripture item.
+- **Rename…** changes the name shown in the schedule, without renaming the song or file in your library.
+- **Duplicate** adds a copy at the end, for example to sing the opening song again at the close.
+- **Theme…** picks a different theme for just this row, or **Use default theme** to go back. Rows with their own theme show a palette icon.
+- **Remove**
+
+## Editing an item without changing the library
+
+Sometimes a song needs a one-off change: an extra chorus, a skipped verse or a note for the band. Right-click the song or scripture row and choose **Edit…**:
+
+- Change the title, and add, duplicate, delete or edit slides. The formatting toolbar works here too.
+- Click **Save to Schedule** (**Ctrl + S**) to change only this row. The row gets a pencil icon, and later edits to the library song no longer flow into it.
+- Or, for songs, click **Save to Library** to update the song everywhere.
+- **Reset to source** throws away the one-off changes and goes back to the library version.
+
+To change a presentation that's in the schedule, edit it from the **Presentations** tab.
+
+## Saving and loading schedules
+
+Crater **saves your working schedule automatically** a few seconds after every change and again when you close it. Next time you open Crater, it's exactly where you left it.
+
+To keep a schedule for later, give it a name. Everything for named schedules is in the **Schedule ▾** button at the top left:
+
+| To... | Do this |
+|-------|---------|
+| Save the current schedule with a name | **Save current as…**, or press **Ctrl + S** |
+| Save changes to the loaded schedule | **Save**, or **Ctrl + S** |
+| Save a copy under a new name | **Save as new…**, or **Ctrl + Shift + S** |
+| Open a saved schedule | Click it in the list |
+| Rename or delete a saved schedule | Hover over it and use its buttons |
+| Start fresh | **New empty schedule** |
+| Stop working on the loaded schedule | **Close loaded schedule** |
+
+The list shows each schedule's item count and when it last changed, with the loaded one ticked. A dot next to the schedule name in the panel means you've made changes since you last saved it by name. The automatic save keeps your working schedule safe, but only **Save** updates the named copy.
+
+!!! warning
+    Opening a saved schedule or choosing **New empty schedule** replaces the working schedule straight away. Save your current schedule by name first if you want to keep it.
+
+A good habit is to name schedules by date and service, for example *Sunday AM - June 5*.
+
+## Clearing the schedule
+
+- The **trash** button in the panel header clears the whole schedule (after asking) when nothing is selected, or removes just the selected rows.
+- The **⋯** menu has **Clear selection**, **Close loaded schedule** and **Clear all items**.
+
+Clearing the working schedule never changes your saved schedules.

@@ -1,45 +1,44 @@
-# Crater Bible Project Documentation
+# Crater Documentation
 
-This folder contains the documentation website for **Crater Bible Project**, a free and open-source scripture projection software.
+This folder contains the documentation website for **Crater**, free and open-source worship projection software for churches. It is published at https://crater.voyagerlabs.tech/.
 
-## About the Project
-
-Crater is designed to help churches and worship teams display scriptures, songs, and media during services. Built with simplicity in mind, it's accessible to users of all technical backgrounds.
-
-### Key Features
-
-- **Scripture Display** - Multiple Bible translations with instant search
-- **Song Library** - Full-featured song management with built-in editor
-- **Media Support** - Display images and videos
-- **Custom Themes** - Visual theme editor with real-time preview
-- **Service Schedules** - Plan and organize your services
+The docs describe the Qt version of Crater (source: https://github.com/vygr-labs/crater-v2). Download links point at that repository's releases, and `docs/js/latest-release.js` swaps in the newest release's files when the page loads.
 
 ## Documentation Structure
 
 ```
 docs/
-├── index.md                    # Welcome & Quick Start
+├── index.md                    # Welcome, download, quick start
+├── downloads.md                # Downloads, checksums, system requirements
 ├── faq.md                      # Frequently Asked Questions
+├── js/latest-release.js        # Points download links at the latest release
 ├── getting-started/
-│   ├── installation.md         # Download & Install
-│   ├── first-launch.md         # Initial Setup
-│   └── interface-overview.md   # UI Walkthrough
+│   ├── installation.md         # Install, update, uninstall
+│   ├── first-launch.md         # Projection screen setup
+│   └── interface-overview.md   # Console tour
 ├── features/
-│   ├── scriptures.md           # Scripture Features
-│   ├── songs.md                # Song Library
-│   ├── media.md                # Media Handling
-│   ├── themes.md               # Theme System
-│   └── schedules.md            # Service Schedules
+│   ├── scriptures.md           # Scripture tab
+│   ├── strongs.md              # Strong's concordance
+│   ├── songs.md                # Song library
+│   ├── media.md                # Pictures, videos, PDFs
+│   ├── presentations.md        # Sermon slides and speaker notes
+│   ├── themes.md               # Themes, defaults, sharing
+│   ├── schedules.md            # Order of service
+│   ├── outputs.md              # Multiple outputs, stage monitor, TV cast
+│   └── ndi-streaming.md        # NDI output
 ├── guides/
-│   ├── displaying-content.md   # Display Workflow
-│   ├── quick-search.md         # Search Features
-│   ├── creating-themes.md      # Theme Editor Guide
-│   └── managing-songs.md       # Song Management
+│   ├── displaying-content.md   # Running a service (Preview and Live)
+│   ├── quick-search.md         # Global search (Ctrl+K)
+│   ├── managing-songs.md       # Song editor and collections
+│   ├── importing-songs.md      # EasyWorship import
+│   └── creating-themes.md      # Theme editor and AI design
 └── reference/
     ├── keyboard-shortcuts.md   # Shortcuts
-    ├── settings.md             # Configuration
-    └── troubleshooting.md      # Common Issues
+    ├── settings.md             # Every settings option
+    └── troubleshooting.md      # Common issues, data folder, backups
 ```
+
+The sidebar order is set by `nav` in `mkdocs.yml`. Add new pages there.
 
 ## Building the Documentation
 
@@ -76,7 +75,7 @@ Software Developer based in Lagos, Nigeria
 
 ## License
 
-Crater Bible Project is free and open-source software. See the [LICENSE.md](../LICENSE.md) file in the project root for details.
+Crater is free and open-source software under the GPL-3.0 licence.
 
 ---
 

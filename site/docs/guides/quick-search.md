@@ -1,191 +1,63 @@
-# Quick Scripture Search
-
-Crater's quick search feature lets you jump directly to any Bible verse by typing a simple reference. This is the fastest way to find scripture during a service.
-
-## What is Quick Search?
-
-Quick search (also called "special search mode") allows you to type a scripture reference like you would say it, and Crater finds it instantly.
-
-**Examples:**
-- `John 3:16` → John chapter 3, verse 16
-- `Genesis 1:1` → Genesis chapter 1, verse 1  
-- `Psalm 23:1` → Psalm 23, verse 1
-- `Matt 5:3` → Matthew chapter 5, verse 3
-
-## Enabling Quick Search Mode
-
-The Scripture tab has two search modes:
-
-1. **Quick Search Mode** (tree icon) - Type references like "John 3:16"
-2. **Text Search Mode** (magnifying glass) - Search for words within verses
-
-### Switching Modes
-
-1. Look for the search icon in the Scripture tab search bar
-2. Click the icon to toggle between modes
-3. The tree icon indicates Quick Search mode
-
-## How to Use Quick Search
-
-### Basic Format
-
-```
-Book Chapter:Verse
-```
-
-**Steps:**
-1. Make sure you're in Quick Search mode
-2. Click in the search box
-3. Type your reference (e.g., "John 3:16")
-4. Press Enter or click the result
-
-### Examples
-
-| You Type | Crater Finds |
-|----------|--------------|
-| John 3:16 | John 3:16 |
-| Gen 1:1 | Genesis 1:1 |
-| Ps 23:1 | Psalm 23:1 |
-| Rom 8:28 | Romans 8:28 |
-| 1 Cor 13:4 | 1 Corinthians 13:4 |
-| Rev 21:4 | Revelation 21:4 |
-
-## Book Abbreviations
-
-You can use common abbreviations to type faster:
-
-### Old Testament
-
-| Full Name | Abbreviations |
-|-----------|---------------|
-| Genesis | Gen, Ge |
-| Exodus | Ex, Exo, Exod |
-| Leviticus | Lev, Le |
-| Numbers | Num, Nu |
-| Deuteronomy | Deut, Dt |
-| Joshua | Josh, Jos |
-| Judges | Judg, Jdg |
-| Ruth | Ruth, Ru |
-| 1 Samuel | 1 Sam, 1 Sa |
-| 2 Samuel | 2 Sam, 2 Sa |
-| 1 Kings | 1 Ki, 1 Kgs |
-| 2 Kings | 2 Ki, 2 Kgs |
-| 1 Chronicles | 1 Chr, 1 Ch |
-| 2 Chronicles | 2 Chr, 2 Ch |
-| Ezra | Ezr |
-| Nehemiah | Neh, Ne |
-| Esther | Est, Es |
-| Job | Job |
-| Psalms | Ps, Psa, Psalm |
-| Proverbs | Prov, Pr |
-| Ecclesiastes | Eccl, Ecc |
-| Song of Solomon | Song, SoS |
-| Isaiah | Isa, Is |
-| Jeremiah | Jer, Je |
-| Lamentations | Lam, La |
-| Ezekiel | Ezek, Eze |
-| Daniel | Dan, Da |
-| Hosea | Hos, Ho |
-| Joel | Joel |
-| Amos | Amos, Am |
-| Obadiah | Obad, Ob |
-| Jonah | Jon |
-| Micah | Mic, Mi |
-| Nahum | Nah, Na |
-| Habakkuk | Hab |
-| Zephaniah | Zeph, Zep |
-| Haggai | Hag |
-| Zechariah | Zech, Zec |
-| Malachi | Mal |
-
-### New Testament
-
-| Full Name | Abbreviations |
-|-----------|---------------|
-| Matthew | Matt, Mt |
-| Mark | Mark, Mk |
-| Luke | Luke, Lk |
-| John | John, Jn |
-| Acts | Acts, Ac |
-| Romans | Rom, Ro |
-| 1 Corinthians | 1 Cor, 1 Co |
-| 2 Corinthians | 2 Cor, 2 Co |
-| Galatians | Gal, Ga |
-| Ephesians | Eph |
-| Philippians | Phil, Php |
-| Colossians | Col |
-| 1 Thessalonians | 1 Thess, 1 Th |
-| 2 Thessalonians | 2 Thess, 2 Th |
-| 1 Timothy | 1 Tim, 1 Ti |
-| 2 Timothy | 2 Tim, 2 Ti |
-| Titus | Titus, Tit |
-| Philemon | Phlm, Phm |
-| Hebrews | Heb |
-| James | James, Jas |
-| 1 Peter | 1 Pet, 1 Pe |
-| 2 Peter | 2 Pet, 2 Pe |
-| 1 John | 1 John, 1 Jn |
-| 2 John | 2 John, 2 Jn |
-| 3 John | 3 John, 3 Jn |
-| Jude | Jude |
-| Revelation | Rev, Re |
-
-## Tips for Quick Search
-
-### Speed Tips
-
-1. **Use abbreviations** - "Jn" is faster than "John"
-2. **Type confidently** - The search updates as you type
-3. **Press Enter** - Quickly confirms your selection
-
-### During Service
-
-1. Listen for the reference
-2. Start typing immediately
-3. Verify in the preview
-4. Double-click to display
-
-### Common Mistakes
-
-| Wrong | Correct |
-|-------|---------|
-| John3:16 | John 3:16 (space before chapter) |
-| John 3.16 | John 3:16 (colon, not period) |
-| Psalms 23:1 | Ps 23:1 or Psalm 23:1 |
-| 1st John 1:9 | 1 John 1:9 |
-
-## Practice References
-
-Try these to get comfortable:
-
-1. `John 3:16` - The most famous verse
-2. `Ps 23:1` - "The Lord is my shepherd"
-3. `Rom 8:28` - "All things work together for good"
-4. `Phil 4:13` - "I can do all things through Christ"
-5. `Jer 29:11` - "For I know the plans I have for you"
-6. `Prov 3:5` - "Trust in the Lord with all your heart"
-7. `Isa 40:31` - "They shall mount up with wings like eagles"
-8. `Matt 28:19` - The Great Commission
-
-## Using Quick Search in a Service
-
-### Scenario: Pastor Calls Out a Reference
-
-1. Pastor says: "Turn to Romans chapter 8, verse 28"
-2. You type: `Rom 8:28`
-3. Press Enter to select
-4. Double-click to display
-
-### Scenario: Need to Find a Verse Quickly
-
-1. Switch to Quick Search mode (if not already)
-2. Type the reference
-3. Review in preview
-4. Send live when ready
-
+---
+title: Global Search
+description: Press Ctrl+K to search scripture, songs, Strong's, media and themes at once, then preview, send live or add to the schedule without leaving the keyboard.
 ---
 
-**Related Topics:**
-- [Working with Scripture](../features/scriptures.md)
-- [Displaying Content](displaying-content.md)
-- [Keyboard Shortcuts](../reference/keyboard-shortcuts.md)
+# Global Search
+
+Press **Ctrl + K** anywhere in the console to open global search. It looks through your Bible, songs, Strong's dictionary, media and themes at once, so you don't need to switch tabs to find something.
+
+## Searching
+
+1. Press **Ctrl + K**.
+2. Start typing. Results appear once you've typed two characters, grouped as **Scripture**, **Songs**, **Strong's**, **Media** and **Themes**, with up to six in each group.
+3. Use **Up** and **Down** to move through the results. The panel on the right shows the verse text, the song's lyrics, a picture's thumbnail or a theme's colours.
+
+What each group finds:
+
+- **Scripture:** type a reference like `john 3:16` for that verse first, followed by verses containing your words. It searches the translation currently selected on the Scripture tab.
+- **Songs:** titles, authors and lyrics, like the **All** mode on the Songs tab.
+- **Strong's:** numbers like `H430` and words in definitions. Hidden if you've turned off the Strong's tab.
+- **Media** and **Themes:** by name.
+
+Presentations and schedule items aren't included in global search. Find them on their own tab.
+
+Global search remembers your last search for the rest of the session and shows it again the next time you open it.
+
+## Acting on a result
+
+| Key | Action |
+|-----|--------|
+| **Enter** | The main action for that kind of result (see below) |
+| **Ctrl + Enter** | Go Live |
+| **Shift + Enter** | Add to Schedule. Search stays open so you can add several items. |
+| **Esc** | Close |
+
+Each result also has buttons for **Preview**, **Go Live**, **Add to Schedule** and **Reveal**.
+
+- **Preview** loads the item into the Preview panel without the room seeing it.
+- **Go Live** sends it live. If the projection window is closed, click **Go Live** in the top bar to open it.
+- **Add to Schedule** adds it to the end of your schedule.
+- **Reveal** jumps to the item in its own tab.
+
+### Picking a song section
+
+When the highlighted result is a song, the right-hand panel lists its sections, with the one that matched your search already selected. Press **Tab** and **Shift + Tab** to pick a different section, or click it. **Preview** then loads the song with that section selected, ready to send live. This is the quickest way to jump to *"the bridge of that song"*.
+
+## Choosing what Enter does
+
+Go to **Settings > Search > Default action by type** to choose what **Enter** does for each kind of result:
+
+| Kind | Default |
+|------|---------|
+| Scripture | Stage to Preview |
+| Songs | Stage to Preview |
+| Strong's | Reveal in tab |
+| Media | Stage to Preview |
+| Themes | Reveal in tab (always) |
+
+Each can be set to **Stage to Preview**, **Reveal in tab** or **Go Live**. If you trust your typing, **Go Live** makes Enter put the result straight on screen.
+
+## Searching inside a tab
+
+Each library tab also has its own search box with options that suit it: reference and full-text modes on [Scripture](../features/scriptures.md), title, author and lyrics modes on [Songs](../features/songs.md), and name search on Media, Presentations and Themes. Those boxes keep a **Recent** list of your last searches for the session.

@@ -1,302 +1,162 @@
-# Creating Custom Themes
-
-The Theme Editor allows you to create beautiful, custom themes for your projection display. This guide walks you through the process step by step.
-
-## Opening the Theme Editor
-
-1. Go to the **Themes** tab
-2. Click the **Add (+)** button
-3. Select the theme type:
-   - **Song** - For displaying lyrics
-   - **Scripture** - For displaying Bible verses
-   - **Presentation** - For general content
-4. The Theme Editor opens
-
-## Understanding the Theme Editor
-
-The Theme Editor window contains:
-
-### Editor Canvas
-
-The main area where you design your theme. This represents what will appear on the projection screen.
-
-### Toolbox
-
-Contains the elements you can add to your theme:
-
-- **Container** - Background boxes and areas
-- **Text** - Text elements for content
-
-### Settings Panel
-
-When you select an element, its settings appear here for customization.
-
-## Adding Elements
-
-### Adding a Container
-
-Containers are background elements that hold other content.
-
-1. Find "Container" in the Toolbox
-2. Drag it onto the canvas
-3. Position and resize as needed
-
-### Adding Text
-
-Text elements display your content (lyrics, verses).
-
-1. Find "Text" in the Toolbox
-2. Drag it onto the canvas
-3. Position where you want text to appear
-
-## Customizing Elements
-
-### Selecting an Element
-
-Click on any element in the canvas to select it. The settings panel will show options for that element.
-
-### Moving Elements
-
-- Click and drag to move
-- Use arrow keys for fine adjustments
-- Watch the position values in settings
-
-### Resizing Elements
-
-- Drag the corners or edges to resize
-- Hold Shift to maintain proportions
-- Check width/height in settings
-
-## Styling Text
-
-When a text element is selected, you can customize:
-
-### Font Settings
-
-| Setting | Description |
-|---------|-------------|
-| Font Family | The typeface (e.g., Arial, Open Sans) |
-| Font Size | How large the text appears |
-| Font Weight | Bold, normal, light |
-| Font Style | Italic, normal |
-
-### Color Settings
-
-| Setting | Description |
-|---------|-------------|
-| Text Color | The color of the text |
-| Background Color | Background behind text |
-| Opacity | Transparency level |
-
-### Text Layout
-
-| Setting | Description |
-|---------|-------------|
-| Text Align | Left, center, right, justified |
-| Line Height | Space between lines |
-| Letter Spacing | Space between letters |
-
-### Text Effects
-
-| Setting | Description |
-|---------|-------------|
-| Text Shadow | Drop shadow behind text |
-| Text Outline | Border around letters |
-
-### Text Auto-Resize
-
-Text elements can automatically resize to fit their container, ensuring your content always displays properly regardless of length.
-
-**How it works:**
-
-- When enabled, text automatically shrinks if it would overflow its container
-- Longer verses or lyrics will use a smaller font size
-- Shorter content displays at the maximum font size
-- This prevents text from being cut off on screen
-
-**Configuration options:**
-
-| Setting | Description |
-|---------|-------------|
-| Enable Auto-Resize | Turn automatic text resizing on/off |
-| Minimum Font Size | The smallest size text can shrink to |
-| Maximum Font Size | The largest size for short content |
-
-**Tips:**
-
-- Set a reasonable minimum size (e.g., 24pt) to ensure readability
-- Test with your longest verses/lyrics to ensure they fit
-- Auto-resize is especially useful for scripture with varying verse lengths
-
-### Text Linkages
-
-Text linkages connect text elements to specific data sources, telling Crater what content to display in each text element.
-
-**Available linkages:**
-
-| Linkage | Description | Use For |
-|---------|-------------|---------|
-| Scripture Text | The Bible verse content | Main verse display |
-| Scripture Reference | Book, chapter, verse | Reference line (e.g., "John 3:16") |
-| Scripture Version | Bible translation | Version indicator (e.g., "NKJV") |
-| Song Lyrics | The lyrics text | Main lyrics display |
-| Song Section | Verse/Chorus label | Section indicator |
-| Song Title | Name of the song | Title display |
-
-**How to set linkages:**
-
-1. Select a text element in the editor
-2. Find the "Linkage" or "Data Source" setting
-3. Choose what content this text should display
-4. The text element will show that data when the theme is used
-
-**Example setup for Scripture theme:**
-
-- Text Element 1: Linkage = "Scripture Text" (large, centered)
-- Text Element 2: Linkage = "Scripture Reference" (smaller, bottom)
-- Text Element 3: Linkage = "Scripture Version" (small, corner)
-
-**Example setup for Song theme:**
-
-- Text Element 1: Linkage = "Song Lyrics" (large, centered)
-- Text Element 2: Linkage = "Song Section" (smaller, top-left)
-
-**Why linkages matter:**
-
-Without proper linkages, text elements won't know what content to display. Always verify each text element has the correct linkage before saving your theme.
-
-## Styling Containers
-
-When a container is selected, you can customize:
-
-### Background
-
-- **Solid Color** - Single color background
-- **Gradient** - Blended colors
-- **Image** - Background picture
-- **Transparent** - See-through
-
-### Border
-
-- Border color
-- Border width
-- Border radius (rounded corners)
-
-### Position
-
-- X and Y coordinates
-- Width and height
-- Z-index (layer order)
-
-## Theme Layout Tips
-
-### Scripture Theme Layout
-
-Recommended elements:
-
-1. **Main container** - Dark, semi-transparent background
-2. **Verse text** - Large, centered text
-3. **Reference text** - Smaller text for book/chapter/verse
-
-Example layout:
-```
-┌─────────────────────────────────────┐
-│                                     │
-│    "For God so loved the world,     │
-│     that he gave his only           │
-│     begotten Son..."                │
-│                                     │
-│              John 3:16 (KJV)        │
-│                                     │
-└─────────────────────────────────────┘
-```
-
-### Song Theme Layout
-
-Recommended elements:
-
-1. **Main container** - Background area
-2. **Lyrics text** - Large, easy-to-read text
-3. **Section label** - Optional (Verse, Chorus, etc.)
-
-Example layout:
-```
-┌─────────────────────────────────────┐
-│   Verse 1                           │
-│                                     │
-│     Amazing grace, how sweet        │
-│     the sound,                      │
-│     That saved a wretch like me     │
-│                                     │
-└─────────────────────────────────────┘
-```
-
-## Saving Your Theme
-
-1. Enter a name for your theme in the name field
-2. Click **Save**
-3. Your theme appears in the Themes list
-
-## Editing Existing Themes
-
-1. Go to the Themes tab
-2. Right-click on the theme you want to edit
-3. Select "Edit"
-4. Make your changes
-5. Click Save
-
-## Best Practices
-
-### Readability
-
-- **High contrast**: Light text on dark backgrounds
-- **Large text**: At least 48pt for main content
-- **Simple fonts**: Avoid decorative or thin fonts
-- **Generous margins**: Don't crowd the edges
-
-### Visual Design
-
-- **Consistency**: Match your church's brand colors
-- **Simplicity**: Less is more for projection
-- **Test on projector**: Colors look different on screen vs monitor
-
-### Performance
-
-- **Optimize images**: Large images can slow display
-- **Limit effects**: Too many shadows/effects can impact performance
-
-## Common Theme Mistakes
-
-| Mistake | Solution |
-|---------|----------|
-| Text too small | Increase font size to 48pt+ |
-| Low contrast | Use light text on dark or vice versa |
-| Busy background | Use solid colors or simple gradients |
-| Text near edges | Add padding/margins |
-| Thin fonts | Use regular or bold weight |
-
-## Quick Theme Recipes
-
-### Simple Scripture Theme
-
-1. Add a Container (dark, semi-transparent)
-2. Add Text for verse (white, 56pt, centered)
-3. Add Text for reference (white, 28pt, bottom-right)
-
-### Simple Song Theme
-
-1. Add a Container (dark background)
-2. Add Text for lyrics (white, 52pt, centered)
-3. Optional: Add Text for section label (smaller, top-left)
-
-### Minimalist Theme
-
-1. No container (transparent background)
-2. Add Text with shadow (white, 60pt, centered)
-3. Text shadow provides readability on any background
-
+---
+title: Designing Themes
+description: Design song, scripture and presentation themes in Crater's visual theme editor, import fonts, and have an AI assistant draft a theme for you.
 ---
 
-**Related Topics:**
-- [Working with Themes](../features/themes.md)
-- [Displaying Content](displaying-content.md)
+# Designing Themes
+
+Crater's theme editor is a visual design tool, a little like a simple slide designer. You build a theme from **layers** (text boxes and containers), see the result as you work, and save it for every service.
+
+For what themes are and how defaults work, see [Themes](../features/themes.md).
+
+## Opening the editor
+
+On the **Themes** tab:
+
+- Click **New theme** and choose **Song theme**, **Scripture theme** or **Presentation theme**. A new theme starts with a dark background and one text box.
+- Or double-click an existing theme, or right-click it and choose **Edit**.
+
+Built-in themes can't be edited. Right-click one and choose **Duplicate** to get your own copy to change.
+
+## The editor at a glance
+
+```text
+┌───────────────────────────────────────────────────────────────────────┐
+│ Theme Editor  [Song]  Unsaved          Design with AI     Save Theme  │  Header
+├───────────────────────────────────────────────────────────────────────┤
+│ + Text  + Container  Undo Redo  Copy Delete  Align  Front/Back  Zoom  │  Toolbar
+├────────────┬──────────────────────────────────────────┬───────────────┤
+│  LAYERS    │                                          │  PROPERTIES   │
+│            │               Canvas                     │               │
+│            │     (sample verse or lyric text)         │               │
+├────────────┴──────────────────────────────────────────┴───────────────┤
+│ Name: [Sunday Morning]                          Cancel    Save Theme  │  Footer
+└───────────────────────────────────────────────────────────────────────┘
+```
+
+- **Layers** (left) lists every element. The top of the list is in front.
+- **Canvas** (centre) shows the theme with sample text, such as John 3:16 or a verse of Amazing Grace, drawn exactly as it will look on screen.
+- **Properties** (right) shows the settings of the selected layer.
+- **Name** (bottom) is the theme's name.
+
+## Building a theme step by step
+
+A typical theme is a background container with one or two text boxes on top.
+
+### 1. Set the background
+
+1. Click **Container** in the toolbar.
+2. Drag its handles to fill the canvas.
+3. In **Properties > Background**, choose **Solid** and pick a colour, or **Gradient** (see below).
+4. To use a picture or video from your Media library, pick it under **Media** and set its **Opacity**.
+5. Drag the container to the bottom of the Layers list so it sits behind everything else.
+
+### 2. Add the text
+
+1. Click **Text** in the toolbar.
+2. In **Properties > Content**, choose what this box shows:
+    - **Verse text** or **Lyric** for the main words
+    - **Reference / title** for the verse reference or song title
+    - **Slide title**, **Slide subtitle**, **Slide body** or **Slide right column** on presentation themes
+    - **Custom text** for fixed words, like your church name
+3. Drag and resize the box to where the words should go.
+
+### 3. Style the text
+
+- **Typography.** Pick a font (each name is shown in its own typeface), size, weight from Thin to Black, line spacing and letter spacing.
+- **Colour.** The text colour.
+- **Shadow.** Turn on **Drop shadow** and set its offset, blur and colour. A soft shadow keeps text readable over busy backgrounds.
+- **Alignment.** Left, centre or right, top, middle or bottom, and text case (as typed, UPPER, lower or Title Case).
+- **Auto-fit.** Shrinks long verses and lyrics to fit the box, up to the **Max** size you set.
+- **Auto-layout.** Keeps a box **above** or **below** another one with a set **gap**, so a reference line always sits just under the verse however long the verse is. This takes effect on the live screen.
+
+### 4. Save
+
+Type a name in the footer and click **Save Theme** (or press **Ctrl + S**, which saves and closes the editor).
+
+!!! warning "Keep layers inside the canvas"
+    You can drag a layer partly off the edge while you work, but Crater only saves a theme when every layer's **X** and **Y** position is between 0% and 100%. If saving shows an error about a position, move that layer back onto the canvas.
+
+## Working on the canvas
+
+| To... | Do this |
+|-------|---------|
+| Move a layer | Drag it, or press the arrow keys (1% steps, **Shift** for 5%) |
+| Resize | Drag any of the eight handles |
+| Rotate | Drag the handle above the layer. Hold **Shift** to snap to 15° steps. |
+| Skew | Drag the handle to the left of the layer. Hold **Shift** to keep to one direction. |
+| Measure the gap between two layers | Select one, then hold **Alt** and point at the other |
+| Duplicate / delete | **Ctrl + D** / **Delete** |
+| Undo / redo | **Ctrl + Z** / **Ctrl + Y** (50 steps) |
+| Zoom | The toolbar buttons (10% to 400%), or **Ctrl + 0** to reset |
+| Deselect | **Esc**. Press **Esc** again to leave the editor. |
+
+The toolbar also aligns the selected layer to the left, centre, right, top, middle or bottom of the canvas, and brings it to the front or sends it to the back.
+
+Right-click a layer on the canvas for the same actions plus **Bring forward**, **Send backward**, **Lock** and **Hide**. Right-click empty canvas to add a text box or container.
+
+## The Layers panel
+
+- Drag rows to change which layer is in front.
+- Hover a row for **show/hide**, **lock**, **duplicate** and **delete** buttons. Locked layers can't be moved by accident.
+- Double-click a row (or right-click > **Rename layer**) to give it a name like *Verse* or *Background*.
+
+## Transform settings
+
+Every layer has a **Transform** section with exact values:
+
+- **X** and **Y**: position, as a percentage of the canvas.
+- **W** and **H**: width and height, as a percentage of the canvas.
+- **Rot**: rotation in degrees.
+- **SkX** and **SkY**: skew in degrees.
+- **Opacity**.
+
+Using percentages means a theme looks the same on any screen resolution.
+
+## Containers
+
+Containers are coloured boxes, picture frames and backgrounds.
+
+- **Background.** **Solid** fill, or **Gradient** with **Linear**, **Radial**, **Conic** or **Mesh** styles and 2 to 6 colour stops. Linear and conic gradients have an **Angle**. Conic and mesh gradients can **Animate** slowly, at a **Speed** you choose, for a gently moving background.
+- **Media.** A picture or video from your Media library, with its own **Opacity**. On presentation themes, **Use the slide's picture** shows whatever picture each slide chooses.
+- **Corner Radius.** Rounds the corners.
+- **Card / Group.** Stacks other layers inside the container from top to bottom, with padding and gaps, so the box grows to fit its text. Add layers under **Members**. This is how lower-thirds and caption cards are built. Card layout takes effect on the live screen. The editor canvas shows the members where you placed them.
+
+## Designs for presentation themes
+
+A presentation theme holds several **designs**, one for each kind of slide. The **Designs** rail in the editor shows them as thumbnails.
+
+- Click **Add design** to add one of the standard designs (**Title slide**, **Section divider**, **Title + content**, **Two columns**, **Quote**, **Picture**, **Blank**) or **Custom design…** with your own name.
+- A new design starts from the default design's background and styling, so they all match.
+- Each design's menu has **Rename…**, **Duplicate**, **Set as default**, **Move left**, **Move right** and **Delete design**. The default design has a star.
+
+In the [presentation editor](../features/presentations.md#slide-designs), each slide picks one of these designs.
+
+## Fonts
+
+Any font installed on your computer is available. To use a font that isn't installed:
+
+1. On the **Themes** tab, click **Import > Import font…** (or go to **Settings > Projection > Fonts > Import font…**).
+2. Choose a `.ttf` or `.otf` file.
+
+Imported fonts appear in every theme's font list, marked *imported*, and can be bundled into exported themes. Remove them in **Settings > Projection > Fonts**.
+
+## Designing with AI
+
+Crater can hand the design work to an AI chat assistant such as Claude or ChatGPT. Crater itself doesn't connect to any AI service. You copy a prompt out and paste the reply back in.
+
+1. In the theme editor, click **Design with AI**.
+2. **Describe what you want**, for example *"Warm, candle-lit, serif type. Something for a carol service."* Or leave it blank to let the AI choose.
+3. Tick **Send my current design too, and evolve it** if you want changes to what's already on the canvas.
+4. Click **Copy prompt** and paste it into your AI assistant.
+5. Copy the whole reply and paste it into **Paste the reply back**. Crater checks it as you paste and tells you when it's ready. Extra chatter around the design is fine.
+6. Click **Load into editor**. The design appears on the canvas as one step you can undo.
+7. Adjust anything you like, then click **Save Theme**.
+
+AI-made designs use fonts already on your computer and don't include pictures or videos. Add those yourself afterwards.
+
+You can also save an AI reply as a `.json` file and bring it in with **Import > Import theme JSON…** on the Themes tab.
+
+## Leaving the editor
+
+**Cancel** (or **Esc** with nothing selected) closes the editor. If you have unsaved changes, Crater asks before discarding them.
