@@ -46,7 +46,7 @@ If Crater is on a different computer, copy both files across on a USB drive firs
 |----------|--------------|
 | Title, author, copyright and CCLI number | Themes and backgrounds |
 | Lyrics, as plain text | Bold, italic and other lyric formatting |
-| Sections, split at blank lines and at labels like *Verse*, *Chorus*, *Pre-chorus*, *Bridge*, *Tag*, *Intro*, *Outro*, *Ending*, *Interlude* and *Refrain* | Media, schedules and favourites |
+| Sections, split at blank lines and at labels like *Verse*, *Chorus*, *Pre-chorus*, *Bridge*, *Tag*, *Intro*, *Outro*, *Ending*, *Interlude* and *Refrain* | Media, schedules and favourites (see [Importing EasyWorship Media](importing-media.md) for pictures and videos) |
 
 The import is all or nothing. If something goes wrong partway, no songs are added and you can try again.
 
