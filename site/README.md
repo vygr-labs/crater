@@ -30,7 +30,8 @@ docs/
 │   ├── displaying-content.md   # Running a service (Preview and Live)
 │   ├── quick-search.md         # Global search (Ctrl+K)
 │   ├── managing-songs.md       # Song editor and collections
-│   ├── importing-songs.md      # EasyWorship import
+│   ├── importing-songs.md      # EasyWorship song import
+│   ├── importing-media.md      # EasyWorship pictures and videos
 │   └── creating-themes.md      # Theme editor and AI design
 └── reference/
     ├── keyboard-shortcuts.md   # Shortcuts

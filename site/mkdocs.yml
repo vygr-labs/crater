@@ -54,7 +54,8 @@ nav:
       - Running a Service: guides/displaying-content.md
       - Global Search: guides/quick-search.md
       - Managing Songs: guides/managing-songs.md
-      - Importing from EasyWorship: guides/importing-songs.md
+      - Importing EasyWorship Songs: guides/importing-songs.md
+      - Importing EasyWorship Media: guides/importing-media.md
       - Designing Themes: guides/creating-themes.md
   - Reference:
       - Keyboard Shortcuts: reference/keyboard-shortcuts.md
