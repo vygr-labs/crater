@@ -17,6 +17,7 @@
 		"win-zip": /^Crater-[\d.]+-win64\.zip$/,
 		"mac-dmg": /^Crater-[\d.]+-macos\.dmg$/,
 		"mac-zip": /^Crater-[\d.]+-macos\.zip$/,
+		"linux-appimage": /^Crater-[\d.]+-x86_64\.AppImage$/,
 		checksums: /^SHA256SUMS\.txt$/,
 	};
 

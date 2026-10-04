@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Install Crater on Windows or macOS and keep it up to date.
+description: Install Crater on Windows, macOS or Linux and keep it up to date.
 ---
 
 # Installation
@@ -52,6 +52,19 @@ Crater isn't signed with an Apple Developer ID yet, so macOS blocks it on the fi
     2. Hold **Control** and click **crater**, then choose **Open**.
     3. Click **Open** in the warning dialog.
 
+## Linux
+
+Crater for Linux is an AppImage: the whole app in one file, with nothing to install.
+
+1. Download the AppImage (like `Crater-0.7.4-x86_64.AppImage`). Your browser saves it to your **Downloads** folder.
+2. **Mark it as executable.** In Files, right-click the file and choose **Properties**, then turn on **Executable as Program**. In a terminal, `chmod +x Crater-*.AppImage` does the same.
+3. **Double-click the file** to open Crater.
+
+Keep the file wherever suits you, like your home folder. To open Crater later, double-click it again.
+
+!!! info "Wayland"
+    On a Wayland desktop, Crater runs through XWayland so the projection window can place itself on the right screen. This happens automatically.
+
 ## The first launch
 
 The first time Crater starts, it sets up its Bible library. This takes a few seconds and happens once. Then the console appears. Continue with [First Launch](first-launch.md) to choose your projection screen.
@@ -65,6 +78,7 @@ Crater checks for a new version once a day, shortly after it opens. When one is 
 3. Install it:
     - **Windows:** click **Install and restart**, then **Close and install**. Windows asks for permission to run the installer, and Crater reopens by itself when it's done. The projection screen goes dark while this happens, so don't update in the middle of a service.
     - **macOS:** click **Open the disk image** and drag Crater onto Applications, replacing the copy already there.
+    - **Linux:** download the new AppImage from the [Downloads](../downloads.md) page, mark it as executable, and use it in place of the old file.
 
 You can also click **Check now** at any time, or turn off **Check for updates automatically**. Nothing downloads or installs without you clicking.
 
@@ -74,6 +88,7 @@ Your songs, themes, schedules, media and settings are kept when you update.
 
 - **Windows:** use **Settings > Apps > Installed apps > Crater > Uninstall**, or **Uninstall Crater** in the Start menu.
 - **macOS:** drag Crater from Applications to the Trash.
+- **Linux:** delete the AppImage file.
 
 Uninstalling leaves your data behind so that a reinstall picks up where you left off. To remove it as well, delete the data folder listed under [Where Crater keeps your data](../reference/troubleshooting.md#where-crater-keeps-your-data).
 

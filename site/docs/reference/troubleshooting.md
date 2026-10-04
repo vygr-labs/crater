@@ -134,6 +134,7 @@ All your songs, schedules, themes, imported media and fonts are in one folder:
 |--------|--------|
 | Windows | `%APPDATA%\Voyager Labs\Crater` (paste this into File Explorer's address bar) |
 | macOS | `~/Library/Application Support/Voyager Labs/Crater` |
+| Linux | `~/.local/share/Voyager Labs/Crater` |
 
 Inside it:
 
