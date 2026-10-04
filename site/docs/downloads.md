@@ -1,6 +1,6 @@
 ---
 title: Downloads
-description: Download Crater for Windows and macOS.
+description: Download Crater for Windows, macOS and Linux.
 ---
 
 # Downloads
@@ -32,7 +32,11 @@ For macOS 14 Sonoma or later. One download runs natively on both Intel and Apple
 
 ## Linux
 
-There's no Linux download yet.
+For 64-bit Linux with glibc 2.35 or newer: Ubuntu 22.04, Debian 12, Fedora 36 and later.
+
+| Download | Size | Use it when |
+|----------|------|-------------|
+| [**Linux AppImage**](https://github.com/vygr-labs/crater-v2/releases/download/v0.7.4/Crater-0.7.4-x86_64.AppImage){ data-crater-asset="linux-appimage" } | <span data-crater-size="linux-appimage">92 MB</span> | One file that runs on most distributions. Mark it as executable, then double-click it. The [installation guide](getting-started/installation.md#linux) shows how. |
 
 ## Checking your download
 
@@ -50,13 +54,19 @@ Every release includes a [`SHA256SUMS.txt`](https://github.com/vygr-labs/crater-
     shasum -a 256 Crater-0.7.2-macos.dmg
     ```
 
+=== "Linux (Terminal)"
+
+    ```bash
+    sha256sum Crater-0.7.4-x86_64.AppImage
+    ```
+
 The value printed should match the line for that file in `SHA256SUMS.txt`.
 
 ## System requirements
 
 | | Minimum |
 |---|---|
-| **Operating system** | Windows 10 or 11 (64-bit), or macOS 14 Sonoma or later |
+| **Operating system** | Windows 10 or 11 (64-bit), macOS 14 Sonoma or later, or 64-bit Linux with glibc 2.35 or newer (Ubuntu 22.04, Debian 12, Fedora 36 and later) |
 | **Memory** | 4 GB RAM |
 | **Graphics** | On Windows, a graphics chip with Direct3D 11 support. Crater is designed for Intel HD 4000-class laptops and newer. |
 | **Disk space** | About 1 GB free. The app itself takes about 230 MB on Windows and 320 MB on a Mac, and the Bible library adds about 300 MB after first launch. Media you import is copied into Crater's data folder, so allow extra space for videos. |
