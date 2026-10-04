@@ -17,7 +17,7 @@ Yes. There's no licence to buy, no subscription and no trial period. Install it 
 
 ### Which computers does it run on?
 
-Windows 10 and 11 (64-bit), and macOS 14 Sonoma or later on both Intel and Apple Silicon Macs. There's no Linux version yet. See [system requirements](downloads.md#system-requirements).
+Windows 10 and 11 (64-bit), macOS 14 Sonoma or later on both Intel and Apple Silicon Macs, and 64-bit Linux (Ubuntu 22.04, Debian 12, Fedora 36 and later). See [system requirements](downloads.md#system-requirements).
 
 ### Will it run on our old church laptop?
 
