@@ -11,12 +11,13 @@ Crater starts quickly, stays light on memory and is built to run well on the mod
 
 ## Download
 
-Latest version: <span data-crater-version>v0.7.2</span>
+Latest version: <span data-crater-version>v0.7.5</span>
 
-- **Windows 10 and 11:** [Download the Windows installer](https://github.com/vygr-labs/crater-v2/releases/download/v0.7.2/Crater-Setup-0.7.2.exe){ data-crater-asset="win-setup" }
-- **macOS 14 Sonoma or later** (Intel and Apple Silicon): [Download the macOS disk image](https://github.com/vygr-labs/crater-v2/releases/download/v0.7.2/Crater-0.7.2-macos.dmg){ data-crater-asset="mac-dmg" }
+- **Windows 10 and 11:** [Download the Windows installer](https://github.com/vygr-labs/crater-v2/releases/download/v0.7.5/Crater-Setup-0.7.5.exe){ data-crater-asset="win-setup" }
+- **macOS 14 Sonoma or later** (Intel and Apple Silicon): [Download the macOS disk image](https://github.com/vygr-labs/crater-v2/releases/download/v0.7.5/Crater-0.7.5-macos.dmg){ data-crater-asset="mac-dmg" }
+- **Linux** (64-bit, Ubuntu 22.04, Debian 12, Fedora 36 or later): [Download the Linux AppImage](https://github.com/vygr-labs/crater-v2/releases/download/v0.7.5/Crater-0.7.5-x86_64.AppImage){ data-crater-asset="linux-appimage" }
 
-See [all downloads](downloads.md) for the portable Windows zip, the macOS zip and checksums.
+See [all downloads](downloads.md) for the portable Windows zip, the macOS zip, Linux install steps and checksums.
 
 ## What Crater does
 
