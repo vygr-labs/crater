@@ -48,9 +48,8 @@ export default function RenderProjection() {
 		<Box
 			as="main"
 			cursor="none"
-			h="full"
+			h="vh"
 			maxW="vw"
-			maxH="vh"
 			display="flex"
 			flexDir="column"
 			justifyContent="space-between"
