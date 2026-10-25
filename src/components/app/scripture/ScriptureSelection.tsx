@@ -257,7 +257,7 @@ export default function ScriptureSelection() {
 			query: "",
 			filter: "",
 			contextMenuOpen: false,
-			translation: "NKJV",
+			translation: "KJV",
 			inputValue: "",
 			interpretedValue: "",
 		});

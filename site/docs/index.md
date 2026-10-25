@@ -21,7 +21,7 @@ See [all downloads](downloads.md) for the portable Windows zip, the macOS zip, L
 
 ## What Crater does
 
-- **Scripture.** 14 Bible translations come built in. Type `jn 3:16` or a few words you remember and the verse is ready to show. Select a range of verses, switch translation with one click, and project Strong's Greek and Hebrew definitions.
+- **Scripture.** 10 public domain Bible translations come built in. Type `jn 3:16` or a few words you remember and the verse is ready to show. Select a range of verses, switch translation with one click, and project Strong's Greek and Hebrew definitions.
 - **Songs.** Keep your whole song library in one place, with bold, italic, underline and coloured lyrics. Search by title, author or any line of lyrics, even with a typo. Bring your songs across from EasyWorship 6 and 7.
 - **Media.** Show pictures, videos and PDF pages, with per-item crop, fit, loop and mute.
 - **Presentations.** Write sermon slides and speaker notes right inside Crater. The congregation sees the slides and the preacher sees the notes on a stage monitor.

@@ -78,7 +78,6 @@ Crater shows the version of an item from the moment it went live. Click a slide 
 - Make sure the search box is in **reference mode** (book icon). Press **Ctrl + F** to switch.
 - Use a colon or space between chapter and verse (`John 3:16` or `John 3 16`), not a dot.
 - Ranges only work within one chapter (`John 3:16-18`).
-- Some translations don't include every book. The Passion Translation (TPT) is missing several Old Testament books.
 
 ### A word search finds nothing
 

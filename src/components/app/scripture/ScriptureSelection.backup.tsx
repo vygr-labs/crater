@@ -182,7 +182,7 @@ export default function ScriptureSelection() {
             query: "",
             filter: "",
             contextMenuOpen: false,
-            translation: "NKJV",
+            translation: "KJV",
         });
     const allScriptures = createAsyncMemo(async () => {
         // const updated = appStore.scripturesUpdateCounter

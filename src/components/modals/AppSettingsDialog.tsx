@@ -123,13 +123,16 @@ export function AppSettingsDialog() {
 	// Available translations for scripture settings
 	const { collection: translationCollection } = useListCollection({
 		initialItems: [
-			{ label: "NKJV - New King James Version", value: "NKJV" },
 			{ label: "KJV - King James Version", value: "KJV" },
-			{ label: "NIV - New International Version", value: "NIV" },
-			{ label: "NLT - New Living Translation", value: "NLT" },
+			{ label: "WEB - World English Bible", value: "WEB" },
+			{ label: "BSB - Berean Standard Bible", value: "BSB" },
 			{ label: "ASV - American Standard Version", value: "ASV" },
-			{ label: "AMPC - Amplified Bible Classic", value: "AMPC" },
-			{ label: "TLV - Tree of Life Version", value: "TLV" },
+			{ label: "BBE - Bible in Basic English", value: "BBE" },
+			{ label: "YLT - Young's Literal Translation", value: "YLT" },
+			{ label: "DARBY - Darby Translation", value: "DARBY" },
+			{ label: "WBT - Webster's Bible", value: "WBT" },
+			{ label: "GNV - Geneva Bible 1599", value: "GNV" },
+			{ label: "DRA - Douay-Rheims 1899", value: "DRA" },
 		],
 	});
 

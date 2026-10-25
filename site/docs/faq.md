@@ -71,7 +71,7 @@ Not yet. Phone remote control is planned. For now, you can show the live project
 
 ### Which Bible translations are included?
 
-Fourteen English translations: AMPC, ASV, CEV, ESV, GNT, KJV, MSG, NASB2020, NIV, NKJV, NLT, RSV, TLV and TPT. See [Scripture](features/scriptures.md#included-translations).
+Ten English translations in the public domain: ASV, BBE, BSB, DARBY, DRA, GNV, KJV, WBT, WEB and YLT. See [Scripture](features/scriptures.md#included-translations).
 
 ### Can I add other translations?
 

@@ -27,8 +27,8 @@ export const defaultScripture: ScriptureVerse = {
 	book_name: "joshua",
 	chapter: 1,
 	verse: "8",
-	text: "This Book of the Law shall not depart from your mouth, but you shall meditate in it day and night, that you may observe to do according to all that is written in it. For then you will make your way prosperous, and then you will have good success.",
-	version: "NKJV",
+	text: "This book of the law shall not depart out of thy mouth; but thou shalt meditate therein day and night, that thou mayest observe to do according to all that is written therein: for then thou shalt make thy way prosperous, and then thou shalt have good success.",
+	version: "KJV",
 };
 export const defaultLyric: SongLyric = {
 	label: "Song of the Ages",
@@ -178,7 +178,7 @@ export const defaultAppSettings: AppSettings = {
 	// Appearance settings
 	fontSize: "medium",
 	// Scripture settings
-	defaultTranslation: "NKJV",
+	defaultTranslation: "KJV",
 	showVerseNumbers: true,
 	showScriptureReference: true,
 	showStrongsTab: true,

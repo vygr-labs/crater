@@ -116,7 +116,7 @@ export default function App() {
 	const [translations, setTranslations] = createSignal<Translation[]>([]);
 	const [selectedBook, setSelectedBook] = createSignal("");
 	const [selectedChapter, setSelectedChapter] = createSignal<number>(0);
-	const [selectedVersion, setSelectedVersion] = createSignal("NKJV");
+	const [selectedVersion, setSelectedVersion] = createSignal("KJV");
 	const [verses, setVerses] = createSignal<Verse[]>([]);
 	const [selectedVerses, setSelectedVerses] = createSignal<Set<string>>(new Set());
 	
@@ -535,9 +535,9 @@ export default function App() {
 							>
 								<Show when={translations().length > 0} fallback={
 									<>
-										<option value="NKJV">NKJV</option>
-										<option value="NIV">NIV</option>
-										<option value="NLT">NLT</option>
+										<option value="KJV">KJV</option>
+										<option value="WEB">WEB</option>
+										<option value="BSB">BSB</option>
 									</>
 								}>
 									<For each={translations()}>
