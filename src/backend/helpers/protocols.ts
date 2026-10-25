@@ -92,7 +92,6 @@ const handleRangeRequest = async (request: Request, targetPath: string) => {
 		return makeUnsupportedRangeResponse();
 	}
 
-	console.log("GETTING STAT FOR: ", targetPath);
 	const stat = await fs.stat(targetPath);
 	// Ranges are requested using one of the following formats
 	//  bytes=1234-5679
@@ -144,31 +143,16 @@ const handleCustomProtocols = (): CustomProtocolHandler => {
 
 	// See also the protocol.handle example: https://www.electronjs.org/docs/latest/api/protocol#protocolhandlescheme-handler
 	protocol.handle(contentProtocolName, async (request) => {
-		console.log(request);
 		const url = new URL(request.url);
 		const host = url.host;
 		const fileUrl = pathToFileURL(decodeURI(url.pathname));
 
-		console.log("\n----", url, url.pathname, host, "\n----\n");
 		let pathname = decodeURI(fileUrl.pathname).slice(1); // .replace("\\", "");
-		console.log(
-			pathname,
-			"---\n---",
-			appBundleDirectory,
-			"---\n---",
-			decodeURI(fileUrl.pathname),
-			"---\n---",
-			fileUrl.pathname,
-			"---\n---",
-		);
 
 		// See https://security.stackexchange.com/a/123723
 		if (pathname.startsWith("..")) {
 			throw new Error(`Invalid URL (not absolute), ${request.url}`);
 		}
-
-		// pathname = resolve(appBundleDirectory, pathname);
-		console.log("FINAL: ", pathname);
 
 		let canRead = false;
 		// if (allowedHosts.includes(host)) { // url host is sometimes the drive letter
@@ -191,12 +175,6 @@ const handleCustomProtocols = (): CustomProtocolHandler => {
 		}
 
 		const asFileUrl = decodeURI(fileUrl.href);
-		console.log(
-			"FETCH FILE URL: ",
-			asFileUrl,
-			fileUrl.href,
-			decodeURI(fileUrl.href),
-		);
 		// logger.debug("protocol handler: Fetch file URL", asFileUrl);
 
 		const rangeHeader = request.headers.get("Range");

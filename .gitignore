@@ -26,6 +26,9 @@ pnpm-debug.log*
 # claude code workspace
 .claude/
 
+# local working notes / audits / planning docs (not for the repo)
+docs/
+
 ## Panda
 styled-system-studio
 
